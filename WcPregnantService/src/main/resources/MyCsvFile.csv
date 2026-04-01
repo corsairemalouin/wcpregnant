@@ -1,0 +1,71 @@
+#my commentary
+# author
+# etc
+Name;Id;Parent;NodeType;Icon;Panel;Username;Password;Hostname;Protocol;PuttySession;Port
+AET;AET;root;Container;Linux;Antai;;;;SSH2;Default Settings;22
+frrnsantaetbdd1;frrnsantaetbdd1;AET;Connection;Linux;Antai;www;Ant@i2015;frrnsantaetbdd1;SSH2;Default Settings;22
+frrnsantaetd0;frrnsantaetd0;AET;Connection;Linux;Antai;www;Ant@i2015;frrnsantaetd0;SSH2;Default Settings;22
+frrnsantaetdev1;frrnsantaetdev1;AET;Connection;Linux;Antai;www;Ant@i2015;frrnsantaetdev1;SSH2;Default Settings;22
+COEUR;COEUR;root;Container;Linux;Antai;;;;SSH2;Default Settings;22
+frrnsantacotnrx;frrnsantacotnrx;COEUR;Connection;Linux;Antai;www;Ant@i2015;frrnsantacotnrx;SSH2;Default Settings;22
+frrnsantcoeur1;frrnsantcoeur1;COEUR;Connection;Linux;Antai;www;F0rfA1t;frrnsantcoeur1;SSH2;Default Settings;22
+frrnsantcoeur2;frrnsantcoeur2;COEUR;Connection;Linux;Antai;www;F0rfA1t;frrnsantcoeur2;SSH2;Default Settings;22
+frrnsantcoeur3;frrnsantcoeur3;COEUR;Connection;Linux;Antai;www;F0rfA1t;frrnsantcoeur3;SSH2;Default Settings;22
+frrnsantcoeur4;frrnsantcoeur4;COEUR;Connection;Linux;Antai;www;F0rfA1t;frrnsantcoeur4;SSH2;Default Settings;22
+frrnsantcoeur5;frrnsantcoeur5;COEUR;Connection;Linux;Antai;www;F0rfA1t;frrnsantcoeur5;SSH2;Default Settings;22
+frrnsantintapp2;frrnsantintapp2;COEUR;Connection;Linux;Antai;www;Ant@i2015;frrnsantintapp2;SSH2;Default Settings;22
+frrnsantintbdd2;frrnsantintbdd2;COEUR;Connection;Linux;Antai;www;Ant@i2015;frrnsantintbdd2;SSH2;Default Settings;22
+frrnsantintbdd5;frrnsantintbdd5;COEUR;Connec tion;Linux;Antai;www;Ant@i2015;frrnsantintbdd5;SSH2;Default Settings;22
+FPS;FPS;root;Container;Linux;Antai;;;;SSH2;Default Settings;22
+frrnsfpsbdd1;frrnsfpsbdd1;FPS;Connection;Linux;Antai;www;Fps!2023;frrnsfpsbdd1;SSH2;Default Settings;22
+frrnsfpsfront1;frrnsfpsfront1;FPS;Connection;Linux;Antai;www;Fps!2023;frrnsfpsfront1;SSH2;Default Settings;22
+frrnsfpswrk1;frrnsfpswrk1;FPS;Connection;Linux;Antai;www;Fps!2023;frrnsfpswrk1;SSH2;Default Settings;22
+KPI;KPI;root;Container;Linux;Antai;;;;SSH2;Default Settings;22
+frrnsantacodev5;frrnsantacodev5;KPI;Connection;Linux;Antai;www;Ant@i2015;frrnsantacodev5;SSH2;Default Settings;22
+frrnsantkpi;frrnsantkpi;KPI;Connection;Linux;Antai;systeam;Ant@i2024;frrnsantkpi;SSH2;Default Settings;22
+frrnsantkpid;frrnsantkpid;KPI;Connection;Linux;Antai;systeam;Ant@i2024;frrnsantkpid;SSH2;Default Settings;22
+frrnsantkpidev1;frrnsantkpidev1;KPI;Connection;Linux;Antai;www;Ant@i2015;frrnsantkpidev1;SSH2;Default Settings;22
+IRIS Dev;IRIS Dev;root;Container;Linux;Antai;;;;SSH2;Default Settings;22
+frrnsantirisd01;frrnsantirisd01;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd01;SSH2;Default Settings;22
+frrnsantirisd02;frrnsantirisd02;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd02;SSH2;Default Settings;22
+frrnsantirisd03;frrnsantirisd03;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd03;SSH2;Default Settings;22
+frrnsantirisd04;frrnsantirisd04;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd04;SSH2;Default Settings;22
+frrnsantirisd05;frrnsantirisd05;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd05;SSH2;Default Settings;22
+frrnsantirisd06;frrnsantirisd06;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd06;SSH2;Default Settings;22
+frrnsantirisd07;frrnsantirisd07;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd07;SSH2;Default Settings;22
+frrnsantirisd08;frrnsantirisd08;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd08;SSH2;Default Settings;22
+frrnsantirisd09;frrnsantirisd09;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd09;SSH2;Default Settings;22
+frrnsantirisd10;frrnsantirisd10;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd10;SSH2;Default Settings;22
+frrnsantirisd11;frrnsantirisd11;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd11;SSH2;Default Settings;22
+frrnsantirisd12;frrnsantirisd12;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd12;SSH2;Default Settings;22
+frrnsantirisd13;frrnsantirisd13;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd13;SSH2;Default Settings;22
+frrnsantirisd14;frrnsantirisd14;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd14;SSH2;Default Settings;22
+frrnsantirisd15;frrnsantirisd15;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd15;SSH2;Default Settings;22
+frrnsantirisd16;frrnsantirisd16;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd16;SSH2;Default Settings;22
+frrnsantirisd17;frrnsantirisd17;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd17;SSH2;Default Settings;22
+frrnsantirisd18;frrnsantirisd18;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd18;SSH2;Default Settings;22
+frrnsantirisd19;frrnsantirisd19;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd19;SSH2;Default Settings;22
+frrnsantirisd20;frrnsantirisd20;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd20;SSH2;Default Settings;22
+frrnsantirisd21;frrnsantirisd21;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd21;SSH2;Default Settings;22
+frrnsantirisd22;frrnsantirisd22;IRIS Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantirisd22;SSH2;Default Settings;22
+IRIS Integ;IRIS Integ;root;Container;Linux;Antai;;;;SSH2;Default Settings;22
+frrnsantirist01;frrnsantirist01;IRIS Integ;Connection;Linux;Antai;www;F0rfA1t;frrnsantirist01;SSH2;Default Settings;22
+frrnsantirist02;frrnsantirist02;IRIS Integ;Connection;Linux;Antai;www;F0rfA1t;frrnsantirist02;SSH2;Default Settings;22
+frrnsantirist03;frrnsantirist03;IRIS Integ;Connection;Linux;Antai;www;F0rfA1t;frrnsantirist03;SSH2;Default Settings;22
+frrnsantirist04;frrnsantirist04;IRIS Integ;Connection;Linux;Antai;www;F0rfA1t;frrnsantirist04;SSH2;Default Settings;22
+SID Dev;SID Dev;root;Container;Linux;Antai;;;;SSH2;Default Settings;22
+
+frrnsantaifddv2;frrnsantaifddv2;SID Dev;Connection;Linux;Antai;www;F0rfA1t;frrnsantaifddv2;SSH2;Default Settings;22
+Outillage;Outillage;root;Container;Linux;Antai;;;;SSH2;Default Settings;22
+frrnsantaipicmi;frrnsantaipicmi;Outillage;Connection;Linux;Antai;www;Ant@i2015;frrnsantaipicmi;SSH2;Default Settings;2275
+frrnsantansible;frrnsantansible;Outillage;Connection;Linux;Antai;systeam;Ant@i2024;frrnsantansible;SSH2;Default Settings;22
+frrnsantdns;frrnsantdns;Outillage;Connection;Linux;Antai;systeam;Ant@i2024;frrnsantdns;SSH2;Default Settings;22
+frrnsantmon;frrnsantmon;Outillage;Connection;Linux;Antai;systeam;Ant@i2024;frrnsantmon;SSH2;Default Settings;22
+frrnsantpicmir;frrnsantpicmir;Outillage;Connection;Linux;Antai;systeam;Ant@i2024;frrnsantpicmir;SSH2;Default Settings;22
+frrnsanttool;frrnsanttool;Outillage;Connection;Linux;Antai;www;Ant@i2015;frrnsanttool;SSH2;Default Settings;22
+frrnsanttooling;frrnsanttooling;Outillage;Connection;Linux;Antai;systeam;Ant@i2024;frrnsanttooling;SSH2;Default Settings;22
+Slaves Jenkins;Slaves Jenkins;root;Container;Linux;Antai;;;;SSH2;Default Settings;22
+frrnsantplslv1;frrnsantplslv1;Slaves Jenkins;Connection;Linux;Antai;www;Sl@v3_pl;frrnsantplslv1;SSH2;Default Settings;22
+frrnsantplslv2;frrnsantplslv2;Slaves Jenkins;Connection;Linux;Antai;www;Sl@v3_pl;frrnsantplslv2;SSH2;Default Settings;22
+frrnsantplslv3;frrnsantplslv3;Slaves Jenkins;Connection;Linux;Antai;www;Sl@v3_pl;frrnsantplslv3;SSH2;Default Settings;22
+frrnsantplslv3;frrnsantplslv3;Slaves Jenkins;Connection;Linux;Antai;www;Sl@v3_pl;frrnsantplslv3;SSH2;Default Settings;75

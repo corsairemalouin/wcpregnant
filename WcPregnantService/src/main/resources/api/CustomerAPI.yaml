@@ -1,0 +1,42 @@
+openapi: 3.0.0
+info:
+  title: WC Pregnant API
+  description: API de gestion des utilisateurs
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+    description: Serveur local
+
+paths:
+
+  /customer/{id}:
+    get:
+      summary: lire un customer
+      operationId: lireCustomer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: long
+      responses:
+        '200':
+          description: Toilette détails
+          content:
+            application/json:
+              schema:
+                $ref: 'ObjectDefinitions.yaml#/components/schemas/Customer'
+
+  /customer:
+    get:
+      summary: Récupérer toutes les clients
+      operationId: getAllCustomers
+      responses:
+        '200':
+          description: Liste des clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                    $ref: 'ObjectDefinitions.yaml#/components/schemas/Customer'

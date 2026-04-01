@@ -1,0 +1,16 @@
+<div *ngIf="toilet" class="toilet-details">
+  <h2>{{ toilet.name }}</h2>
+  <p><strong>Adresse :</strong> {{ toilet.address }}</p>
+  <p><strong>Note :</strong> {{ toilet.rating }} / 5</p>
+
+  <div class="photos" *ngIf="toilet.photos?.length">
+    <h3>Photos</h3>
+    <div class="photo-grid">
+      <img *ngFor="let photo of toilet.photos" [src]="photo" alt="Photo toilette" />
+    </div>
+  </div>
+
+  <a [href]="getGoogleMapsLink()" target="_blank" class="btn-itinerary">
+    🧭 Obtenir l’itinéraire
+  </a>
+</div>

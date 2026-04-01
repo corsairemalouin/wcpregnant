@@ -1,0 +1,64 @@
+components:
+  schemas:
+    Customer:
+      type: object
+      properties:
+        login:
+            type: string
+        password:
+            type: string
+        nom:
+            type: string
+        prenom:
+            type: string
+        adress:
+          $ref: "Adress"
+
+
+    Toilet:
+      type: object
+      properties:
+        libelle:
+            type: string
+        distance:
+            type: double
+        adress:
+          $ref: "Adress"
+        grade:
+          $ref: "Graduation"
+        position:
+          $ref: "GeoPosition"
+
+
+    Adress:
+      type: object
+      properties:
+        numero:
+          type: string
+        voie:
+          type: string
+        codePostal:
+          type: string
+        ville:
+          type: string
+        pays:
+          type: string
+
+
+    Graduation:
+      type: object
+      properties:
+          proprete:
+            type: integer
+          accueil:
+            type: integer
+          espace:
+            type: integer
+
+    GeoPosition:
+      type: object
+      properties:
+        latitude:
+          type: double
+        longitude:
+          type: double
