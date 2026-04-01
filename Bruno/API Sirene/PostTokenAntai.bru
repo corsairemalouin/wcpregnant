@@ -1,0 +1,29 @@
+meta {
+  name: PostTokenAntai
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://auth.insee.net/auth/realms/apim-gravitee/protocol/openid-connect/token
+  body: formUrlEncoded
+  auth: none
+}
+
+headers {
+  Content-Type: application/x-www-form-urlencoded
+}
+
+body:form-urlencoded {
+  grant_type: password
+  client_id: 21fc922f-957a-4d8c-8fe2-63082a56dbb1
+  client_secret: dei6F8SeLq87BljAvA1FTVJnQGiFdcEa
+  username: licences-si%40antai.fr
+  password: *Z%2B*zF%2B%2B6n%2BS
+}
+
+body:multipart-form {
+  grant_type: password
+  username: c7643091-1c7a-4b84-a2c9-12095b05d50d
+  password: 3y4HyGiEKJ5JjEB5lqSGd8OGjOryIkmn
+}

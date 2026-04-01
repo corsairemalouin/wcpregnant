@@ -1,0 +1,38 @@
+meta {
+  name: addToilette3
+  type: http
+  seq: 8
+}
+
+post {
+  url: http://localhost:8080/wcpregnant/toilet
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "libelle": "tout pourri",
+    "adress": {
+      "numero": "7",
+      "voie": "Rue henry",
+      "codePostal": "35350",
+      "ville": " La Gouesniere",
+      "ligne4": "france"
+    },
+    "grade": {
+      "clean": 1,
+      "welcome": 1,
+      "space": 1
+    },
+    "position": {
+      "latitude": 48.0566,
+      "longitude": -2.001
+    }
+  }
+}

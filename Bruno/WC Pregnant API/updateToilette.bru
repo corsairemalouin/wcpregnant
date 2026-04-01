@@ -1,0 +1,11 @@
+meta {
+  name: updateToilette
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8080/api/toilet/{id}
+  body: json
+  auth: none
+}

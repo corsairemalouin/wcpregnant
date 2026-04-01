@@ -1,0 +1,38 @@
+name: Test getNearsetToilettes
+steps:
+  - name: Appel de la méthode getNearsetToilettes
+    request:
+      url: http://localhost:8080/api/toilet
+      method: GET
+      query:
+        latitude: 48.8566
+        longitude: 2.3522
+      headers:
+        accept: application/json
+    response:
+      status: 200
+      body:
+        - adresse:
+            ligne1: "123 Rue Exemple"
+            ligne2: ""
+            ligne3: ""
+            ligne4: ""
+          grade:
+            clean: 5
+            welcome: 4
+            space: 3
+          position:
+            latitude: 48.8566
+            longitude: 2.3522
+        - adresse:
+            ligne1: "456 Avenue Exemple"
+            ligne2: ""
+            ligne3: ""
+            ligne4: ""
+          grade:
+            clean: 4
+            welcome: 5
+            space: 4
+          position:
+            latitude: 48.8566
+            longitude: 2.3522

@@ -1,0 +1,25 @@
+meta {
+  name: getNearsetToilettes
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8089/wcpregnant/toilets/toilet?latitude=48.001&longitude=-2.12
+  body: multipartForm
+  auth: basic
+}
+
+query {
+  latitude: 48.001
+  longitude: -2.12
+}
+
+auth:basic {
+  username: user
+  password: manu
+}
+
+body:multipart-form {
+  position: {    "latitude": 48.8566,    "longitude": 2.3522 }
+}

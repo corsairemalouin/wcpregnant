@@ -1,0 +1,41 @@
+meta {
+  name: addToilette
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/toilet?ToiletteDTO={ }
+  "adresse": {
+    "ligne1": "19 bis rue de la baie"
+  },
+  "grade": {
+    "clean": "2",
+    "space": "2",
+    "welcome": "2"
+  },
+  "position": {
+    "latitude": "48.1",
+    "longitude": "-1.91"
+  }
+}
+  body: json
+  auth: none
+}
+
+query {
+  ToiletteDTO: { }
+    "adresse": {
+      "ligne1": "19 bis rue de la baie"
+    },
+    "grade": {
+      "clean": "2",
+      "space": "2",
+      "welcome": "2"
+    },
+    "position": {
+      "latitude": "48.1",
+      "longitude": "-1.91"
+    }
+  }
+}

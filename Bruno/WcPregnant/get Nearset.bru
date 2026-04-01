@@ -1,0 +1,15 @@
+meta {
+  name: get Nearset
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/wcpregnant?position={long=100,lat=100}
+  body: none
+  auth: none
+}
+
+query {
+  position: {long=100,lat=100}
+}

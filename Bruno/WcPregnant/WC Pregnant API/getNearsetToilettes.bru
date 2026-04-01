@@ -1,0 +1,15 @@
+meta {
+  name: getNearsetToilettes
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/wcpregnant
+  body: none
+  auth: none
+}
+
+query {
+  ~position: { "latitude": "48", "longitude": "-1,5"}
+}
