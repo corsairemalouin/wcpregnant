@@ -1,6 +1,7 @@
 package org.manu.wcpregnant.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.manu.wcpregnant.service.CustomerService;
 import org.manu.wcpregnant.web.dto.Customer;
@@ -16,5 +17,10 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public List<Customer> getAllCustomers() {
         return List.of();
+    }
+
+    @Override
+    public Optional<Customer> getCustomerByLogin(String login) {
+        return Optional.empty();
     }
 }

@@ -1,35 +1,10 @@
+openapi: 3.0.0
+info:
+  title: Object Definitions
+  version: 1.0.0
+
 components:
   schemas:
-    Customer:
-      type: object
-      properties:
-        login:
-            type: string
-        password:
-            type: string
-        nom:
-            type: string
-        prenom:
-            type: string
-        adress:
-          $ref: "Adress"
-
-
-    Toilet:
-      type: object
-      properties:
-        libelle:
-            type: string
-        distance:
-            type: double
-        adress:
-          $ref: "Adress"
-        grade:
-          $ref: "Graduation"
-        position:
-          $ref: "GeoPosition"
-
-
     Adress:
       type: object
       properties:
@@ -44,16 +19,15 @@ components:
         pays:
           type: string
 
-
     Graduation:
       type: object
       properties:
-          proprete:
-            type: integer
-          accueil:
-            type: integer
-          espace:
-            type: integer
+        proprete:
+          type: integer
+        accueil:
+          type: integer
+        espace:
+          type: integer
 
     GeoPosition:
       type: object
@@ -62,3 +36,31 @@ components:
           type: double
         longitude:
           type: double
+
+    Customer:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        adress:
+          $ref: '#/components/schemas/Adress'
+
+    Toilet:
+      type: object
+      properties:
+        libelle:
+          type: string
+        distance:
+          type: double
+        adress:
+          $ref: '#/components/schemas/Adress'
+        grade:
+          $ref: '#/components/schemas/Graduation'
+        position:
+          $ref: '#/components/schemas/GeoPosition'

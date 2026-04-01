@@ -1,23 +1,30 @@
 openapi: 3.0.0
 info:
-  title: WC Pregnant API
-  description: API pour géolocaliser et gérer les toilettes pour les femmes enceintes
+  title: Toilet API
   version: 1.0.0
 servers:
   - url: http://localhost:8080/api
-    description: Serveur local
 
 paths:
   /toilet:
     get:
-      summary: Récupérer toutes les toilettes à proximité
+      tags:
+        - Toilet
+      summary: RÃ©cupÃ©rer les toilettes Ã  proximitÃ©
       operationId: getNearsetToilettes
       parameters:
-        - name: position
+        - name: latitude
           in: query
           required: true
           schema:
-            $ref: 'ObjectDefinitions.yaml#/components/schemas/GeoPosition'
+            type: number
+            format: double
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
       responses:
         '200':
           description: Liste des toilettes
@@ -28,65 +35,23 @@ paths:
                 items:
                   $ref: 'ObjectDefinitions.yaml#/components/schemas/Toilet'
 
-    post:
-      summary: Ajouter une nouvelle toilette
-      operationId:
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: 'ObjectDefinitions.yaml#/components/schemas/Toilet'
-      responses:
-        '200':
-          description: Toilette ajoutée
-
   /toilet/{id}:
     get:
-      summary: lire une toilette
+      tags:
+        - Toilet
+      summary: Lire une toilette par son ID
       operationId: lireToilette
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: long
+            type: integer
+            format: int64
       responses:
         '200':
-          description: Toilette détails
+          description: DÃ©tails de la toilette
           content:
             application/json:
               schema:
                 $ref: 'ObjectDefinitions.yaml#/components/schemas/Toilet'
-    put:
-      summary: Mettre à jour une toilette
-      operationId: updateToilette
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: 'ObjectDefinitions.yaml#/components/schemas/Toilet'
-      responses:
-        '200':
-          description: Toilette mise à jour
-
-    delete:
-      summary: Supprimer une toilette
-      operationId: deleteToilette
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Toilette supprimée

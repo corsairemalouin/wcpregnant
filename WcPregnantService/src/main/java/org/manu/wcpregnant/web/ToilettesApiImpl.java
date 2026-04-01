@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Optional;
+import org.manu.wcpregnant.web.api.ToiletApi;
 
 @RestController
 @RequestMapping("/api/wcpregnant/toilets")
@@ -26,6 +27,11 @@ public class ToilettesApiImpl implements ToiletApi {
 
     @Autowired
     ToiletteService service;
+
+    @Override
+    public ResponseEntity<List<Toilet>> getNearsetToilettes(Double latitude, Double longitude) {
+        return getNearsetToilettes(GeoPosition.builder().latitude(latitude).longitude(longitude).build());
+    }
 
     @GetMapping("/toilet")
     @Override
@@ -38,7 +44,6 @@ public class ToilettesApiImpl implements ToiletApi {
 
     @PostMapping("/toilet")
     @PreAuthorize("asRole('ADMIN')")
-    @Override
     public ResponseEntity<Void> toiletPost(Toilet val) {
         assertNotEmpty(val);
         service.addToilet(val);
@@ -46,7 +51,6 @@ public class ToilettesApiImpl implements ToiletApi {
     }
 
     @GetMapping("/nearby")
-    @Override
     @PreAuthorize("asRole('USER')")
     public ResponseEntity<List<Toilet>> getNearsetToilettes(GeoPosition position) {
         assertNotEmpty(position);
