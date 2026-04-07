@@ -6,6 +6,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +17,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.manu.wcpregnant.bdd.dao.ToiletDAO;
 import org.manu.wcpregnant.bdd.repository.ToiletteRepository;
 import org.manu.wcpregnant.utils.TestsUtils;
+import org.manu.wcpregnant.web.dto.Adress;
 import org.manu.wcpregnant.web.dto.GeoPosition;
+import org.manu.wcpregnant.web.dto.Graduation;
 import org.manu.wcpregnant.web.dto.Toilet;
 import org.mockito.Mock;
 import org.slf4j.Logger;
@@ -102,5 +105,25 @@ class ToiletteServiceImplTest {
 
     @Test
     void deleteToilette() {
+    }
+
+
+    private Toilet buildBddToilet(String name) {
+        return Toilet.builder().libelle(name).adress(buildAddress()).grade(buildGrade()).position(buildPosition())
+                .build();
+    }
+
+    private Adress buildAddress() {
+        return Adress.builder().numero("19 bis").codePostal("35350").ville("La Gouesnioere").voie("rue de la baie")
+                .build();
+    }
+
+    private Graduation buildGrade() {
+        return Graduation.builder().accueil(2).espace(2).proprete(2).build();
+    }
+
+    private GeoPosition buildPosition() {
+        double offset = ThreadLocalRandom.current().nextDouble() / 1000;
+        return GeoPosition.builder().longitude(-1.98 + offset).latitude(48.1 + offset).build();
     }
 }

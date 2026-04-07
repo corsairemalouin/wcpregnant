@@ -82,23 +82,5 @@ public class ToiletteServiceImpl implements ToiletteService {
         toiletteRepository.deleteById(id);
     }
 
-    private Toilet buildBddToilet(String name) {
-        return Toilet.builder().libelle(name).adress(buildAddress()).grade(buildGrade()).position(buildPosition())
-                .build();
-    }
-
-    private Adress buildAddress() {
-        return Adress.builder().numero("19 bis").codePostal("35350").ville("La Gouesnioere").voie("rue de la baie")
-                .build();
-    }
-
-    private Graduation buildGrade() {
-        return Graduation.builder().accueil(2).espace(2).proprete(2).build();
-    }
-
-    private GeoPosition buildPosition() {
-        double offset = ThreadLocalRandom.current().nextDouble() / 1000;
-        return GeoPosition.builder().longitude(-1.98 + offset).latitude(48.1 + offset).build();
-    }
 
 }

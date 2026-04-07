@@ -11,10 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,36 +23,51 @@ import org.manu.wcpregnant.web.api.ToiletApi;
 public class ToilettesApiImpl implements ToiletApi {
 
     @Autowired
-    ToiletteService service;
+    private ToiletteService service;
 
+    /**
+     * GET /toilet
+     * Mappé via l'interface ToiletApi avec @RequestParam latitude et longitude
+     */
     @Override
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<Toilet>> getNearsetToilettes(Double latitude, Double longitude) {
-        return getNearsetToilettes(GeoPosition.builder().latitude(latitude).longitude(longitude).build());
+        GeoPosition position = GeoPosition.builder()
+                .latitude(latitude)
+                .longitude(longitude)
+                .build();
+
+        assertNotEmpty(position);
+        List<Toilet> toilets = service.getNearsetToilettes(position);
+        return new ResponseEntity<>(toilets, HttpStatus.OK);
     }
 
-    @GetMapping("/toilet")
+    /**
+     * GET /toilet/{id}
+     * Mappé via l'interface ToiletApi
+     */
     @Override
-    @PreAuthorize("asRole('USER')")
-    public ResponseEntity<Toilet> lireToilette(Long id) {
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Toilet> lireToilette(@PathVariable("id") Long id) {
         Optional<Toilet> val = service.lireToilet(id);
-        return val.isEmpty() ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(val.get(), HttpStatus.OK);
+        return val.map(toilet -> new ResponseEntity<>(toilet, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NO_CONTENT));
     }
 
+    /**
+     * POST /toilet
+     * Note: Si cette méthode n'est pas dans l'interface ToiletApi,
+     * on garde l'annotation explicite.
+     */
     @PostMapping("/toilet")
-    @PreAuthorize("asRole('ADMIN')")
-    public ResponseEntity<Void> toiletPost(Toilet val) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> toiletPost(@RequestBody Toilet val) {
         assertNotEmpty(val);
         service.addToilet(val);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @GetMapping("/nearby")
-    @PreAuthorize("asRole('USER')")
-    public ResponseEntity<List<Toilet>> getNearsetToilettes(GeoPosition position) {
-        assertNotEmpty(position);
-        return new ResponseEntity<>(service.getNearsetToilettes(position), HttpStatus.OK);
-    }
+    // --- Méthodes de validation privées ---
 
     private void assertNotEmpty(Toilet toilet) {
         Assert.notNull(toilet, "missing mandatory parameter toilet");
@@ -66,7 +78,7 @@ public class ToilettesApiImpl implements ToiletApi {
 
     private void assertNotEmpty(Adress adress) {
         Assert.notNull(adress, "missing mandatory parameter adress");
-        Assert.notNull(adress.getCodePostal(), "missing mandatory parametercode postal");
+        Assert.notNull(adress.getCodePostal(), "missing mandatory parameter code postal");
     }
 
     private void assertNotEmpty(Graduation grade) {

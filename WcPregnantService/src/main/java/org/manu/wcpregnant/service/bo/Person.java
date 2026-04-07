@@ -1,4 +1,4 @@
-package org.manu.wcpregnant.client;
+package org.manu.wcpregnant.service.bo;
 
 public record Person(String name, Integer age) {
 }
