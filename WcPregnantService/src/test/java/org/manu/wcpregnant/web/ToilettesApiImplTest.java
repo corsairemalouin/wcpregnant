@@ -1,107 +1,163 @@
 package org.manu.wcpregnant.web;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.manu.wcpregnant.service.ToiletteService;
-import org.manu.wcpregnant.utils.TestsUtils;
+import org.manu.wcpregnant.web.dto.Adress;
 import org.manu.wcpregnant.web.dto.GeoPosition;
+import org.manu.wcpregnant.web.dto.Graduation;
 import org.manu.wcpregnant.web.dto.Toilet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class ToilettesApiImplTest {
+@ActiveProfiles("dev")
+@Transactional
+public class ToilettesApiImplTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private ToiletteService service;
-
-    // Correspond au @RequestMapping du contrôleur
-    private final String BASE_URL = "/api/wcpregnant/toilets";
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
-     * Test de lecture d'une toilette par ID.
-     * URL attendue : /api/wcpregnant/toilets/toilet/{id}
+     * Helper pour créer un objet Toilet valide avec toutes les contraintes SQL (Grade, etc.)
      */
-    @Test
-    @WithMockUser(roles = "USER")
-    void lireToilette() throws Exception {
-        // Mocking des comportements du service
-        when(service.lireToilet(1L)).thenReturn(Optional.of(TestsUtils.buildToilet()));
-        when(service.lireToilet(2L)).thenReturn(Optional.empty());
-
-        // Cas 200 OK : L'ID est passé dans le chemin (Path Variable)
-        this.mockMvc.perform(get(BASE_URL + "/toilet/1")
-                        .with(csrf()))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.libelle").value(containsString("default test value")));
-
-        // Cas 204 No Content : L'ID n'existe pas
-        this.mockMvc.perform(get(BASE_URL + "/toilet/2")
-                        .with(csrf()))
-                .andDo(print())
-                .andExpect(status().isNoContent());
+    private Toilet getMockToilet() {
+        return Toilet.builder()
+                .libelle("WC Public")
+                .grade(Graduation.builder().proprete(1).accueil(2).espace(3).build())
+                .adress(Adress.builder().ville("Paris").codePostal("75001").build())
+                .position(GeoPosition.builder().latitude(48.8).longitude(2.3).build())
+                .build();
     }
 
     /**
-     * Test de l'ajout d'une toilette (Admin uniquement).
-     * URL attendue : /api/wcpregnant/toilets/toilet
+     * Helper pour créer un toilette en base et récupérer son ID généré
      */
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    void addToilette() throws Exception {
-        String jsonPayload = TestsUtils.buildToiletteJson();
-
-        this.mockMvc.perform(post(BASE_URL + "/toilet")
-                        .with(csrf()) // Indispensable pour les requêtes POST
+    private Long createAndGetId() throws Exception {
+        MvcResult result = mockMvc.perform(post("/toilets")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonPayload))
-                .andDo(print())
-                .andExpect(status().isCreated());
+                        .content(objectMapper.writeValueAsString(getMockToilet())))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString();
+        JsonNode node = objectMapper.readTree(content);
+        return node.get("id").asLong();
     }
 
-    /**
-     * Test de la recherche à proximité.
-     * URL attendue : /api/wcpregnant/toilets/toilet?latitude=...&longitude=...
-     * Note : L'interface OpenAPI n'utilise pas "/nearby" mais "/toilet" avec params.
-     */
-    @Test
-    @WithMockUser(roles = "USER")
-    void getNearsetToilettes() throws Exception {
-        List<Toilet> list = new ArrayList<>();
-        list.add(TestsUtils.buildToilet());
+    @Nested
+    @DisplayName("Tests de Création (POST)")
+    class CreateTests {
 
-        when(service.getNearsetToilettes(any(GeoPosition.class))).thenReturn(list);
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("ADMIN peut créer un toilette")
+        void create_Admin_Success() throws Exception {
+            mockMvc.perform(post("/toilets")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(getMockToilet())))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.id").exists());
+        }
 
-        this.mockMvc.perform(get(BASE_URL + "/toilet")
-                        .param("latitude", "48.1")
-                        .param("longitude", "-2.2")
-                        .with(csrf()))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("default test value")));
+        @Test
+        @WithMockUser(roles = "USER")
+        @DisplayName("USER ne peut PAS créer un toilette (403)")
+        void create_User_Forbidden() throws Exception {
+            mockMvc.perform(post("/toilets")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(getMockToilet())))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("Tests de Mise à jour (PUT)")
+    class UpdateTests {
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("ADMIN peut modifier un toilette existant")
+        void update_Admin_Success() throws Exception {
+            // Extraction de l'ID réel généré par la BDD
+            Long id = createAndGetId();
+
+            mockMvc.perform(put("/toilets/" + id)
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(getMockToilet())))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @WithMockUser(roles = "USER")
+        @DisplayName("USER ne peut PAS modifier un toilette (403)")
+        void update_User_Forbidden() throws Exception {
+            mockMvc.perform(put("/toilets/1")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(getMockToilet())))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("Tests de Suppression (DELETE)")
+    class DeleteTests {
+
+        @Test
+        @WithMockUser(roles = "ADMIN")
+        @DisplayName("ADMIN peut supprimer un toilette existant")
+        void delete_Admin_Success() throws Exception {
+            // Extraction de l'ID réel généré par la BDD
+            Long id = createAndGetId();
+
+            mockMvc.perform(delete("/toilets/" + id)
+                            .with(csrf()))
+                    .andExpect(status().isNoContent());
+        }
+
+        @Test
+        @WithMockUser(roles = "USER")
+        @DisplayName("USER ne peut PAS supprimer un toilette (403)")
+        void delete_User_Forbidden() throws Exception {
+            mockMvc.perform(delete("/toilets/1")
+                            .with(csrf()))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("Tests de Lecture (GET)")
+    class GetTests {
+
+        @Test
+        @WithMockUser(roles = "USER")
+        @DisplayName("Tout utilisateur authentifié peut lister les toilettes")
+        void getAll_Authenticated_Success() throws Exception {
+            mockMvc.perform(get("/toilets"))
+                    .andExpect(status().isOk());
+        }
     }
 }

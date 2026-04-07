@@ -1,0 +1,25 @@
+meta {
+  name: lireToilet
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/toilet/1
+  body: none
+  auth: basic
+}
+
+headers {
+  Accept: application/json
+}
+
+auth:basic {
+  username: manu
+  password: manu
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

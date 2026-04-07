@@ -3,30 +3,45 @@ info:
   title: Customer API
   version: 1.0.0
 servers:
-  - url: http://localhost:8080/api
+  - url: http://localhost:8080/api/wcpregnant # Harmonisé avec votre projet précédent
 
 paths:
   /customers:
     get:
       tags:
         - Customer
-      summary: Récupérer tous les clients
-      operationId: getAllCustomers
+      summary: Liste tous les clients
+      operationId: getCustomers
       responses:
         '200':
-          description: Liste des clients
+          description: Succès
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: 'ObjectDefinitions.yaml#/components/schemas/Customer'
+                  $ref: './ObjectDefinitions.yaml#/components/schemas/Customer' # Ajout du ./
+
+    post:
+      tags:
+        - Customer
+      summary: Créer un client
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './ObjectDefinitions.yaml#/components/schemas/Customer'
+      responses:
+        '201':
+          description: Client créé
 
   /customers/{login}:
     get:
       tags:
         - Customer
-      summary: Lire un client par son login
+      summary: Détails par login
       operationId: getCustomerByLogin
       parameters:
         - name: login
@@ -36,8 +51,8 @@ paths:
             type: string
       responses:
         '200':
-          description: Détails du client
+          description: OK
           content:
             application/json:
               schema:
-                $ref: 'ObjectDefinitions.yaml#/components/schemas/Customer'
+                $ref: './ObjectDefinitions.yaml#/components/schemas/Customer'

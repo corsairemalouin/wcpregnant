@@ -20,10 +20,10 @@ public class CustomerApiImpl implements  CustomerApi {
     @Autowired
     CustomerService service;
 
-    @GetMapping("/")
+
     @Override
-    public ResponseEntity<List<Customer>> getAllCustomers() {
-        return new ResponseEntity<>(service.getAllCustomers(), HttpStatus.OK);
+    public ResponseEntity<Void> createCustomer(Customer customer) {
+        return new ResponseEntity<>( HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override
@@ -34,5 +34,10 @@ public class CustomerApiImpl implements  CustomerApi {
                 .map(customer -> new ResponseEntity<>(customer, HttpStatus.OK))
                 // Si l'Optional est vide, on renvoie 404 Not Found
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @Override
+    public ResponseEntity<List<Customer>> getCustomers() {
+        return new ResponseEntity<>(service.getAllCustomers(), HttpStatus.OK);
     }
 }

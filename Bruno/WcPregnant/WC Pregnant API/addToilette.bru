@@ -5,7 +5,27 @@ meta {
 }
 
 post {
-  url: http://localhost:8080/api/wcpregnant
+  url: {{base_url}}
   body: json
-  auth: none
+  auth: basic
+}
+
+auth:basic {
+  username: admin
+  password: admin
+}
+
+body:json {
+  {
+    "address": "12 rue de la Paix, 75002 Paris",
+    "description": "Toilettes publiques propres",
+    "latitude": 48.869,
+    "longitude": 2.331,
+    "isFree": true,
+    "hasChangingTable": true
+  }
+}
+
+vars:pre-request {
+  base_url: http://localhost:8080/api/wcpregnant/toilets
 }

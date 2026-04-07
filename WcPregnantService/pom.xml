@@ -6,8 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
+        <relativePath/> </parent>
     <groupId>org.manu</groupId>
     <artifactId>wcpregnant</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -22,7 +21,6 @@
     </properties>
 
     <dependencies>
-        <!-- Core Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -40,7 +38,6 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Database -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -52,7 +49,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Utilities -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -69,7 +65,6 @@
             <version>33.4.0-jre</version>
         </dependency>
 
-        <!-- OpenAPI Support -->
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>
@@ -81,16 +76,10 @@
             <version>2.2.22</version>
         </dependency>
 
-        <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -101,7 +90,6 @@
 
     <build>
         <plugins>
-            <!-- Compiler Configuration -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -111,16 +99,15 @@
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>${org.mapstruct.version}</version>
-                        </path>
-                        <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
-                        <!-- Important: Order matters for Lombok/MapStruct -->
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${org.mapstruct.version}</version>
+                        </path>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
@@ -130,7 +117,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Spring Boot Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -144,7 +130,6 @@
                 </configuration>
             </plugin>
 
-            <!-- OpenAPI Generator Plugin -->
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -165,7 +150,8 @@
                                 <useSpringBoot3>true</useSpringBoot3>
                                 <useTags>true</useTags>
                                 <skipDefaultInterface>true</skipDefaultInterface>
-                                <additionalModelTypeAnnotations>@lombok.Builder @lombok.NoArgsConstructor @lombok.AllArgsConstructor</additionalModelTypeAnnotations>                          </configOptions>
+                                <generateConstructorWithAllArgs>false</generateConstructorWithAllArgs>
+                            </configOptions>
                         </configuration>
                     </execution>
                     <execution>
@@ -183,38 +169,13 @@
                                 <useSpringBoot3>true</useSpringBoot3>
                                 <useTags>true</useTags>
                                 <skipDefaultInterface>true</skipDefaultInterface>
-                                <additionalModelTypeAnnotations>@lombok.Builder @lombok.NoArgsConstructor @lombok.AllArgsConstructor</additionalModelTypeAnnotations>                          </configOptions>
+                                <generateConstructorWithAllArgs>false</generateConstructorWithAllArgs>
+                                <additionalModelTypeAnnotations>@lombok.Builder @lombok.NoArgsConstructor @lombok.AllArgsConstructor @lombok.Data</additionalModelTypeAnnotations>
+                            </configOptions>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- OpenRewrite for Java 25 Migration -->
-            <plugin>
-                <groupId>org.openrewrite.maven</groupId>
-                <artifactId>rewrite-maven-plugin</artifactId>
-                <version>6.35.0</version>
-                <configuration>
-                    <exportDatatables>true</exportDatatables>
-                    <activeRecipes>
-                        <recipe>org.openrewrite.java.migrate.UpgradeToJava25</recipe>
-                    </activeRecipes>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.openrewrite.recipe</groupId>
-                        <artifactId>rewrite-migrate-java</artifactId>
-                        <version>3.31.3</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
         </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <id>central</id>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-    </repositories>
 </project>

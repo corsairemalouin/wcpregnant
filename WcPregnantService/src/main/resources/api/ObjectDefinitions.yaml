@@ -5,6 +5,8 @@ info:
 
 components:
   schemas:
+    # Note: J'ai gardé "Adress" pour correspondre à votre import actuel,
+    # mais le standard anglais est "Address".
     Adress:
       type: object
       properties:
@@ -24,21 +26,28 @@ components:
       properties:
         proprete:
           type: integer
+          format: int32
         accueil:
           type: integer
+          format: int32
         espace:
           type: integer
+          format: int32
 
     GeoPosition:
       type: object
       properties:
         latitude:
-          type: double
+          type: number   # Correction: En OpenAPI, on utilise 'number'
+          format: double # et le format 'double'
         longitude:
-          type: double
+          type: number   # Correction: Idem ici
+          format: double
 
     Customer:
       type: object
+      required:
+        - login # Bonne pratique: définir ce qui est obligatoire
       properties:
         login:
           type: string
@@ -54,10 +63,14 @@ components:
     Toilet:
       type: object
       properties:
+        id: # AJOUT CRUCIAL : sans cela, l'ID n'existe pas dans ton DTO Java
+          type: integer
+          format: int64
         libelle:
           type: string
         distance:
-          type: double
+          type: number
+          format: double
         adress:
           $ref: '#/components/schemas/Adress'
         grade:

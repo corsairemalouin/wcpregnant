@@ -3,55 +3,133 @@ info:
   title: Toilet API
   version: 1.0.0
 servers:
-  - url: http://localhost:8080/api
+  - url: http://localhost:8080/api/wcpregnant
 
 paths:
-  /toilet:
+  /toilets:
+
     get:
       tags:
         - Toilet
-      summary: Récupérer les toilettes à proximité
-      operationId: getNearsetToilettes
+      summary: Liste des toilettes avec filtres
+      description: |
+        Récupère la liste des toilettes. 
+        Si la latitude et la longitude sont fournies, les résultats sont triés par proximité.
+        Inclut un système de pagination.
+      operationId: getToilets
       parameters:
+        # --- Pagination ---
+        - name: page
+          in: query
+          description: Numéro de la page (commence à 0)
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Nombre maximum de résultats par page
+          required: false
+          schema:
+            type: integer
+            default: 20
+
+        # --- Localisation ---
         - name: latitude
           in: query
-          required: true
+          description: Latitude pour le tri par proximité
+          required: false
           schema:
             type: number
             format: double
         - name: longitude
           in: query
-          required: true
+          description: Longitude pour le tri par proximité
+          required: false
           schema:
             type: number
             format: double
+
       responses:
         '200':
-          description: Liste des toilettes
+          description: Liste récupérée avec succès
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: 'ObjectDefinitions.yaml#/components/schemas/Toilet'
+                  $ref: './ObjectDefinitions.yaml#/components/schemas/Toilet'
 
-  /toilet/{id}:
+
+    post:
+      tags:
+        - Toilet
+      summary: Créer une toilette
+      operationId: createToilet
+      requestBody:
+        description: Objet toilette à créer
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './ObjectDefinitions.yaml#/components/schemas/Toilet'
+      responses:
+        '201':
+          description: Toilette créée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: './ObjectDefinitions.yaml#/components/schemas/Toilet'
+        '400':
+          description: Requête invalide
+
+  /toilets/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID unique de la toilette
+        schema:
+          type: integer
+          format: int64
+
     get:
       tags:
         - Toilet
-      summary: Lire une toilette par son ID
-      operationId: lireToilette
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
+      summary: Obtenir une toilette par son ID
+      operationId: getToiletById
       responses:
         '200':
           description: Détails de la toilette
           content:
             application/json:
               schema:
-                $ref: 'ObjectDefinitions.yaml#/components/schemas/Toilet'
+                $ref: './ObjectDefinitions.yaml#/components/schemas/Toilet'
+        '404':
+          description: Toilette non trouvée
+
+    put:
+      tags:
+        - Toilet
+      summary: Mettre à jour une toilette
+      operationId: updateToilet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './ObjectDefinitions.yaml#/components/schemas/Toilet'
+      responses:
+        '200':
+          description: Toilette mise à jour
+        '404':
+          description: Toilette non trouvée
+
+    delete:
+      tags:
+        - Toilet
+      summary: Supprimer une toilette
+      operationId: deleteToilet
+      responses:
+        '204':
+          description: Toilette supprimée avec succès
