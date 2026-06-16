@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wcpregnant-deployment
+  labels:
+    app: wcpregnant
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wcpregnant
+  template:
+    metadata:
+      labels:
+        app: wcpregnant
+    spec:
+      containers:
+        - name: wcpregnant
+          image: ghcr.io/<OWNER>/wcpregnant:latest # replace <OWNER>
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: wcpregnant-db-secret
+                  key: db-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: wcpregnant-db-secret
+                  key: db-user
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wcpregnant-db-secret
+                  key: db-password
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx512m"
+          volumeMounts:
+            - name: app-config
+              mountPath: /etc/app
+          livenessProbe:
+            httpGet:
+              path: /api/actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: app-config
+          configMap:
+            name: wcpregnant-config
+

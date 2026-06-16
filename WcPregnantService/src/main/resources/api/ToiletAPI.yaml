@@ -18,7 +18,8 @@ paths:
         Inclut un système de pagination.
       operationId: getToilets
       parameters:
-        # --- Pagination ---
+        # --- Pagination --
+        - cker/kubernetes-
         - name: page
           in: query
           description: Numéro de la page (commence à 0)

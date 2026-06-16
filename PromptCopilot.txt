@@ -1,0 +1,10 @@
+ceci est le code d'une application ( le backen,d) dontl'objectif est de fournir un service de localisation de toilette pour  les femmes enceinte
+3 profils d'utiolisateurs:
+-admin  qui , a travers une IHM dédiée, administre les BO)
+- prorietaire de topilette ( via contact vers le support qui traite les demandes  en tant q'admin)
+- usagé femme enceine ( via apli mobile)
+
+
+JE veux une optimisation complete du cede
+je veux une couverture maximale du code en TU
+adapt MON ihm pour couvrir les besoins de l'application et interragir avec le backend. l'appli sert a gerolocaliser des toilettes sur une carte. elle nous geolocalise et fournit une carte avec les  toilettes a proximité, possiblez de definir la distance maxi a parcourir. l'ihm est divisée en 2, la carte et la liste des toilette avec leur detail ( note, photos...) dans l'orde de proximitré

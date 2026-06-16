@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: wcpregnant
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: wcpregnant
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    image: wcpregnant:local
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/wcpregnant
+      SPRING_DATASOURCE_USERNAME: wcpregnant
+      SPRING_DATASOURCE_PASSWORD: changeme
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    ports:
+      - "8080:8080"
+
+volumes:
+  db_data:
+

@@ -160,4 +160,17 @@ public class ToilettesApiImplTest {
                     .andExpect(status().isOk());
         }
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Doit échouer si l'adresse est manquante")
+    void create_MissingAddress_Error() throws Exception {
+        Toilet invalidToilet = Toilet.builder().libelle("Sans adresse").build(); // Pas d'adresse ici
+
+        mockMvc.perform(post("/toilets")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidToilet)))
+                .andExpect(status().isBadRequest()); // Ou isBadRequest() si tu as un Handler d'exception
+    }
 }
