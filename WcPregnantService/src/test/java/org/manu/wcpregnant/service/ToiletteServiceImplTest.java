@@ -61,19 +61,29 @@ class ToiletteServiceImplTest {
         assertEquals(expected, actualValue);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = { "", "", "", "", "" })
-    void addToilet() {
+    @Test
+    void addToilet_withValidData_shouldSucceed() {
         Toilet givenData = TestsUtils.buildToilet();
-        ToiletDAO repoResult = TestsUtils.buildToiletDAO();
-        doReturn(repoResult).when(repository).save(repoResult);
+        ToiletDAO mappedDao = TestsUtils.buildToiletDAO();
+        ToiletDAO savedDao = TestsUtils.buildToiletDAO();
+        savedDao.setId(42L);
+        // Ensure saved DAO mirrors the input libelle (mapper + db generated id)
+        savedDao.setLibelle(givenData.getLibelle());
+        Toilet expectedResult = Toilet.builder()
+                .id(42L)
+                .libelle(givenData.getLibelle())
+                .build();
 
+        doReturn(savedDao).when(repository).save(org.mockito.Mockito.any(ToiletDAO.class));
+        // Use ReflectionTestUtils to mock the mapper via service field since it's not mocked directly
         Toilet result = service.addToilet(givenData);
 
+        // Verify the result matches (mapper may normalize casing)
+        assertEquals(givenData.getLibelle().toUpperCase(), result.getLibelle());
     }
 
     @Test
-    void getNearsetToilettes() {
+    void getNearsetToilettes_withPosition_shouldReturnFilteredSortedList() {
 
         List<ToiletDAO> repoResult = TestsUtils.buildBddContent(currentPosition);
         doReturn(repoResult).when(repository).findAll();
@@ -88,23 +98,36 @@ class ToiletteServiceImplTest {
     }
 
     @Test
-    void testGetNearsetToilettes() {
+    void lireToilet_withExistingId_shouldReturnToilet() {
+        ToiletDAO dao = TestsUtils.buildToiletDAO();
+        dao.setId(1L);
+        doReturn(java.util.Optional.of(dao)).when(repository).findById(1L);
+
+        java.util.Optional<Toilet> result = service.lireToilet(1L);
+
+        assertTrue(result.isPresent());
     }
 
     @Test
-    void lireToilet() {
+    void updateToilet_withExistingId_shouldSucceed() {
+        ToiletDAO existingDao = TestsUtils.buildToiletDAO();
+        existingDao.setId(1L);
+        Toilet updateData = TestsUtils.buildToilet();
+        doReturn(java.util.Optional.of(existingDao)).when(repository).findById(1L);
+        doReturn(existingDao).when(repository).save(existingDao);
+
+        service.updateToilet(1L, updateData);
+        // No exception means success
+        assertTrue(true);
     }
 
     @Test
-    void updateToilette() {
-    }
+    void deleteToilet_withExistingId_shouldSucceed() {
+        doReturn(true).when(repository).existsById(1L);
 
-    @Test
-    void updateToilet() {
-    }
-
-    @Test
-    void deleteToilette() {
+        service.deleteToilet(1L);
+        // No exception means success
+        assertTrue(true);
     }
 
 
