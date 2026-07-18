@@ -1,0 +1,162 @@
+=== Recherche des classes a traiter ===
+Classes a traiter : 12
+
+=== RAPPORT DES CLASSES A TRAITER ===
+
+Legende : [OK] Test existant | [..] Test a creer
+================================================================================
+
+[OK] AdressDAO (0 methodes)
+  Source : src\main\java\org\manu\wcpregnant\bdd\dao\AdressDAO.java
+  Test   : src\test\java\org\manu\wcpregnant\bdd\mapper\AdressDAOMapperTest.java
+  Methodes : 
+
+[..] Authorities (0 methodes)
+  Source : src\main\java\org\manu\wcpregnant\bdd\dao\Authorities.java
+  Test   : A creer
+  Methodes : 
+
+[..] CustomerDAO (0 methodes)
+  Source : src\main\java\org\manu\wcpregnant\bdd\dao\CustomerDAO.java
+  Test   : A creer
+  Methodes : 
+
+[..] GeoPositionDAO (0 methodes)
+  Source : src\main\java\org\manu\wcpregnant\bdd\dao\GeoPositionDAO.java
+  Test   : A creer
+  Methodes : 
+
+[OK] GraduationDAO (0 methodes)
+  Source : src\main\java\org\manu\wcpregnant\bdd\dao\GraduationDAO.java
+  Test   : src\test\java\org\manu\wcpregnant\bdd\mapper\GraduationDAOMapperTest.java
+  Methodes : 
+
+[..] ToiletDAO (0 methodes)
+  Source : src\main\java\org\manu\wcpregnant\bdd\dao\ToiletDAO.java
+  Test   : A creer
+  Methodes : 
+
+[..] Users (0 methodes)
+  Source : src\main\java\org\manu\wcpregnant\bdd\dao\Users.java
+  Test   : A creer
+  Methodes : 
+
+[..] Person (1 methodes)
+  Source : src\main\java\org\manu\wcpregnant\service\bo\Person.java
+  Test   : A creer
+  Methodes : Person
+
+[OK] CustomerServiceImpl (2 methodes)
+  Source : src\main\java\org\manu\wcpregnant\service\impl\CustomerServiceImpl.java
+  Test   : src\test\java\org\manu\wcpregnant\service\CustomerServiceImplTest.java
+  Methodes : getAllCustomers, getCustomerByLogin
+
+[OK] ToiletteServiceImpl (6 methodes)
+  Source : src\main\java\org\manu\wcpregnant\service\impl\ToiletteServiceImpl.java
+  Test   : src\test\java\org\manu\wcpregnant\service\ToiletteServiceImplTest.java
+  Methodes : getAllToilets, addToilet, getNearsetToilettes, lireToilet, updateToilet, deleteToilet
+
+[..] CustomerApiImpl (2 methodes)
+  Source : src\main\java\org\manu\wcpregnant\web\CustomerApiImpl.java
+  Test   : A creer
+  Methodes : createCustomer, getCustomerByLogin
+
+[OK] ToilettesApiImpl (4 methodes)
+  Source : src\main\java\org\manu\wcpregnant\web\ToilettesApiImpl.java
+  Test   : src\test\java\org\manu\wcpregnant\web\ToilettesApiImplTest.java
+  Methodes : createToilet, getToiletById, updateToilet, deleteToilet
+
+=== COMMANDES CLINE A EXECUTER ===
+Executer ces commandes une par une dans l'ordre :
+================================================================================
+
+[1/12] AdressDAO
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\bdd\dao\AdressDAO.java</path>
+  2. Lire le test   : read_file <path>src\test\java\org\manu\wcpregnant\bdd\mapper\AdressDAOMapperTest.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=AdressDAOTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+[2/12] Authorities
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\bdd\dao\Authorities.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=AuthoritiesTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+[3/12] CustomerDAO
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\bdd\dao\CustomerDAO.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=CustomerDAOTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+[4/12] GeoPositionDAO
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\bdd\dao\GeoPositionDAO.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=GeoPositionDAOTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+[5/12] GraduationDAO
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\bdd\dao\GraduationDAO.java</path>
+  2. Lire le test   : read_file <path>src\test\java\org\manu\wcpregnant\bdd\mapper\GraduationDAOMapperTest.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=GraduationDAOTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+[6/12] ToiletDAO
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\bdd\dao\ToiletDAO.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=ToiletDAOTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+[7/12] Users
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\bdd\dao\Users.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=UsersTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+[8/12] Person
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\service\bo\Person.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=PersonTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+[9/12] CustomerServiceImpl
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\service\impl\CustomerServiceImpl.java</path>
+  2. Lire le test   : read_file <path>src\test\java\org\manu\wcpregnant\service\CustomerServiceImplTest.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=CustomerServiceImplTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+[10/12] ToiletteServiceImpl
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\service\impl\ToiletteServiceImpl.java</path>
+  2. Lire le test   : read_file <path>src\test\java\org\manu\wcpregnant\service\ToiletteServiceImplTest.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=ToiletteServiceImplTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+[11/12] CustomerApiImpl
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\web\CustomerApiImpl.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=CustomerApiImplTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+[12/12] ToilettesApiImpl
+  1. Lire la source : read_file <path>src\main\java\org\manu\wcpregnant\web\ToilettesApiImpl.java</path>
+  2. Lire le test   : read_file <path>src\test\java\org\manu\wcpregnant\web\ToilettesApiImplTest.java</path>
+  3. Appliquer le prompt .cline/prompt/javadoc-tu.md
+  4. Valider        : mvn test -Dtest=ToilettesApiImplTest -Dsurefire.useFile=false
+  5. Amelioration continue : mettre a jour le prompt avec les apprentissages
+
+=== RESUME ===
+Classes a traiter : 12
+Methodes a couvrir : 15
+Classes avec TU    : 5/12
+Classes sans TU    : 7/12
+
+Prompt utilise : C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\.cline\prompt\javadoc-tu.md
+
+Rapport sauvegarde dans : C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\.cline\rapport-classes.txt
+
+N'oubliez pas l'etape d'amelioration continue apres chaque classe !
+
+=== FIN ===

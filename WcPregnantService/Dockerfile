@@ -1,16 +1,29 @@
-# Multi-stage Dockerfile simplified: expects the application jar to be built locally (mvn package)
-# Build locally: use your Maven (IntelliJ bundled or system mvn) to run `mvn -DskipTests package`.
+# Multi-stage Dockerfile for WcPregnant
+# Build: mvn -DskipTests package
+# Docker: docker build -t wcpregnant:latest .
 
-# Runtime image: use Temurin (adjust java version if necessary)
-FROM eclipse-temurin:25-jre as runtime
+# Stage 1: Build
+FROM eclipse-temurin:26-jdk-alpine AS builder
+WORKDIR /build
+COPY pom.xml .
+COPY src ./src
+RUN apk add --no-cache maven && mvn -DskipTests package -q
 
-ARG JAR_FILE=target/*.jar
+# Stage 2: Runtime
+FROM eclipse-temurin:26-jre-alpine AS runtime
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+ARG JAR_FILE=/build/target/*.jar
 ENV JAVA_OPTS="-Xms256m -Xmx512m"
+ENV SPRING_PROFILES_ACTIVE=prod
 
 WORKDIR /app
-COPY ${JAR_FILE} app.jar
+COPY --from=builder ${JAR_FILE} app.jar
 
 EXPOSE 8080
+USER appuser
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD wget -qO- http://localhost:8080/api/actuator/health || exit 1
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
-

@@ -1,76 +1,117 @@
 openapi: 3.0.0
 info:
   title: Object Definitions
-  version: 1.0.0
+  version: 2.0.0
 
 components:
   schemas:
-    # Note: J'ai gardé "Adress" pour correspondre à votre import actuel,
-    # mais le standard anglais est "Address".
     Adress:
       type: object
+      description: Adresse postale de la toilette
+      required:
+        - codePostal
       properties:
         numero:
           type: string
+          description: Numéro de voie
         voie:
           type: string
+          description: Nom de la voie
         codePostal:
           type: string
+          description: Code postal
         ville:
           type: string
+          description: Ville
         pays:
           type: string
+          description: Pays
 
     Graduation:
       type: object
+      description: Grille d'évaluation de la toilette
       properties:
         proprete:
           type: integer
           format: int32
+          description: Note de propreté (0-10)
+          minimum: 0
+          maximum: 10
         accueil:
           type: integer
           format: int32
+          description: Note d'accueil (0-10)
+          minimum: 0
+          maximum: 10
         espace:
           type: integer
           format: int32
+          description: Note d'espace (0-10)
+          minimum: 0
+          maximum: 10
 
     GeoPosition:
       type: object
+      description: Position géographique (latitude, longitude)
+      required:
+        - latitude
+        - longitude
       properties:
         latitude:
-          type: number   # Correction: En OpenAPI, on utilise 'number'
-          format: double # et le format 'double'
-        longitude:
-          type: number   # Correction: Idem ici
+          type: number
           format: double
+          description: Latitude (-90 à 90)
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          format: double
+          description: Longitude (-180 à 180)
+          minimum: -180
+          maximum: 180
 
     Customer:
       type: object
+      description: Client utilisateur
       required:
-        - login # Bonne pratique: définir ce qui est obligatoire
+        - login
       properties:
         login:
           type: string
+          description: Identifiant unique du client
         password:
           type: string
+          description: Mot de passe
         nom:
           type: string
+          description: Nom de famille
         prenom:
           type: string
+          description: Prénom
         adress:
           $ref: '#/components/schemas/Adress'
 
     Toilet:
       type: object
+      description: Toilette publique
+      required:
+        - libelle
+        - adress
+        - position
       properties:
-        id: # AJOUT CRUCIAL : sans cela, l'ID n'existe pas dans ton DTO Java
+        id:
           type: integer
           format: int64
+          description: Identifiant unique (généré automatiquement)
+          readOnly: true
         libelle:
           type: string
+          description: Libellé / nom de la toilette
         distance:
           type: number
           format: double
+          description: Distance calculée par rapport à une position (lecture seule)
+          readOnly: true
         adress:
           $ref: '#/components/schemas/Adress'
         grade:

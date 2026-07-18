@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "project": "WcPregnantService",
+  "description": "Configuration Cline pour le projet WcPregnantService",
+  "promptsDir": "prompt",
+  "workflowsDir": "workflows",
+  "prompts": {
+    "default": "prompt/javadoc-tu.md",
+    "available": [
+      {
+        "name": "javadoc-tu",
+        "path": "prompt/javadoc-tu.md",
+        "description": "Ajoute Javadoc et TU avec couverture >80% sur chaque méthode"
+      }
+    ]
+  },
+  "workflows": {
+    "available": [
+      {
+        "name": "process-class",
+        "path": "workflows/process-class.ps1",
+        "description": "Traite une classe : Javadoc + TU pour toutes ses méthodes"
+      },
+      {
+        "name": "process-all",
+        "path": "workflows/process-all.ps1",
+        "description": "Traite toutes les classes du projet"
+      }
+    ]
+  },
+  "rules": [
+    "Ne jamais modifier le comportement métier existant",
+    "Ne jamais supprimer de TU existant",
+    "Ajouter Javadoc sur chaque méthode publique avec @param @return @throws",
+    "Cibler >80% de couverture par méthode",
+    "Utiliser Mockito pour les dépendances",
+    "Convention de nommage des tests : method_scenario_expectedBehavior",
+    "Structure minimale par méthode : test nominal + test exception + test null",
+    "Amélioration continue : après chaque classe, mettre à jour le prompt et les scripts"
+  ]
+}

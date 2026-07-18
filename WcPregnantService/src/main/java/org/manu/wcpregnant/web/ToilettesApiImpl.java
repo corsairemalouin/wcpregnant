@@ -1,11 +1,10 @@
 package org.manu.wcpregnant.web;
 
 import lombok.RequiredArgsConstructor;
-import org.manu.wcpregnant.service.ToiletteService;
+import org.manu.wcpregnant.service.ToiletteCrudService;
+import org.manu.wcpregnant.service.ToiletteProximityService;
 import org.manu.wcpregnant.web.api.ToiletApi;
-import org.manu.wcpregnant.web.dto.Adress;
 import org.manu.wcpregnant.web.dto.GeoPosition;
-import org.manu.wcpregnant.web.dto.Graduation;
 import org.manu.wcpregnant.web.dto.Toilet;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +14,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * Implémentation de l'API REST pour les toilettes.
+ * <p>
+ * Respecte le principe DIP (Dependency Inversion Principle) en dépendant
+ * des interfaces {@link ToiletteCrudService} et {@link ToiletteProximityService}
+ * plutôt que d'une implémentation concrète.
+ * </p>
+ */
 @RestController
-@RequiredArgsConstructor // Génère le constructeur pour l'injection du service
+@RequiredArgsConstructor
 public class ToilettesApiImpl implements ToiletApi {
 
-    private final ToiletteService service;
+    private final ToiletteCrudService crudService;
+    private final ToiletteProximityService proximityService;
 
     /**
      * GET /toilets
@@ -36,41 +44,40 @@ public class ToilettesApiImpl implements ToiletApi {
                     .longitude(longitude)
                     .build();
 
-            // On délègue au service qui devrait idéalement prendre en compte page/size
-            return ResponseEntity.ok(service.getNearsetToilettes(position));
+            return ResponseEntity.ok(proximityService.getNearestToilets(position));
         }
 
-        // Sinon, on renvoie la liste classique (à implémenter dans votre service)
-        return ResponseEntity.ok(service.getAllToilets(page, size));
+        // Sinon, on renvoie la liste paginée classique
+        return ResponseEntity.ok(crudService.getAllToilets(page, size));
     }
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Toilet> createToilet(Toilet toilet) {
         validateToilet(toilet);
-        Toilet created = service.addToilet(toilet);
+        Toilet created = crudService.addToilet(toilet);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @Override
     public ResponseEntity<Toilet> getToiletById(Long id) {
-        return service.lireToilet(id)
+        return crudService.getToiletById(id)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build()); // 404 est plus correct que 204 si non trouvé
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updateToilet(Long id, Toilet toilet) {
         validateToilet(toilet);
-        service.updateToilet(id, toilet);
+        crudService.updateToilet(id, toilet);
         return ResponseEntity.ok().build();
     }
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteToilet(Long id) {
-        service.deleteToilet(id);
+        crudService.deleteToilet(id);
         return ResponseEntity.noContent().build();
     }
 

@@ -5,22 +5,29 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.3</version>
-        <relativePath/> </parent>
+        <version>4.1.0</version>
+        <relativePath/>
+    </parent>
     <groupId>org.manu</groupId>
     <artifactId>wcpregnant</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>wcpregnant</name>
-    <description>Demo project for Spring Boot</description>
+    <description>WcPregnant - Gestion de toilettes publiques</description>
 
     <properties>
         <java.version>25</java.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
-        <openapi-generator.version>7.10.0</openapi-generator.version>
+        <openapi-generator.version>7.12.0</openapi-generator.version>
         <jackson-nullable.version>0.2.6</jackson-nullable.version>
+        <guava.version>33.4.5-jre</guava.version>
+        <swagger-annotations.version>2.2.28</swagger-annotations.version>
+        <jacoco.version>0.8.12</jacoco.version>
+        <postgresql.version>42.7.5</postgresql.version>
+        <h2.version>2.3.232</h2.version>
     </properties>
 
     <dependencies>
+        <!-- Spring Boot Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -37,34 +44,45 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 
+        <!-- Database -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <!-- MapStruct -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${org.mapstruct.version}</version>
         </dependency>
+
+        <!-- Utilities -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.4.0-jre</version>
+            <version>${guava.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>
@@ -73,12 +91,18 @@
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>2.2.22</version>
+            <version>${swagger-annotations.version}</version>
         </dependency>
 
+        <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test-autoconfigure</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -94,8 +118,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <release>25</release>
                     <compilerArgs>
-                        <arg>--enable-preview</arg>
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <path>
@@ -117,11 +141,11 @@
                 </configuration>
             </plugin>
 
-            <!-- JaCoCo plugin for coverage reporting -->
+            <!-- JaCoCo -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
+                <version>${jacoco.version}</version>
                 <configuration>
                     <propertyName>jacocoArgLine</propertyName>
                     <excludes>
@@ -179,7 +203,8 @@
                                 <useSpringBoot3>true</useSpringBoot3>
                                 <useTags>true</useTags>
                                 <skipDefaultInterface>true</skipDefaultInterface>
-                                <generateConstructorWithAllArgs>false</generateConstructorWithAllArgs>
+                                <generateConstructorWithAllArgs>true</generateConstructorWithAllArgs>
+                                <additionalModelTypeAnnotations>@lombok.Builder @lombok.Data</additionalModelTypeAnnotations>
                             </configOptions>
                         </configuration>
                     </execution>
@@ -198,8 +223,9 @@
                                 <useSpringBoot3>true</useSpringBoot3>
                                 <useTags>true</useTags>
                                 <skipDefaultInterface>true</skipDefaultInterface>
-                                <generateConstructorWithAllArgs>false</generateConstructorWithAllArgs>
-                                <additionalModelTypeAnnotations>@lombok.Builder @lombok.NoArgsConstructor @lombok.AllArgsConstructor @lombok.Data</additionalModelTypeAnnotations>
+                                <generateConstructorWithAllArgs>true</generateConstructorWithAllArgs>
+                                <skipModels>true</skipModels>
+                                <additionalModelTypeAnnotations>@lombok.Builder @lombok.Data</additionalModelTypeAnnotations>
                             </configOptions>
                         </configuration>
                     </execution>

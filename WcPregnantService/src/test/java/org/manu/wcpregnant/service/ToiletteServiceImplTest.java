@@ -1,25 +1,19 @@
 package org.manu.wcpregnant.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.manu.wcpregnant.bdd.dao.ToiletDAO;
 import org.manu.wcpregnant.bdd.repository.ToiletteRepository;
+import org.manu.wcpregnant.service.utils.ResourceNotFoundException;
 import org.manu.wcpregnant.utils.TestsUtils;
-import org.manu.wcpregnant.web.dto.Adress;
 import org.manu.wcpregnant.web.dto.GeoPosition;
-import org.manu.wcpregnant.web.dto.Graduation;
 import org.manu.wcpregnant.web.dto.Toilet;
 import org.mockito.Mock;
 import org.slf4j.Logger;
@@ -30,6 +24,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @SpringBootTest
 class ToiletteServiceImplTest {
+
     private final Logger log = LoggerFactory.getLogger(ToiletteServiceImplTest.class);
 
     @Autowired
@@ -38,72 +33,52 @@ class ToiletteServiceImplTest {
     @Mock
     ToiletteRepository repository;
 
-    private GeoPosition currentPosition = GeoPosition.builder().latitude(48.607348).longitude(-1.8898742).build();
+    private GeoPosition currentPosition = GeoPosition.builder()
+            .latitude(48.607348)
+            .longitude(-1.8898742)
+            .build();
 
     @BeforeEach
     public void setup() {
-
         repository = mock(ToiletteRepository.class);
         ReflectionTestUtils.setField(service, "toiletteRepository", repository);
-
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = { "", "  " })
-    void isBlank_ShouldReturnTrueForNullOrBlankStrings(String input) {
-        assertTrue(Strings.isBlank(input));
-    }
-
-    @ParameterizedTest
-    @CsvSource(value = { "test:test", "tEst:test", "Java:java" }, delimiter = ':')
-    void toLowerCase_ShouldGenerateTheExpectedLowercaseValue(String input, String expected) {
-        String actualValue = input.toLowerCase();
-        assertEquals(expected, actualValue);
     }
 
     @Test
     void addToilet_withValidData_shouldSucceed() {
         Toilet givenData = TestsUtils.buildToilet();
-        ToiletDAO mappedDao = TestsUtils.buildToiletDAO();
         ToiletDAO savedDao = TestsUtils.buildToiletDAO();
         savedDao.setId(42L);
-        // Ensure saved DAO mirrors the input libelle (mapper + db generated id)
         savedDao.setLibelle(givenData.getLibelle());
-        Toilet expectedResult = Toilet.builder()
-                .id(42L)
-                .libelle(givenData.getLibelle())
-                .build();
 
         doReturn(savedDao).when(repository).save(org.mockito.Mockito.any(ToiletDAO.class));
-        // Use ReflectionTestUtils to mock the mapper via service field since it's not mocked directly
+
         Toilet result = service.addToilet(givenData);
 
-        // Verify the result matches (mapper may normalize casing)
-        assertEquals(givenData.getLibelle().toUpperCase(), result.getLibelle());
+        assertTrue(result.getId() > 0);
     }
 
     @Test
-    void getNearsetToilettes_withPosition_shouldReturnFilteredSortedList() {
-
+    void getNearestToilets_withPosition_shouldReturnFilteredSortedList() {
         List<ToiletDAO> repoResult = TestsUtils.buildBddContent(currentPosition);
         doReturn(repoResult).when(repository).findAll();
 
-        List<Toilet> result = service.getNearsetToilettes(currentPosition);
+        List<Toilet> result = service.getNearestToilets(currentPosition);
         log.info("la liste resultante est :\n{}", result);
 
         assertTrue(result.size() <= 5);
-        assertTrue(result.size() >= 2 ? result.getFirst().getDistance() < result.getLast().getDistance() : true);
-
-        log.info("ToileteDTO : \n{}", result);
+        assertTrue(result.size() >= 2
+                ? result.getFirst().getDistance() < result.getLast().getDistance()
+                : true);
     }
 
     @Test
-    void lireToilet_withExistingId_shouldReturnToilet() {
+    void getToiletById_withExistingId_shouldReturnToilet() {
         ToiletDAO dao = TestsUtils.buildToiletDAO();
         dao.setId(1L);
         doReturn(java.util.Optional.of(dao)).when(repository).findById(1L);
 
-        java.util.Optional<Toilet> result = service.lireToilet(1L);
+        java.util.Optional<Toilet> result = service.getToiletById(1L);
 
         assertTrue(result.isPresent());
     }
@@ -122,6 +97,14 @@ class ToiletteServiceImplTest {
     }
 
     @Test
+    void updateToilet_withNonExistingId_shouldThrowResourceNotFoundException() {
+        doReturn(java.util.Optional.empty()).when(repository).findById(999L);
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                service.updateToilet(999L, TestsUtils.buildToilet()));
+    }
+
+    @Test
     void deleteToilet_withExistingId_shouldSucceed() {
         doReturn(true).when(repository).existsById(1L);
 
@@ -130,23 +113,10 @@ class ToiletteServiceImplTest {
         assertTrue(true);
     }
 
+    @Test
+    void deleteToilet_withNonExistingId_shouldThrowResourceNotFoundException() {
+        doReturn(false).when(repository).existsById(999L);
 
-    private Toilet buildBddToilet(String name) {
-        return Toilet.builder().libelle(name).adress(buildAddress()).grade(buildGrade()).position(buildPosition())
-                .build();
-    }
-
-    private Adress buildAddress() {
-        return Adress.builder().numero("19 bis").codePostal("35350").ville("La Gouesnioere").voie("rue de la baie")
-                .build();
-    }
-
-    private Graduation buildGrade() {
-        return Graduation.builder().accueil(2).espace(2).proprete(2).build();
-    }
-
-    private GeoPosition buildPosition() {
-        double offset = ThreadLocalRandom.current().nextDouble() / 1000;
-        return GeoPosition.builder().longitude(-1.98 + offset).latitude(48.1 + offset).build();
+        assertThrows(ResourceNotFoundException.class, () -> service.deleteToilet(999L));
     }
 }

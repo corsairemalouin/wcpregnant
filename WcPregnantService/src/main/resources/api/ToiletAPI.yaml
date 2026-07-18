@@ -1,25 +1,28 @@
 openapi: 3.0.0
 info:
   title: Toilet API
-  version: 1.0.0
+  description: API RESTful pour la gestion des toilettes publiques
+  version: 2.0.0
+  contact:
+    name: WcPregnant Team
 servers:
   - url: http://localhost:8080/api/wcpregnant
+    description: Développement local
+  - url: http://wcpregnant-service/api/wcpregnant
+    description: Cluster Kubernetes
 
 paths:
   /toilets:
-
     get:
       tags:
         - Toilet
-      summary: Liste des toilettes avec filtres
+      summary: Liste paginée des toilettes avec filtres
       description: |
-        Récupère la liste des toilettes. 
-        Si la latitude et la longitude sont fournies, les résultats sont triés par proximité.
-        Inclut un système de pagination.
+        Récupère la liste des toilettes.
+        Si latitude et longitude sont fournies, les résultats sont triés par proximité.
+        Supporte la pagination.
       operationId: getToilets
       parameters:
-        # --- Pagination --
-        - cker/kubernetes-
         - name: page
           in: query
           description: Numéro de la page (commence à 0)
@@ -27,6 +30,7 @@ paths:
           schema:
             type: integer
             default: 0
+            minimum: 0
         - name: size
           in: query
           description: Nombre maximum de résultats par page
@@ -34,8 +38,8 @@ paths:
           schema:
             type: integer
             default: 20
-
-        # --- Localisation ---
+            minimum: 1
+            maximum: 100
         - name: latitude
           in: query
           description: Latitude pour le tri par proximité
@@ -43,6 +47,8 @@ paths:
           schema:
             type: number
             format: double
+            minimum: -90
+            maximum: 90
         - name: longitude
           in: query
           description: Longitude pour le tri par proximité
@@ -50,7 +56,8 @@ paths:
           schema:
             type: number
             format: double
-
+            minimum: -180
+            maximum: 180
       responses:
         '200':
           description: Liste récupérée avec succès
@@ -60,12 +67,26 @@ paths:
                 type: array
                 items:
                   $ref: './ObjectDefinitions.yaml#/components/schemas/Toilet'
-
+        '400':
+          description: Paramètres de requête invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - basicAuth: []
 
     post:
       tags:
         - Toilet
-      summary: Créer une toilette
+      summary: Créer une nouvelle toilette
+      description: Nécessite le rôle ADMIN
       operationId: createToilet
       requestBody:
         description: Objet toilette à créer
@@ -82,7 +103,17 @@ paths:
               schema:
                 $ref: './ObjectDefinitions.yaml#/components/schemas/Toilet'
         '400':
-          description: Requête invalide
+          description: Requête invalide (données manquantes ou incorrectes)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Non authentifié
+        '403':
+          description: Accès refusé (rôle ADMIN requis)
+      security:
+        - basicAuth: []
 
   /toilets/{id}:
     parameters:
@@ -93,6 +124,7 @@ paths:
         schema:
           type: integer
           format: int64
+          minimum: 1
 
     get:
       tags:
@@ -108,11 +140,18 @@ paths:
                 $ref: './ObjectDefinitions.yaml#/components/schemas/Toilet'
         '404':
           description: Toilette non trouvée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - basicAuth: []
 
     put:
       tags:
         - Toilet
-      summary: Mettre à jour une toilette
+      summary: Mettre à jour une toilette existante
+      description: Nécessite le rôle ADMIN
       operationId: updateToilet
       requestBody:
         required: true
@@ -122,15 +161,53 @@ paths:
               $ref: './ObjectDefinitions.yaml#/components/schemas/Toilet'
       responses:
         '200':
-          description: Toilette mise à jour
+          description: Toilette mise à jour avec succès
+        '400':
+          description: Requête invalide
         '404':
           description: Toilette non trouvée
+        '403':
+          description: Accès refusé (rôle ADMIN requis)
+      security:
+        - basicAuth: []
 
     delete:
       tags:
         - Toilet
       summary: Supprimer une toilette
+      description: Nécessite le rôle ADMIN
       operationId: deleteToilet
       responses:
         '204':
           description: Toilette supprimée avec succès
+        '404':
+          description: Toilette non trouvée
+        '403':
+          description: Accès refusé (rôle ADMIN requis)
+      security:
+        - basicAuth: []
+
+components:
+  schemas:
+    ApiError:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: Code HTTP
+        message:
+          type: string
+          description: Message d'erreur
+        timestamp:
+          type: string
+          format: date-time
+          description: Horodatage de l'erreur
+      required:
+        - status
+        - message
+        - timestamp
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
