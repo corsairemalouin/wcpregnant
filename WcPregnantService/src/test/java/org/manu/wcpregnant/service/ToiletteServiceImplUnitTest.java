@@ -182,7 +182,6 @@ class ToiletteServiceImplUnitTest {
     // Cas : résultat normal, aucun résultat, distance max = 0, position null
     // ========================================================================
 
-    @org.junit.jupiter.api.Disabled("Test assertion issue")
     @Test
     void getNearestToilets_withResults_shouldFilterSortAndLimit() {
         List<ToiletDAO> repoResult = TestsUtils.buildBddContent(currentPosition);
@@ -215,8 +214,8 @@ class ToiletteServiceImplUnitTest {
         if (result.size() >= 2) {
             assertTrue(result.get(0).getDistance() <= result.get(result.size() - 1).getDistance());
         }
-        // Vérifie que le distanceCalculator a été appelé
-        verify(distanceCalculator, times(1)).calculate(any(GeoPosition.class), any(GeoPosition.class));
+        // Vérifie que le distanceCalculator a bien été appelé pour chaque toilette (6 DAOs)
+        verify(distanceCalculator, times(6)).calculate(any(GeoPosition.class), any(GeoPosition.class));
     }
 
     @Test
@@ -253,7 +252,6 @@ class ToiletteServiceImplUnitTest {
         assertTrue(result.isEmpty());
     }
 
-    @org.junit.jupiter.api.Disabled("Test assertion issue")
     @Test
     void getNearestToilets_withNullPosition_shouldThrowNullPointerException() {
         assertThrows(NullPointerException.class, () -> service.getNearestToilets(null));
@@ -298,7 +296,6 @@ class ToiletteServiceImplUnitTest {
         assertTrue(result.isEmpty());
     }
 
-    @org.junit.jupiter.api.Disabled("Test assertion issue")
     @Test
     void getToiletById_withNullId_shouldThrowNullPointerException() {
         assertThrows(NullPointerException.class, () -> service.getToiletById(null));
@@ -341,13 +338,11 @@ class ToiletteServiceImplUnitTest {
         verify(repository, never()).save(any());
     }
 
-    @org.junit.jupiter.api.Disabled("Test assertion issue")
     @Test
     void updateToilet_withNullId_shouldThrowNullPointerException() {
         assertThrows(NullPointerException.class, () -> service.updateToilet(null, Toilet.builder().build()));
     }
 
-    @org.junit.jupiter.api.Disabled("Test assertion issue")
     @Test
     void updateToilet_withNullData_shouldThrowNullPointerException() {
         doReturn(Optional.of(new ToiletDAO())).when(repository).findById(1L);
@@ -396,7 +391,6 @@ class ToiletteServiceImplUnitTest {
         verify(repository, never()).deleteById(any());
     }
 
-    @org.junit.jupiter.api.Disabled("Test assertion issue")
     @Test
     void deleteToilet_withNullId_shouldThrowNullPointerException() {
         assertThrows(NullPointerException.class, () -> service.deleteToilet(null));

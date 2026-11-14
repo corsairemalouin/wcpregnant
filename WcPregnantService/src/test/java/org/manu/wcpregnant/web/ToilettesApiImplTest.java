@@ -1,7 +1,6 @@
 package org.manu.wcpregnant.web;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,10 +12,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -24,17 +28,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-// @AutoConfigureMockMvc - Not available in Spring Boot 4.1.0
 @ActiveProfiles("dev")
 @Transactional
-@org.junit.jupiter.api.Disabled("MockMvc not available in Spring Boot 4.1.0")
 public class ToilettesApiImplTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    private final WebApplicationContext webApplicationContext;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    /**
+     * Spring Boot 4.x n'expose plus @AutoConfigureMockMvc dans spring-boot-test-autoconfigure :
+     * MockMvc est construit manuellement à partir du WebApplicationContext de l'application.
+     */
+    private MockMvc mockMvc;
+
+    ToilettesApiImplTest(WebApplicationContext webApplicationContext) {
+        this.webApplicationContext = webApplicationContext;
+    }
+
+    @BeforeEach
+    void setUpMockMvc() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(SecurityMockMvcConfigurers.springSecurity())
+                .build();
+    }
 
     /**
      * Helper pour créer un objet Toilet valide avec toutes les contraintes SQL (Grade, etc.)

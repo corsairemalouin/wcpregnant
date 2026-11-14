@@ -3,7 +3,6 @@ package org.manu.wcpregnant.bdd.mapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.manu.wcpregnant.bdd.dao.ToiletDAO;
 import org.manu.wcpregnant.utils.TestsUtils;
@@ -18,7 +17,6 @@ class ToiletteDAOMapperTest {
     ToiletteDAOMapper mapper;
 
     @Test
-    @Disabled
     void daoToBo_shouldMapFields() {
         ToiletDAO dao = TestsUtils.buildToiletDAO();
         Toilet bo = mapper.daoToBo(dao);
@@ -28,7 +26,6 @@ class ToiletteDAOMapperTest {
     }
 
     @Test
-    @Disabled
     void boToDao_and_updateShouldWork() {
         Toilet bo = TestsUtils.buildToilet();
         ToiletDAO dao = mapper.boToDao(bo);

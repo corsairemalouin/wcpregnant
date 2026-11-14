@@ -3,8 +3,23 @@ param(
     [string]$ClassName,
     
     [Parameter(Mandatory=$false)]
-    [string]$ProjectDir = (Get-Location).Path
+    [string]$ProjectDir = ""
 )
+
+# Déterminer le répertoire du projet par défaut si non fourni
+if ([string]::IsNullOrEmpty($ProjectDir)) {
+    $scriptPath = $MyInvocation.MyCommand.Definition
+    if (-not [string]::IsNullOrWhiteSpace($scriptPath)) {
+        $scriptDir = Split-Path -Parent $scriptPath
+        if (-not [string]::IsNullOrWhiteSpace($scriptDir)) {
+            $ProjectDir = Split-Path -Parent (Split-Path -Parent $scriptDir)
+        }
+    }
+
+    if ([string]::IsNullOrEmpty($ProjectDir)) {
+        $ProjectDir = (Get-Location).Path
+    }
+}
 
 <#
 .SYNOPSIS
@@ -15,7 +30,7 @@ param(
 .PARAMETER ClassName
     Nom de la classe à traiter (ex: ToiletteServiceImpl)
 .PARAMETER ProjectDir
-    Répertoire racine du projet (par défaut : répertoire courant)
+Répertoire racine du projet (par défaut : la racine détectée à partir du script)
 .EXAMPLE
     .\process-class.ps1 -ClassName "ToiletteServiceImpl"
 #>

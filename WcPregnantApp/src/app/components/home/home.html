@@ -1,1 +1,76 @@
-<div font-size:100px color="red">helo</div>
+<main class="home-container">
+  <h1>WC Pregnant — toilettes publiques accessibles</h1>
+
+  @if (!loggedIn) {
+    <section class="login-card" aria-label="Connexion">
+      <h2>Connexion</h2>
+      <p class="hint">Comptes de démonstration : <code>manu / manu</code> ou <code>admin / admin</code></p>
+
+      <label for="username">Utilisateur</label>
+      <input id="username" name="username" type="text" [(ngModel)]="username" aria-label="Utilisateur">
+
+      <label for="password">Mot de passe</label>
+      <input id="password" name="password" type="password" [(ngModel)]="password" aria-label="Mot de passe">
+
+      <button type="button" (click)="login()" aria-label="Se connecter">Se connecter</button>
+    </section>
+  } @else {
+    <section class="toolbar" aria-label="Recherche">
+      <label for="lat">Latitude</label>
+      <input id="lat" name="lat" type="number" min="-90" max="90" [(ngModel)]="lat">
+
+      <label for="lng">Longitude</label>
+      <input id="lng" name="lng" type="number" min="-180" max="180" [(ngModel)]="lng">
+
+      <button type="button" (click)="loadNearest()" aria-label="Rechercher les toilettes à proximité">Rechercher</button>
+      <button type="button" (click)="useMyLocation()" aria-label="Utiliser ma position">Ma position</button>
+      <button type="button" (click)="loadAll()" aria-label="Afficher toutes les toilettes">Toutes</button>
+      <button type="button" class="ghost" (click)="logout()" aria-label="Se déconnecter">Déconnexion</button>
+    </section>
+
+    @if (error) {
+      <p class="error" role="alert">{{ error }}</p>
+    }
+
+    <div class="layout">
+      <section class="results" aria-label="Résultats">
+        <h2>Résultats ({{ toilets.length }})</h2>
+
+        @if (toilets.length === 0) {
+          <p>Aucune toilette trouvée.</p>
+        } @else {
+          <ul class="toilet-list">
+            @for (toilet of toilets; track toilet.id ?? $index) {
+              <li class="toilet-item">
+                <button type="button" (click)="select(toilet)" [attr.aria-label]="'Afficher les détails de ' + toilet.libelle">
+                  {{ toilet.libelle }}
+                </button>
+                <span class="distance">{{ toilet.distance ?? 0 }} km</span>
+                <span class="address">
+                  {{ toilet.adress.numero }} {{ toilet.adress.voie }},
+                  {{ toilet.adress.codePostal }} {{ toilet.adress.ville }}
+                </span>
+                <button type="button" class="danger" (click)="remove(toilet)" [attr.aria-label]="'Supprimer ' + toilet.libelle">
+                  Supprimer
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="map-section" aria-label="Carte des toilettes">
+        <wc-map [toilets]="toilets"></wc-map>
+      </section>
+    </div>
+
+    @if (selectedToilet) {
+      <wc-toilet-details [toilet]="selectedToilet"></wc-toilet-details>
+    }
+
+    <section class="form-container">
+      <h2>Ajouter une toilette</h2>
+      <wc-toilet-form (created)="onCreated($event)"></wc-toilet-form>
+    </section>
+  }
+</main>

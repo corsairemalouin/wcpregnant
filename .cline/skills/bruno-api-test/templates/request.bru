@@ -1,0 +1,29 @@
+meta {
+  name: createToilet
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/toilets
+  body: json
+  auth: basic
+}
+
+body:json {
+  {
+    "libelle": "Toilette test",
+    "adress": {
+      "codePostal": "75001"
+    },
+    "position": {
+      "latitude": 48.85,
+      "longitude": 2.35
+    }
+  }
+}
+
+auth:basic {
+  username: manu
+  password: manu
+}

@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -68,6 +69,8 @@ public class ToiletteServiceImpl implements ToiletteService {
     @Override
     @Transactional(readOnly = true)
     public List<Toilet> getAllToilets(Integer page, Integer size) {
+        Objects.requireNonNull(page, "page must not be null");
+        Objects.requireNonNull(size, "size must not be null");
         log.debug("Fetching toilets page {} with size {}", page, size);
         return toiletteRepository.findAll(PageRequest.of(page, size))
                 .map(toiletteMapper::daoToBo)
@@ -83,6 +86,7 @@ public class ToiletteServiceImpl implements ToiletteService {
      */
     @Override
     public Toilet addToilet(Toilet toilet) {
+        Objects.requireNonNull(toilet, "toilet must not be null");
         log.info("Adding new toilet: {}", toilet.getLibelle());
         ToiletDAO toiletteDAO = toiletteMapper.boToDao(toilet);
         ToiletDAO saved = toiletteRepository.save(toiletteDAO);
@@ -98,6 +102,7 @@ public class ToiletteServiceImpl implements ToiletteService {
     @Override
     @Transactional(readOnly = true)
     public Optional<Toilet> getToiletById(Long id) {
+        Objects.requireNonNull(id, "id must not be null");
         log.debug("Fetching toilet by id: {}", id);
         return toiletteRepository.findById(id)
                 .map(toiletteMapper::daoToBo);
@@ -112,6 +117,8 @@ public class ToiletteServiceImpl implements ToiletteService {
      */
     @Override
     public void updateToilet(Long id, Toilet toilet) {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(toilet, "toilet must not be null");
         log.info("Updating toilet id: {}", id);
         toiletteRepository.findById(id)
                 .map(existingDAO -> {
@@ -130,6 +137,7 @@ public class ToiletteServiceImpl implements ToiletteService {
      */
     @Override
     public void deleteToilet(Long id) {
+        Objects.requireNonNull(id, "id must not be null");
         log.warn("Deleting toilet id: {}", id);
         if (!toiletteRepository.existsById(id)) {
             throw new ResourceNotFoundException("Cannot delete: Toilette not found with id: " + id);
@@ -153,6 +161,7 @@ public class ToiletteServiceImpl implements ToiletteService {
     @Override
     @Transactional(readOnly = true)
     public List<Toilet> getNearestToilets(GeoPosition currentPosition) {
+        Objects.requireNonNull(currentPosition, "currentPosition must not be null");
         log.debug("Searching nearest toilets for position: {}", currentPosition);
         return toiletteRepository.findAll().stream()
                 .map(toiletteMapper::daoToBo)

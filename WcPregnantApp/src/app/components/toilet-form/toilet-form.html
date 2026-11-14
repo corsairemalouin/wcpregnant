@@ -1,1 +1,36 @@
-<p>toilet-form works!</p>
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <label for="libelle">Nom de la toilette</label>
+  <input id="libelle" name="libelle" type="text" formControlName="libelle" aria-label="Nom de la toilette">
+
+  <label for="numero">Numéro</label>
+  <input id="numero" name="numero" type="text" formControlName="numero" aria-label="Numéro de voie">
+
+  <label for="voie">Voie</label>
+  <input id="voie" name="voie" type="text" formControlName="voie" aria-label="Nom de la voie">
+
+  <label for="codePostal">Code postal</label>
+  <input id="codePostal" name="codePostal" type="text" formControlName="codePostal" aria-label="Code postal">
+
+  <label for="ville">Ville</label>
+  <input id="ville" name="ville" type="text" formControlName="ville" aria-label="Ville">
+
+  <label for="pays">Pays</label>
+  <input id="pays" name="pays" type="text" formControlName="pays" aria-label="Pays">
+
+  <label for="latitude">Latitude</label>
+  <input id="latitude" name="latitude" type="number" formControlName="latitude" aria-label="Latitude">
+
+  <label for="longitude">Longitude</label>
+  <input id="longitude" name="longitude" type="number" formControlName="longitude" aria-label="Longitude">
+
+  <label for="proprete">Propreté (0-10)</label>
+  <input id="proprete" name="proprete" type="number" formControlName="proprete" aria-label="Note de propreté">
+
+  <label for="accueil">Accueil (0-10)</label>
+  <input id="accueil" name="accueil" type="number" formControlName="accueil" aria-label="Note d'accueil">
+
+  <label for="espace">Espace (0-10)</label>
+  <input id="espace" name="espace" type="number" formControlName="espace" aria-label="Note d'espacement">
+
+  <button type="submit" [disabled]="form.invalid" aria-label="Enregistrer la toilette">Enregistrer</button>
+</form>

@@ -1,13 +1,16 @@
 package org.manu.wcpregnant.web;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
@@ -16,14 +19,28 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-// @AutoConfigureMockMvc - Not available in Spring Boot 4.1.0
 @ActiveProfiles("dev") // Utilise le UserDetailsService en mémoire (manu/admin)
 @DisplayName("Tests d'Intégration Sécurité")
-@org.junit.jupiter.api.Disabled("MockMvc not available in Spring Boot 4.1.0")
 class SecurityIntegrationTest {
 
-    @Autowired
+    private final WebApplicationContext webApplicationContext;
+
+    /**
+     * Spring Boot 4.x n'expose plus @AutoConfigureMockMvc dans spring-boot-test-autoconfigure :
+     * MockMvc est construit manuellement à partir du WebApplicationContext de l'application.
+     */
     private MockMvc mockMvc;
+
+    SecurityIntegrationTest(WebApplicationContext webApplicationContext) {
+        this.webApplicationContext = webApplicationContext;
+    }
+
+    @BeforeEach
+    void setUpMockMvc() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(SecurityMockMvcConfigurers.springSecurity())
+                .build();
+    }
 
     // L'URL doit correspondre à ce qui est généré par OpenAPI (vu dans tes logs)
     private final String BASE_URL = "/toilets";
@@ -63,17 +80,15 @@ class SecurityIntegrationTest {
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Rôle ADMIN : Succès (201) avec données complètes")
     void roleAdmin_CanPost() throws Exception {
-        // AJOUT DU GRADE dans le JSON pour éviter l'erreur SQL
+        // Données complètes pour satisfaire les contraintes du modèle (grade obligatoire)
         String jsonWithGrade = """
         {
             "libelle": "WC Test",
             "adress": { "ville": "Paris", "codePostal": "75010" },
             "position": { "latitude": 48.87, "longitude": 2.35 },
-            "grade": { "id": 1 } 
+            "grade": { "proprete": 1, "accueil": 2, "espace": 3 }
         }
         """;
-        // Note : Si l'ID 1 du grade n'existe pas, il faudra peut-être
-        // créer un grade en base via un Repository avant le test.
 
         mockMvc.perform(post(BASE_URL)
                         .with(csrf())

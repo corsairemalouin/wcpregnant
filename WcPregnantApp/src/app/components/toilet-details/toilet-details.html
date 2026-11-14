@@ -1,16 +1,26 @@
-<div *ngIf="toilet" class="toilet-details">
-  <h2>{{ toilet.name }}</h2>
-  <p><strong>Adresse :</strong> {{ toilet.address }}</p>
-  <p><strong>Note :</strong> {{ toilet.rating }} / 5</p>
+<div class="details-card">
+  <h3>{{ toilet.libelle }}</h3>
 
-  <div class="photos" *ngIf="toilet.photos?.length">
-    <h3>Photos</h3>
-    <div class="photo-grid">
-      <img *ngFor="let photo of toilet.photos" [src]="photo" alt="Photo toilette" />
-    </div>
-  </div>
+  <p>
+    {{ toilet.adress.numero }} {{ toilet.adress.voie }},
+    {{ toilet.adress.codePostal }} {{ toilet.adress.ville }}, {{ toilet.adress.pays }}
+  </p>
 
-  <a [href]="getGoogleMapsLink()" target="_blank" class="btn-itinerary">
-    🧭 Obtenir l’itinéraire
+  @if (toilet.distance !== undefined) {
+    <p>Distance depuis votre position : {{ toilet.distance }} km</p>
+  }
+
+  @if (toilet.grade) {
+    <ul>
+      <li>Propreté : {{ toilet.grade.proprete ?? 0 }}/10</li>
+      <li>Accueil : {{ toilet.grade.accueil ?? 0 }}/10</li>
+      <li>Espace : {{ toilet.grade.espace ?? 0 }}/10</li>
+    </ul>
+  }
+
+  <p>Position : {{ toilet.position.latitude }}, {{ toilet.position.longitude }}</p>
+
+  <a href="{{ getGoogleMapsLink() }}" target="_blank" rel="noopener" aria-label="Itinéraire Google Maps">
+    Itinéraire Google Maps
   </a>
 </div>

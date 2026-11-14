@@ -8,3 +8,428 @@ ceci est le code d'une application ( le backen,d) dontl'objectif est de fournir 
 JE veux une optimisation complete du cede
 je veux une couverture maximale du code en TU
 adapt MON ihm pour couvrir les besoins de l'application et interragir avec le backend. l'appli sert a gerolocaliser des toilettes sur une carte. elle nous geolocalise et fournit une carte avec les  toilettes a proximité, possiblez de definir la distance maxi a parcourir. l'ihm est divisée en 2, la carte et la liste des toilette avec leur detail ( note, photos...) dans l'orde de proximitré
+
+Ce projet est une IHM Anglular  pour une application  soit mobile, soit sur PC) 
+Contexte
+
+L’idée est de fournir une application permettant de géolocaliser rapidement des toilettes à proximité pour les femmes enceintes
+L’application mobile, sous Android ou dans une page web , géolocaliserait l’utilisateur et fournirait une carte avec les WC à proximité avec une note d’accueil de la part des- propriétaires (P si public)
+Des informations plus détaillées seraient disponibles
+-	Photo
+-	Propreté
+-	Accueil
+-	Espace
+L’utilisateur pourrait bien sur référencer de nouvelle toilette ou noter elle-même les toilettes conseillées
+Contraintes
+Faible budget de réalisation
+Pas d’infrastructure
+Peu de temps à consacrer pour la produire et la maintenir
+Contraintes de techniques
+Socle technique
+L’application doit répondre a des contraintes techniques pour faciliter sont développement
+-	Un front en Node JS /Angular incluant une carte google map
+-	Un back en java 21 et Springboot 3.5
+-	Une base de données PostgreSQL
+-	Les API REST sont décrites au format openapi. Le code java est autogénéré à partir des fichiers yaml
+-	Le projet est construit à partir de maven
+-	Le delivery doit fournir  des container dockers et le fichier de configuration kubernetes
+
+Contraintes de développement
+-	Le package globale de l’application est « org.manu.wcpregnant »
+-	Tout ce qui relève de l’API REST est dans un sous package « web »
+-	les objets renvoyés par l'API REST sont  suffixés par « DTO »
+-	Tout ce qui relève de la bdd est dans un sous package « bdd »
+-	les objets correspondants aux tables de la base de données sont  suffixés par « DAO »
+-	tout ce qui releve de la couche de service est dans un sous package « service »
+-	Les objets métiers de la couche de service sont suffixés par « BO »
+-	un mapper mapstruct permet de mapper les DAO en BO et inversement
+-	un mapper mapstruct permet de mapper les DTO en BO et inversement
+-	Tous les BO/DAO et DTO sont définis en utilisant l’annotation lombok @Data
+
+Le projet intellij qui permet de développer ce projet défini 3 modules
+
+Le déploiement
+L’application permet un déploiement automatisé
+Un quatrième module intellij permet de générer des dockers pour le front, le middle et le back
+Il genere également la configuration kubernetes pour lancer les dockers
+Il genrer également la description terraforme pour déployer une architecture cible sur AWS
+
+-	Le front en angular
+-	Le middle en springboot java 
+-	Le back en JPA java 
+Concepts
+Business
+ Business Rôles
+Utilisateur : les femmes enceintes qui ont une envie pressente
+Les administrateurs : qui corrigent les données
+Les parasites : des utilisateurs qui voudraient profiter du système sans entre enceinte
+Les propriétaires : ceux à qui appartiennent les WC
+Les annonceurs qui financeraient le projet
+
+Business Activity
+
+Uses Cases toilettes
+-	Trouver des toilettes
+o	Un utilisateur qui a besoin de toilette est geolocalisé. Ensuite, on lui fournit une liste des toilettes connues les plus proches de lui. L’affichage est scindé en trois parties :
+?	une carte ou une puce identifie chacune des toilettes retournée, l’autre partie
+?	une liste des 5 toilettes les plus proches classées par distance par rapport à lui
+?	une zone affichant les details des toilettes selectionnées par l’utilisateur.
+-	Noter des toilettes
+o	L’utilisateur, après avoir utilisé des toilettes peux donner une note aux toilettes.
+?	Les critères sont 
+•	La conformité avec la description enregistrée
+•	La qualité intrinsèque des photos
+?	Il peut annoter les caractéristiques des toilettes
+?	Il peut ajouter des photos descriptives des toilettes
+-	Référencer des toilettes
+o	L’utilisateur peut enregistrer dans l’application de nouvelles toilettes
+?	La localisation des toilettes correspond à la geolocalisation courante de l’utilisateur mais il peut aussi directement saisir l’adresse
+?	Il peut ajouter des photos
+?	Donner une note de 0 à 5
+Uses Cases utilisateurs
+-	Un utilisateur peut s’enregistrer sur la plateforme. Il fournit :
+-	Un nom
+-	un prénom
+-	Une adresse mail
+- un utilisateur se connecte sur la plateforme. Il est authentifié et toutes les actions qu’il réalise lui sont attaché et sont historisées.
+- Un utilisateur a une note sur 5 qui dépend :
+- du nombre de toilette qu’il partage et de la bonne note qui leur est attribuée
+- De sa fréquence d’utilisation de l’application
+Du faible taux de correction sur les toilettes qu’il a partagé, en particulier si la note diminue
+Uses Case Administrateur
+-	Les administrateurs ont des accès privilégiés qui leur permet de corriger ou d’effacer des données incorrectes.
+o	Si des commentaires concordants montrent que les toilettes enregistrées ne correspondent pas à la réalité
+o	Si le propriétaire des toilettes se plaint.
+
+
+#S
+
+Fournit moi le pom.xml  ainsi que toutes les classes java
+
+
+
+
+
+
+Merci pour ces détails supplémentaires. Voici un plan pour créer le projet en respectant toutes les contraintes et spécifications que vous avez mentionnées.
+Structure du projet
+1.	Frontend (React)
+2.	Backend (Spring Boot)
+3.	Base de données (PostgreSQL)
+4.	API REST (OpenAPI)
+Étapes pour créer le projet
+1. Créez la structure des dossiers
+wcpregnant/
++-- frontend/
+¦   +-- src/
+¦   ¦   +-- components/
+¦   ¦   +-- pages/
+¦   ¦   +-- App.js
+¦   ¦   +-- index.js
++-- backend/
+¦   +-- src/
+¦   ¦   +-- main/
+¦   ¦   ¦   +-- java/
+¦   ¦   ¦   ¦   +-- org/
+¦   ¦   ¦   ¦       +-- manu/
+¦   ¦   ¦   ¦           +-- service/
+¦   ¦   ¦   ¦               +-- wcpregnant/
+¦   ¦   ¦   ¦                   +-- web/
+¦   ¦   ¦   ¦                   ¦   +-- ToiletteController.java
+¦   ¦   ¦   ¦                   ¦   +-- dto/
+¦   ¦   ¦   ¦                   ¦       +-- ToiletteDTO.java
+¦   ¦   ¦   ¦                   +-- service/
+¦   ¦   ¦   ¦                   ¦   +-- ToiletteService.java
+¦   ¦   ¦   ¦                   ¦   +-- bo/
+¦   ¦   ¦   ¦                   ¦   ¦   +-- ToiletteBO.java
+¦   ¦   ¦   ¦                   ¦   +-- mapper/
+¦   ¦   ¦   ¦                   ¦       +-- ToiletteMapper.java
+¦   ¦   ¦   ¦                   +-- bdd/
+¦   ¦   ¦   ¦                   ¦   +-- dao/
+¦   ¦   ¦   ¦                   ¦   ¦   +-- ToiletteDAO.java
+¦   ¦   ¦   ¦                   ¦   +-- repository/
+¦   ¦   ¦   ¦                   ¦       +-- ToiletteRepository.java
+¦   ¦   ¦   ¦                   +-- invoker/
+¦   ¦   +-- resources/
+¦   ¦       +-- openapi.yaml
+¦   +-- pom.xml
++-- README.md
+2. Ajoutez le contenu des fichiers
+•	ToiletteController.java
+package org.manu.service.wcpregnant.web;
+
+import org.manu.service.wcpregnant.service.ToiletteService;
+import org.manu.service.wcpregnant.web.dto.ToiletteDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/toilettes")
+public class ToiletteController {
+
+    @Autowired
+    private ToiletteService toiletteService;
+
+    @GetMapping
+    public List<ToiletteDTO> getAllToilettes() {
+        return toiletteService.getAllToilettes();
+    }
+
+    @PostMapping
+    public ToiletteDTO addToilette(@RequestBody ToiletteDTO toiletteDTO) {
+        return toiletteService.addToilette(toiletteDTO);
+    }
+
+    @PutMapping("/{id}")
+    public ToiletteDTO updateToilette(@PathVariable Long id, @RequestBody ToiletteDTO toiletteDTO) {
+        return toiletteService.updateToilette(id, toiletteDTO);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteToilette(@PathVariable Long id) {
+        toiletteService.deleteToilette(id);
+    }
+}
+•	ToiletteService.java
+package org.manu.service.wcpregnant.service;
+
+import org.manu.service.wcpregnant.bdd.dao.ToiletteDAO;
+import org.manu.service.wcpregnant.bdd.repository.ToiletteRepository;
+import org.manu.service.wcpregnant.service.bo.ToiletteBO;
+import org.manu.service.wcpregnant.web.dto.ToiletteDTO;
+import org.manu.service.wcpregnant.service.mapper.ToiletteMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class ToiletteService {
+
+    @Autowired
+    private ToiletteRepository toiletteRepository;
+
+    @Autowired
+    private ToiletteMapper toiletteMapper;
+
+    public List<ToiletteDTO> getAllToilettes() {
+        return toiletteRepository.findAll().stream()
+                .map(toiletteMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public ToiletteDTO addToilette(ToiletteDTO toiletteDTO) {
+        ToiletteDAO toiletteDAO = toiletteMapper.toDAO(toiletteDTO);
+        ToiletteDAO savedToilette = toiletteRepository.save(toiletteDAO);
+        return toiletteMapper.toDTO(savedToilette);
+    }
+
+    public ToiletteDTO updateToilette(Long id, ToiletteDTO toiletteDTO) {
+        ToiletteDAO existingToilette = toiletteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Toilette not found"));
+        toiletteMapper.updateToiletteFromDTO(toiletteDTO, existingToilette);
+        ToiletteDAO updatedToilette = toiletteRepository.save(existingToilette);
+        return toiletteMapper.toDTO(updatedToilette);
+    }
+
+    public void deleteToilette(Long id) {
+        toiletteRepository.deleteById(id);
+    }
+}
+•	ToiletteBO.java
+package org.manu.service.wcpregnant.service.bo;
+
+import lombok.Data;
+
+@Data
+public class ToiletteBO {
+
+    private Long id;
+    private String adresse;
+    private int proprete;
+    private int accueil;
+    private int espace;
+
+}
+•	ToiletteRepository.java
+package org.manu.service.wcpregnant.bdd.repository;
+
+import org.manu.service.wcpregnant.bdd.dao.ToiletteDAO;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ToiletteRepository extends JpaRepository<ToiletteDAO, Long> {
+}
+•	ToiletteDAO.java
+package org.manu.service.wcpregnant.bdd.dao;
+
+import javax.persistence.*;
+
+@Entity
+public class ToiletteDAO {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String adresse;
+    private int proprete;
+    private int accueil;
+    private int espace;
+
+}
+•	ToiletteDTO.java
+package org.manu.service.wcpregnant.web.dto;
+
+import lombok.Data;
+
+@Data
+public class ToiletteDTO {
+
+    private Long id;
+    private String adresse;
+    private int proprete;
+    private int accueil;
+    private int espace;
+
+}
+•	ToiletteMapper.java
+package org.manu.service.wcpregnant.service.mapper;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
+import org.manu.service.wcpregnant.bdd.dao.ToiletteDAO;
+import org.manu.service.wcpregnant.service.bo.ToiletteBO;
+import org.manu.service.wcpregnant.web.dto.ToiletteDTO;
+
+@Mapper(componentModel = "spring")
+public interface ToiletteMapper {
+
+    ToiletteDTO toDTO(ToiletteDAO toiletteDAO);
+
+    ToiletteDAO toDAO(ToiletteDTO toiletteDTO);
+
+    ToiletteBO toBO(ToiletteDAO toiletteDAO);
+
+    ToiletteDAO toDAO(ToiletteBO toiletteBO);
+
+    void updateToiletteFromDTO(ToiletteDTO toiletteDTO, @MappingTarget ToiletteDAO toiletteDAO);
+}
+•	openapi.yaml
+```yaml openapi: 3.0.0 info: title: WC Pregnant API description: API pour géolocaliser et gérer les toilettes pour les femmes enceintes version: 1.0.0 servers:
+•	url: http://localhost:8080/api description: Serveur local
+paths: /toilettes: get: summary: Récupérer toutes les toilettes operationId: getAllToilettes responses: '200': description: Liste des toilettes content: application/json: schema: type: array items: $ref: '#/components/schemas/ToiletteDTO' post: summary: Ajouter une nouvelle toilette operationId: addToilette requestBody: required: true content: application/json: schema: $ref: '#/components/schemas/ToiletteDTO' responses: '200': description: Toilette ajoutée content: application/json: schema: $ref: '#/components/schemas/ToiletteDTO'
+/toilettes/{id}: put: summary: Mettre à jour une toilette operationId: updateToilette parameters: - name: id in: path required: true schema: type: integer requestBody: required: true content: application/json: schema: $ref: '#/components/schemas/ToiletteDTO' responses: '200': description: Toilette mise à jour content: application/json: schema: $ref: '#/components/schemas/ToiletteDTO' delete: summary: Supprimer une
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Business Object
+Toilettes
+-	Geolocalisation
+-	Adresse
+-	Propriétaire
+-	Prix
+-	Notation
+-	Diaporama
+
+Utilisateur
+	Login
+Password
+Historique d’activités
+
+
+Contraintes de développement
+Logical
+
+Services
+Services toilette
+toilet
+Collection<Toilet> find(Position posIn)
+void grade(Toilet wcToGradeIn)
+
+Service register
+void register(User newUserIn)
+
+
+
+
+
+
+
+
+Architecture de l'application
+1.	Frontend (Node.js)
+o	Utilisez un framework comme React ou Vue.js pour créer une interface utilisateur réactive et intuitive.
+o	Intégrez des services de géolocalisation pour détecter la position de l'utilisateur.
+o	Utilisez des bibliothèques de cartes comme Leaflet ou Google Maps API pour afficher les toilettes à proximité.
+2.	Backend (Java 21 et Spring Boot 3.5)
+o	Créez des API RESTful pour gérer les opérations CRUD (Create, Read, Update, Delete) pour les toilettes, les utilisateurs, et les évaluations.
+o	Implémentez des services de sécurité pour gérer l'authentification et l'autorisation des utilisateurs.
+3.	Base de données (PostgreSQL)
+o	Modélisez les tables pour les toilettes, les utilisateurs, les évaluations, et les photos.
+o	Utilisez des index géospatiaux pour optimiser les requêtes de localisation.
+Fonctionnalités principales
+1.	Trouver des toilettes
+o	Géolocalisation de l'utilisateur.
+o	Affichage des toilettes les plus proches sur une carte.
+o	Liste des 5 toilettes les plus proches avec des détails comme la propreté, l'accueil, et l'espace.
+2.	Noter des toilettes
+o	Système de notation basé sur la conformité avec la description et la qualité des photos.
+o	Possibilité d'ajouter des commentaires et des photos.
+3.	Référencer des toilettes
+o	Formulaire pour ajouter de nouvelles toilettes avec géolocalisation automatique ou saisie manuelle de l'adresse.
+o	Téléchargement de photos et ajout de notes.
+Rôles et permissions
+1.	Utilisateur
+o	Peut rechercher, noter, et référencer des toilettes.
+o	Historique des activités.
+2.	Administrateur
+o	Peut corriger les données et modérer les évaluations.
+3.	Propriétaire
+o	Peut gérer les informations de ses toilettes.
+4.	Annonceurs
+o	Peuvent financer le projet en échange de visibilité dans l'application.
+Contraintes techniques
+•	Faible budget et peu de temps : Utilisez des outils et des frameworks open-source pour réduire les coûts.
+•	Pas d'infrastructure : Déployez l'application sur des services cloud comme Heroku ou AWS pour éviter la gestion de l'infrastructure.
+•	Facilité de développement : Utilisez des outils de développement modernes et des pratiques de développement agiles pour accélérer le processus.
+Conclusion
+En suivant cette structure, vous pourrez développer une application efficace et utile pour les femmes enceintes, tout en respectant les contraintes de budget et de temps. Si vous avez besoin de plus de détails ou d'aide pour un aspect spécifique du développement, n'hésitez pas à demander ! ??
+
+
+
+
+optimise et ameliore le code de cette application angular; formate la a un niveau professionnel

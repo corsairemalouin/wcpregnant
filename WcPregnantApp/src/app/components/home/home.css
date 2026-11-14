@@ -1,0 +1,109 @@
+.home-container {
+  padding: 20px;
+  text-align: left;
+}
+
+.login-card {
+  max-width: 420px;
+  margin: 20px auto;
+  background: white;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hint {
+  color: #666;
+  font-size: 14px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  background: white;
+  padding: 12px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar input {
+  width: 140px;
+}
+
+.ghost {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.error {
+  color: #b00020;
+  background: #ffe6e6;
+  padding: 10px;
+  border-radius: var(--border-radius);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.results {
+  background: white;
+  padding: 16px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toilet-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toilet-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.distance {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.address {
+  color: #555;
+  font-size: 14px;
+  flex: 1;
+}
+
+.danger {
+  background: #d32f2f;
+}
+
+.map-section {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.details-card {
+  background: white;
+  padding: 16px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 16px;
+}
+
+@media (max-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

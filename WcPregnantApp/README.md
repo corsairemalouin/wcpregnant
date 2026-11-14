@@ -7,10 +7,19 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 To start a local development server, run:
 
 ```bash
-ng serve
+ng serve --proxy-config src/proxy.conf.json
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+The proxy forwards `/toilets*` to the Spring Boot API on `http://localhost:8081`, so the backend
+must be running. `src/environments/environment.ts` holds the API base path (`/toilets`) and the
+default search position.
+
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The
+application will automatically reload whenever you modify any of the source files. Sign in with the
+`dev` demo accounts (`manu / manu` for read access, `admin / admin` for create/update/delete).
+
+> Note: the app uses the `zone.js` polyfill (declared in the `build` and `test` targets of
+> `angular.json`). Without it, `TestBed` and `NgZone` fail with `NG0908` and the page renders blank.
 
 ## Code scaffolding
 
@@ -43,6 +52,19 @@ To execute unit tests with the [Karma](https://karma-runner.github.io) test runn
 ```bash
 ng test
 ```
+
+The runner uses the custom `karma.conf.js` referenced in `angular.json`. Because the development
+machine has no Google Chrome, `CHROME_BIN` is pointed at Microsoft Edge (`msedge.exe`), which is
+Chromium-based and supports headless mode:
+
+```js
+const DEFAULT_BROWSER = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
+process.env.CHROME_BIN = process.env.CHROME_BIN || DEFAULT_BROWSER;
+```
+
+Override it with the `CHROME_BIN` environment variable if Edge is installed elsewhere, e.g.
+`$env:CHROME_BIN = 'C:\Program Files\Microsoft\Edge\Application\msedge.exe'` before running `ng test`.
+Tests run once (`singleRun: true`), so `ng test --no-watch` is not required.
 
 ## Running end-to-end tests
 

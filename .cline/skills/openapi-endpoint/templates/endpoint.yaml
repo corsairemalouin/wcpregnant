@@ -1,0 +1,30 @@
+paths:
+  /toilets/{id}:
+    get:
+      tags:
+        - Toilet
+      summary: Récupère une toilette par identifiant
+      description: |
+        Retourne la toilette correspondant à l'identifiant, ou 404 si elle n'existe pas.
+      operationId: getToiletById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: Toilette trouvée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Toilet'
+        '404':
+          description: Toilette inexistante
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
