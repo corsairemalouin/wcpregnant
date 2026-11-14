@@ -1,6 +1,6 @@
 import { Component, Input, SimpleChange } from '@angular/core';
 import * as L from 'leaflet';
-import { Toilet } from '../../models/toilet.model';
+import { Toilet, GeoPosition } from '../../models/toilet.model';
 
 /**
  * Carte Leaflet affichant les toilettes référencées.
@@ -9,14 +9,22 @@ import { Toilet } from '../../models/toilet.model';
 @Component({
   selector: 'wc-map',
   standalone: true,
+  imports: [],
   templateUrl: './map.html',
   styleUrl: './map.css'
 })
 export class WcMapComponent {
   @Input() toilets: Toilet[] = [];
 
+  /**
+   * Position de recherche (géolocalisation par défaut) matérialisée
+   * par un marqueur distinct sur la carte.
+   */
+  @Input() origin: GeoPosition | null = null;
+
   private map: L.Map | null = null;
   private markers: L.Marker[] = [];
+  private originMarker: L.CircleMarker | null = null;
 
   ngAfterViewInit(): void {
     this.map = L.map('map').setZoom(13);
@@ -29,20 +37,23 @@ export class WcMapComponent {
   }
 
   ngOnChanges(changes: Record<string, SimpleChange>): void {
-    if (this.map && changes['toilets']) {
+    if (this.map && (changes['toilets'] || changes['origin'])) {
       this.renderMarkers();
     }
   }
 
   ngOnDestroy(): void {
     this.markers.forEach(marker => marker.remove());
+    this.originMarker?.remove();
     this.markers = [];
+    this.originMarker = null;
     this.map?.remove();
     this.map = null;
   }
 
   /**
-   * (Re)dessine un marqueur pour chaque toilette et recentre la carte.
+   * (Re)dessine un marqueur pour chaque toilette, le point de recherche,
+   * et recentre la carte sur ce point.
    */
   private renderMarkers(): void {
     if (!this.map) {
@@ -54,14 +65,40 @@ export class WcMapComponent {
 
     this.toilets.forEach(toilet => {
       const marker = L.marker([toilet.position.latitude, toilet.position.longitude]).addTo(this.map!);
-      marker.bindTooltip(toilet.libelle);
       marker.bindTooltip(this.tooltip(toilet));
       this.markers.push(marker);
     });
 
-    if (this.toilets.length > 0) {
-      this.map.panTo([this.toilets[0].position.latitude, this.toilets[0].position.longitude]);
+    this.renderOrigin();
+
+    const target = this.origin ?? (this.toilets.length > 0 ? this.toilets[0].position : null);
+    if (target) {
+      this.map.panTo([target.latitude, target.longitude]);
     }
+  }
+
+  /**
+   * Dessine le marqueur du point de recherche, s'il est fourni.
+   */
+  private renderOrigin(): void {
+    if (!this.map) {
+      return;
+    }
+
+    this.originMarker?.remove();
+    this.originMarker = null;
+
+    if (!this.origin) {
+      return;
+    }
+
+    this.originMarker = L.circleMarker([this.origin.latitude, this.origin.longitude], {
+      radius: 9,
+      color: '#f06292',
+      fillColor: '#f48fb1',
+      fillOpacity: 0.35
+    }).addTo(this.map);
+    this.originMarker.bindTooltip('Position de recherche');
   }
 
   /**

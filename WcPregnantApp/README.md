@@ -21,6 +21,23 @@ application will automatically reload whenever you modify any of the source file
 > Note: the app uses the `zone.js` polyfill (declared in the `build` and `test` targets of
 > `angular.json`). Without it, `TestBed` and `NgZone` fail with `NG0908` and the page renders blank.
 
+### Search position and developer mode
+
+By default the search starts from the **browser geolocation** (`MapService.getCurrentLocation()`):
+after signing in, the toolbar shows a "Position de recherche" chip and the map is centred on that
+point. If the browser refuses geolocation, the app falls back to `environment.defaultPosition`
+and displays a notice.
+
+The latitude/longitude inputs are only exposed in **developer mode**, toggled from
+`⚙️ Paramètres`. The preference is persisted by `SettingsService` in `localStorage`
+(key `wc-pregnant-developer-mode`).
+
+| Mode | Coordinates fields | Search origin |
+|---|---|---|
+| Default | hidden | browser geolocation, fallback `environment.defaultPosition` |
+| Developer | visible | manual entry (useful to debug a specific point) |
+
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

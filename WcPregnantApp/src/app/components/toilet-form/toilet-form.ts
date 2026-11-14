@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, SimpleChange } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Toilet } from '../../models/toilet.model';
+import { Toilet, GeoPosition } from '../../models/toilet.model';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -15,8 +15,8 @@ import { environment } from '../../../environments/environment';
   styleUrl: './toilet-form.css'
 })
 export class ToiletFormComponent {
-  /** Position de départ facultative utilisée pour pré-remplir les coordonnées. */
-  @Input() location: { lat: number; lng: number } | null = null;
+  /** Position de recherche utilisée pour pré-remplir les coordonnées. */
+  @Input() location: GeoPosition | null = null;
 
   /** Émet le payload de création lorsque le formulaire est valide. */
   @Output() created = new EventEmitter<Toilet>();
@@ -39,11 +39,15 @@ export class ToiletFormComponent {
     });
   }
 
+  /**
+   * Pré-remplit les coordonnées du formulaire avec la position de recherche
+   * (géolocalisation par défaut).
+   */
   ngOnChanges(changes: Record<string, SimpleChange>): void {
     if (changes['location'] && this.location) {
       this.form.patchValue({
-        latitude: this.location.lat,
-        longitude: this.location.lng
+        latitude: this.location.latitude,
+        longitude: this.location.longitude
       });
     }
   }

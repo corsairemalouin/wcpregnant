@@ -16,17 +16,48 @@
     </section>
   } @else {
     <section class="toolbar" aria-label="Recherche">
-      <label for="lat">Latitude</label>
-      <input id="lat" name="lat" type="number" min="-90" max="90" [(ngModel)]="lat">
+      <span class="position-chip" aria-live="polite">
+        <strong>Position de recherche</strong>
+        <span>{{ searchPosition.latitude }}, {{ searchPosition.longitude }}</span>
+        <small>{{ positionSource === 'geolocation' ? '(ma position)' : '(position de référence)' }}</small>
+      </span>
 
-      <label for="lng">Longitude</label>
-      <input id="lng" name="lng" type="number" min="-180" max="180" [(ngModel)]="lng">
+      @if (developerMode) {
+        <label for="lat">Latitude</label>
+        <input id="lat" name="lat" type="number" min="-90" max="90" [(ngModel)]="lat" aria-label="Latitude">
+
+        <label for="lng">Longitude</label>
+        <input id="lng" name="lng" type="number" min="-180" max="180" [(ngModel)]="lng" aria-label="Longitude">
+      }
 
       <button type="button" (click)="loadNearest()" aria-label="Rechercher les toilettes à proximité">Rechercher</button>
       <button type="button" (click)="useMyLocation()" aria-label="Utiliser ma position">Ma position</button>
       <button type="button" (click)="loadAll()" aria-label="Afficher toutes les toilettes">Toutes</button>
+      <button type="button" class="ghost" (click)="settingsOpen ? closeSettings() : openSettings()" aria-label="Ouvrir les paramètres">⚙️ Paramètres</button>
       <button type="button" class="ghost" (click)="logout()" aria-label="Se déconnecter">Déconnexion</button>
     </section>
+
+    @if (settingsOpen) {
+      <section class="settings-panel" aria-label="Paramètres">
+        <h2>Paramètres</h2>
+
+        <label class="switch" for="developer-mode">
+          <input type="checkbox" id="developer-mode" [checked]="developerMode" (change)="toggleDeveloperMode()" aria-label="Activer le mode développeur">
+          Mode développeur — saisir manuellement latitude et longitude
+        </label>
+
+        <p class="hint">
+          Par défaut, la recherche part de votre position géolocalisée. Le mode développeur
+          est réservé au débogage : il affiche les champs de coordonnées et mémorise le choix.
+        </p>
+
+        <button type="button" class="ghost" (click)="closeSettings()" aria-label="Fermer les paramètres">Fermer</button>
+      </section>
+    }
+
+    @if (notice) {
+      <p class="notice" role="status">{{ notice }}</p>
+    }
 
     @if (error) {
       <p class="error" role="alert">{{ error }}</p>
@@ -60,7 +91,7 @@
       </section>
 
       <section class="map-section" aria-label="Carte des toilettes">
-        <wc-map [toilets]="toilets"></wc-map>
+        <wc-map [toilets]="toilets" [origin]="searchPosition"></wc-map>
       </section>
     </div>
 
@@ -70,7 +101,7 @@
 
     <section class="form-container">
       <h2>Ajouter une toilette</h2>
-      <wc-toilet-form (created)="onCreated($event)"></wc-toilet-form>
+      <wc-toilet-form (created)="onCreated($event)" [location]="searchPosition"></wc-toilet-form>
     </section>
   }
 </main>

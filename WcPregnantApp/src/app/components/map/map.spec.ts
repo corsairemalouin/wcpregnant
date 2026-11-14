@@ -1,4 +1,5 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { SimpleChange } from '@angular/core';
 import { WcMapComponent } from './map';
 import { Toilet } from '../../models/toilet.model';
 
@@ -33,5 +34,27 @@ describe('WcMapComponent', () => {
     component.toilets = [toilet];
 
     expect(component.toilets.length).toBe(1);
+  });
+
+  it('origin_shouldBeNull_whenNotProvided', () => {
+    expect(component.origin).toBeNull();
+  });
+
+  it('origin_shouldBeStored_whenSearchPositionIsSet', () => {
+    component.origin = { latitude: 48.1119, longitude: -1.6745 };
+
+    expect(component.origin).toEqual({ latitude: 48.1119, longitude: -1.6745 });
+  });
+
+  it('ngOnChanges_shouldNotThrow_whenMapIsNotInitializedYet', () => {
+    component.toilets = [];
+    component.origin = { latitude: 48.1119, longitude: -1.6745 };
+
+    component.ngOnChanges({
+      toilets: new SimpleChange(null, component.toilets, true),
+      origin: new SimpleChange(null, component.origin, true)
+    });
+
+    expect(component.origin).toEqual({ latitude: 48.1119, longitude: -1.6745 });
   });
 });

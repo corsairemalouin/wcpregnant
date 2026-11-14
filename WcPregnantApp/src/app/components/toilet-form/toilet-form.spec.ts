@@ -1,4 +1,5 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { SimpleChange } from '@angular/core';
 import { ToiletFormComponent } from './toilet-form';
 
 describe('ToiletFormComponent', () => {
@@ -70,9 +71,14 @@ describe('ToiletFormComponent', () => {
 
   it('location_shouldPrefillCoordinates_whenInputProvided', () => {
     const withLocation = TestBed.createComponent(ToiletFormComponent);
-    withLocation.componentInstance.location = { lat: 48.9, lng: 2.4 };
-    withLocation.componentInstance.form.patchValue({ latitude: 48.9, longitude: 2.4 });
+    const position = { latitude: 48.9, longitude: 2.4 };
+
+    withLocation.componentInstance.location = position;
+    withLocation.componentInstance.ngOnChanges({
+      location: new SimpleChange(null, position, true)
+    });
 
     expect(withLocation.componentInstance.form.get('latitude')?.value).toBe(48.9);
+    expect(withLocation.componentInstance.form.get('longitude')?.value).toBe(2.4);
   });
 });
