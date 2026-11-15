@@ -14,6 +14,14 @@ Toute la documentation vit dans [`documentation/`](documentation/README.md), org
 - Ne jamais modifier le comportement métier existant lors d'ajouts de documentation ou de tests.
 - Validation : `mvn -q test` (backend), `npm run build` / `npm run test` (frontend) avant de conclure.
 
+## Workflow Git — un commit + un push par évolution fonctionnelle
+
+- **Un incrément fonctionnel = validation + mise à jour de la documentation + commit + push.**
+- Séquence : code → tests → validation → documentation (dans le **même** commit) → commit → `git push origin main`.
+- Message de commit : `type(scope): résumé en français` (`feat`, `fix`, `refactor`, `test`, `docs`, `config`, `chore`).
+- Ne jamais committer `target/**`, `dist/**`, `node_modules/**` ni un secret ; stager explicitement les fichiers de l'incrément.
+- Règle exécutable : [`.clinerules/10-workflow-git.md`](.clinerules/10-workflow-git.md) · détail : [`documentation/06-outils/workflow-git.md`](documentation/06-outils/workflow-git.md).
+
 ## Objectif agentique — Tool Calling
 
 - **Stack backend** : Java 25, Spring Boot 4.1.0, Maven, PostgreSQL. **Stack frontend** : Angular 20, TypeScript 5.8, Leaflet.

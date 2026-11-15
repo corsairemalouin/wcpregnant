@@ -15,7 +15,7 @@ Les documents jusqu'ici dispersés à la racine, dans `WcPregnantService/`, `WcP
 | 3 | **Implémentation** | [conventions-de-code.md](03-implementation/conventions-de-code.md) · [frontend-angular.md](03-implementation/frontend-angular.md) |
 | 4 | **Tests** | [strategie-de-tests.md](04-tests/strategie-de-tests.md) · [javadoc-et-couverture-tests.md](04-tests/javadoc-et-couverture-tests.md) |
 | 5 | **Déploiement** | [environnement-developement.md](05-deploiement/environnement-developement.md) · [build-et-deploiement.md](05-deploiement/build-et-deploiement.md) · [kubernetes.md](05-deploiement/kubernetes.md) |
-| 6 | **Outils & gouvernance** | [configuration-cline.md](06-outils/configuration-cline.md) |
+| 6 | **Outils & gouvernance** | [configuration-cline.md](06-outils/configuration-cline.md) · [workflow-git.md](06-outils/workflow-git.md) |
 
 ---
 
@@ -83,9 +83,9 @@ Certains fichiers restent à leur emplacement d'origine parce qu'ils sont consom
 |---|---|
 | 1 — Exigences | ✅ Rédigée (convertie depuis le `.docx` et le brief Copilot) + objectif agentique Tool Calling et son **état d'implémentation** |
 | 2 — Conception | ✅ Rédigée (architecture, modèle de données, diagrammes Mermaid, contrat API) — §7.3 décrit la couche agentique (registre d'outils, boucle Reason → Act → Observe, configuration d'inférence) |
-| 3 — Implémentation | ✅ Rédigée (conventions de code, frontend Angular) |
+| 3 — Implémentation | ✅ Rédigée (conventions de code, frontend Angular) — frontend enrichi de l'**assistant agentique** (composant de conversation, service `/agent`, synchronisation carte Leaflet) |
 | 4 — Tests | ✅ Rédigée (stratégie de tests, couverture JaCoCo) — tests de la couche agent (registre, executor, orchestrateur, client d'inférence, API) et **test bout en bout** `AgentChatEndToEndTest` avec faux serveur d'inférence local |
 | 5 — Déploiement | ✅ Rédigée (environnement, Docker, Kubernetes) |
-| 6 — Outils | ✅ Rédigée (configuration Cline) |
+| 6 — Outils | ✅ Rédigée (configuration Cline + **workflow Git : un commit/push et une maj de doc par évolution fonctionnelle**) |
 
 > **Note** : les documents historiques rédigés en anglais (`architecture.md`, `environnement-developement.md`, `kubernetes.md`, `frontend-angular.md`) ont été **traduits en français** et alignés sur le code réel (interfaces `ToiletteCrudService` / `ToiletteProximityService`, stratégie `DistanceCalculator`, Docker multi-stage Temurin 26, workflow CI existant).
