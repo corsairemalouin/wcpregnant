@@ -31,6 +31,20 @@
 | `GET` | `/toilets/{id}` | `getToiletById` | `basicAuth` | 200, 404 |
 | `PUT` | `/toilets/{id}` | `updateToilet` | `basicAuth` (rôle **ADMIN**) | 200, 400, 404, 403 |
 | `DELETE` | `/toilets/{id}` | `deleteToilet` | `basicAuth` (rôle **ADMIN**) | 204, 404, 403 |
+| `PUT` | `/toilets/{id}/grade` | `gradeToilet` | `basicAuth` (rôle **USER**) | 200, 400, 401, 403, 404 |
+
+### Notation : `PUT /toilets/{id}/grade`
+
+| Élément | Détail |
+|---|---|
+| Rôle requis | `USER` (contrairement à `PUT /toilets/{id}`, réservé à `ADMIN`) |
+| Corps | `Graduation` : `proprete`, `accueil`, `espace` |
+| Bornage | chaque critère est ramené dans l'intervalle **`[0, 10]`** |
+| Effet | la note est **ajoutée** à `graduationHistory` (de la plus récente à la plus ancienne) |
+| Note affichée | moyenne de **toutes** les entrées de l'historique, arrondie à l'entier le plus proche |
+| Réponse | la `Toilet` complète, `grade` recalculé et `graduationHistory` horodaté |
+
+> La note agrégée n'est jamais stockée telle quelle : elle est **recalculée à chaque dépôt** à partir de l'historique, ce qui évite toute dérive entre `grade` et `graduationHistory`.
 
 ### Paramètres de `GET /toilets`
 
@@ -91,4 +105,5 @@ Collection : `Bruno/WcPregnant/WC Pregnant API/`
 | `addToilette.bru` | Création |
 | `updateToilette.bru` / `Put Newx Data.bru` | Mise à jour |
 | `deleteToilette.bru` | Suppression |
+| `gradeToilette.bru` | Dépôt d'une note (`PUT /toilets/{id}/grade`) avec le compte `manu/manu` (rôle `USER`) |
 | `folder.bru` | Configuration du dossier |

@@ -13,6 +13,7 @@ import org.manu.wcpregnant.service.ToiletteService;
 import org.manu.wcpregnant.service.strategy.DistanceCalculator;
 import org.manu.wcpregnant.service.utils.ResourceNotFoundException;
 import org.manu.wcpregnant.web.dto.GeoPosition;
+import org.manu.wcpregnant.web.dto.Graduation;
 import org.manu.wcpregnant.web.dto.Toilet;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -144,6 +145,29 @@ public class ToiletteServiceImpl implements ToiletteService {
         }
         toiletteRepository.deleteById(id);
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Charge l'entité {@link ToiletDAO} depuis le repository, ajoute la note
+     * à son historique via {@link ToiletConverter#gradeToilet(ToiletDAO, Graduation)},
+     * puis persiste la toilette et renvoie l'objet métier converti.</p>
+     */
+    @Override
+    public Toilet gradeToilet(Long id, Graduation graduation) {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(graduation, "graduation must not be null");
+        log.debug("Grading toilet id {} with graduation {}", id, graduation);
+
+        ToiletDAO existingDAO = toiletteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Toilette not found with id: " + id));
+
+        ToiletDAO graded = toiletteMapper.gradeToilet(existingDAO, graduation);
+        log.debug("Toilet {} average graduation is now {}", id, graded.getGrade());
+
+        return toiletteMapper.daoToBo(toiletteRepository.save(existingDAO));
+    }
+
 
     // ========================================================================
     // Recherche par proximité (ToiletteProximityService)

@@ -3,6 +3,7 @@ package org.manu.wcpregnant.service;
 import org.manu.wcpregnant.service.impl.ToiletteServiceImpl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -13,12 +14,14 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.manu.wcpregnant.bdd.dao.GeoPositionDAO;
+import org.manu.wcpregnant.bdd.dao.GraduationDAO;
 import org.manu.wcpregnant.bdd.dao.ToiletDAO;
 import org.manu.wcpregnant.bdd.repository.ToiletteRepository;
 import org.manu.wcpregnant.config.ToiletteServiceConfig;
@@ -26,6 +29,7 @@ import org.manu.wcpregnant.service.strategy.DistanceCalculator;
 import org.manu.wcpregnant.service.utils.ResourceNotFoundException;
 import org.manu.wcpregnant.utils.TestsUtils;
 import org.manu.wcpregnant.web.dto.GeoPosition;
+import org.manu.wcpregnant.web.dto.Graduation;
 import org.manu.wcpregnant.web.dto.Toilet;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -409,5 +413,52 @@ class ToiletteServiceImplUnitTest {
         doThrow(new RuntimeException("Delete error")).when(repository).deleteById(1L);
 
         assertThrows(RuntimeException.class, () -> service.deleteToilet(1L));
+    }
+    @Test
+    void gradeToilet_shouldDelegateToMapperAndPersistHistory() {
+        ToiletDAO dao = TestsUtils.buildToiletDAO();
+        Graduation graduation = Graduation.builder().accueil(9).espace(7).proprete(5).build();
+
+        doReturn(Optional.of(dao)).when(repository).findById(1L);
+        // Le mapper est simulé : il ajoute la note à l'historique et renvoie l'entité
+        dao.setGraduationHistory(new ArrayList<>());
+        doAnswer(invocation -> {
+            ToiletDAO target = invocation.getArgument(0);
+            Graduation grade = invocation.getArgument(1);
+            GraduationDAO entry = new GraduationDAO();
+            entry.setAccueil(grade.getAccueil());
+            entry.setEspace(grade.getEspace());
+            entry.setProprete(grade.getProprete());
+            target.getGraduationHistory().add(entry);
+            return target;
+        }).when(mapper).gradeToilet(dao, graduation);
+        doReturn(TestsUtils.buildToilet()).when(mapper).daoToBo(dao);
+        doReturn(dao).when(repository).save(dao);
+
+        Toilet result = service.gradeToilet(1L, graduation);
+
+        verify(mapper).gradeToilet(dao, graduation);
+        verify(repository).save(dao);
+        assertNotNull(result, "the converted toilet must be returned");
+        assertNotNull(result.getGrade(), "the returned grade must not be null");
+        assertEquals(1, dao.getGraduationHistory().size(), "the history must contain the new rating");
+    }
+
+    @Test
+    void gradeToilet_whenToiletNotFound_shouldThrowResourceNotFoundException() {
+        doReturn(TestsUtils.buildEmptyToilette()).when(repository).findById(999L);
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> service.gradeToilet(999L, Graduation.builder().accueil(5).espace(5).proprete(5).build()));
+
+        verify(repository, never()).save(any(ToiletDAO.class));
+    }
+
+    @Test
+    void gradeToilet_withNullGraduation_shouldThrowNullPointerException() {
+        assertThrows(NullPointerException.class, () -> service.gradeToilet(1L, null));
+
+        verify(repository, never()).findById(any());
+        verify(mapper, never()).gradeToilet(any(ToiletDAO.class), any(Graduation.class));
     }
 }

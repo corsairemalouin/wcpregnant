@@ -72,6 +72,8 @@ public class AppSecurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/toilets/**", "/toilets").hasRole("ADMIN")
+                        // Les visiteurs (rôle USER) peuvent uniquement déposer une note
+                        .requestMatchers(HttpMethod.PUT, "/toilets/*/grade").hasRole("USER")
                         .requestMatchers(HttpMethod.PUT, "/toilets/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/toilets/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

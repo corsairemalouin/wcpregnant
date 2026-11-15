@@ -1,0 +1,24 @@
+meta {
+  name: gradeToilette
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{base_url}}/1/grade
+  body: json
+  auth: basic
+}
+
+auth:basic {
+  username: manu
+  password: manu
+}
+
+body:json {
+  {
+    "proprete": 8,
+    "accueil": 6,
+    "espace": 7
+  }
+}

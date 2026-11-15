@@ -61,9 +61,10 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 |---|---|---|
 | `ToiletteCrudService` | CRUD des toilettes | `addToilet`, `getAllToilets(page, size)`, `lireToilet(id)`, `updateToilet(id, toilet)`, `deleteToilet(id)` |
 | `ToiletteProximityService` | Recherche de proximité | `getNearestToilets(currentPosition)` |
+| `ToiletteRatingService` | Notation après visite (rôle `USER`) | `gradeToilet(id, graduation)` |
 | `CustomerService` | Comptes clients | lecture des clients |
 
-`ToiletteServiceImpl` implémente les deux interfaces. La recherche de proximité suit quatre étapes : chargement des toilettes, enrichissement de la distance, filtre `distance < app.distance.max`, tri croissant puis limitation à `app.result.max`.
+`ToiletteServiceImpl` implémente les trois interfaces (via l'interface héritière `ToiletteService`, déclarée `@Deprecated` pour la compatibilité). La recherche de proximité suit quatre étapes : chargement des toilettes, enrichissement de la distance, filtre `distance < app.distance.max`, tri croissant puis limitation à `app.result.max`. Le dépôt d'une note (`gradeToilet`) s'appuie sur `ToiletteDAOMapper#gradeToilet` : bornage des critères, ajout à `graduationHistory` et recalcul de la moyenne.
 
 ### 3.3 Contrôleurs (API REST)
 
@@ -76,13 +77,15 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 | `GET` | `/toilets/{id}` | `USER` | Lecture d'une toilette |
 | `PUT` | `/toilets/{id}` | `ADMIN` | Mise à jour |
 | `DELETE` | `/toilets/{id}` | `ADMIN` | Suppression |
+| `PUT` | `/toilets/{id}/grade` | `USER` | Dépôt d'une note après visite ; la note affichée est la moyenne de l'historique |
 
 **`CustomerApiImpl`** expose les endpoints clients (`GET /customers`, `POST /customers`, `GET /customers/{login}`).
 
 **Sécurité** (voir `AppSecurityConfiguration`) :
 
-- `@PreAuthorize("hasRole('USER')")` pour les lectures ;
-- `@PreAuthorize("hasRole('ADMIN')")` pour les écritures et suppressions ;
+- `@PreAuthorize("hasRole('USER')")` pour les lectures et pour le dépôt de note (`PUT /toilets/{id}/grade`) ;
+- `@PreAuthorize("hasRole('ADMIN')")` pour les créations, mises à jour complètes et suppressions ;
+- Le chemin `/toilets/*/grade` est autorisé pour `USER` dans `AppSecurityConfiguration`, les autres `PUT` restent réservés à `ADMIN` ;
 - Basic auth sans session (`SessionCreationPolicy.STATELESS`) ; CSRF désactivé sur la chaîne API ;
 - Profil `dev` : utilisateurs en mémoire `manu/manu` (rôle `USER`) et `admin/admin` (rôles `USER` + `ADMIN`) ; profil `prod` : `JdbcUserDetailsManager`.
 
@@ -105,7 +108,7 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 
 | Mapper | Transformation |
 |---|---|
-| `ToiletteDAOMapper` | `daoToBo()` : `ToiletDAO` → `Toilet` (DTO) ; `boToDao()` : DTO → DAO ; `updateToiletteDAOFromBO()` : mise à jour partielle |
+| `ToiletteDAOMapper` | `daoToBo()` : `ToiletDAO` → `Toilet` (DTO) ; `boToDao()` : DTO → DAO ; `updateToiletteDAOFromBO()` : mise à jour partielle ; `gradeToilet()` : ajout de la note à `graduationHistory` + recalcul de la moyenne (bornée à `[0, 10]`) |
 | `AdressDAOMapper` | Met `voie` et `ville` en majuscules lors du mapping |
 | `GraduationDAOMapper` | Mapping simple des champs `accueil`, `espace`, `proprete` |
 | `ToiletConverter` / `ToiletConverterImpl` | Conversion objet métier ↔ DTO |

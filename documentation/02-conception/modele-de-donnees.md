@@ -10,6 +10,7 @@
 erDiagram
     TOILET ||--|| ADRESS : "adress_id"
     TOILET ||--|| GRADUATION : "grade_id"
+    TOILET ||--o{ GRADUATION : "toilet_id (historique des notes)"
     TOILET ||--|| LOCALISATION : "position_id"
     CUSTOMER ||--|| ADRESS : "adress_id"
     USERS ||--o{ AUTHORITIES : "authorities"
@@ -34,6 +35,7 @@ erDiagram
         int accueil
         int espace
         int proprete
+        timestamp gradedAt
     }
     LOCALISATION {
         long id PK
@@ -54,15 +56,24 @@ erDiagram
 
 | Entité JPA | Table | Colonnes | Notes |
 |---|---|---|---|
-| `ToiletDAO` | `toilet` | `id`, `libelle`, `adress_id`, `grade_id`, `position_id` | `id` généré (`IDENTITY`) ; les 3 relations sont `@OneToOne(cascade = ALL, optional = false, orphanRemoval = true)` |
+| `ToiletDAO` | `toilet` | `id`, `libelle`, `adress_id`, `grade_id`, `position_id` | `id` généré (`IDENTITY`) ; les 3 relations sont `@OneToOne(cascade = ALL, optional = false, orphanRemoval = true)` ; `graduationHistory` est un `@OneToMany(cascade = ALL)` vers `graduation` (`toilet_id`), trié `id DESC` |
 | `AdressDAO` | `adress` | `id`, `numero`, `voie`, `codePostal`, `ville`, `pays` | Orthographe **`Adress`** côté backend : ne pas « corriger » |
-| `GraduationDAO` | `graduation` | `id`, `accueil`, `espace`, `proprete` | Notes 0-10 dans le contrat OpenAPI |
+| `GraduationDAO` | `graduation` | `id`, `accueil`, `espace`, `proprete`, `graded_at` | Notes 0-10 dans le contrat OpenAPI ; sert à la fois de note agrégée (`grade`) et d'entrée d'historique |
 | `GeoPositionDAO` | `localisation` | `id`, `latitude`, `longitude` | Table nommée `localisation`, classe nommée `GeoPositionDAO` |
 | `CustomerDAO` | `customer` | `id`, `nom`, `prenom`, `adress_id` | Lié à une adresse |
 | `Users` | `users` | login, mot de passe haché | Authentification Spring Security |
 | `Authorities` | `authorities` | rôle (`USER`, `ADMIN`) | RBAC |
 
 **Conséquence des cascades** : supprimer une `toilet` supprime aussi son adresse, sa graduation et sa position (orphan removal).
+
+### Notation et historique des visites
+
+| Élément | Comportement |
+|---|---|
+| `grade` (relation `grade_id`) | note **agrégée** affichée sur la fiche : moyenne des trois critères de toutes les entrées de `graduationHistory`, arrondie à l'entier le plus proche |
+| `graduationHistory` | un `GraduationDAO` par visite, horodaté (`graded_at`), trié du plus récent au plus ancien |
+| Bornage | chaque critère est ramené dans `[0, 10]` avant l'ajout à l'historique |
+| Écriture | seule `ToiletteDAOMapper#gradeToilet` alimente l'historique ; le DTO `Toilet` expose l'historique en **lecture seule** (`boToDao` et `updateToiletteDAOFromBO` l'ignorent) |
 
 ---
 

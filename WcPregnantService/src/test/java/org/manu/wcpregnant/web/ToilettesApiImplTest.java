@@ -191,4 +191,50 @@ public class ToilettesApiImplTest {
                         .content(objectMapper.writeValueAsString(invalidToilet)))
                 .andExpect(status().isBadRequest()); // Ou isBadRequest() si tu as un Handler d'exception
     }
+    @Nested
+    @DisplayName("Tests de notation (PUT /toilets/{id}/grade)")
+    class GradeTests {
+
+        private static final String GRADE_JSON =
+                "{\"accueil\": 9, \"espace\": 7, \"proprete\": 5}";
+
+        @Test
+        @WithMockUser(roles = { "ADMIN", "USER" })
+        @DisplayName("USER peut noter une toilette existante")
+        void grade_User_Success() throws Exception {
+            Long id = createAndGetId();
+
+            mockMvc.perform(put("/toilets/" + id + "/grade")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(GRADE_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.grade.accueil").value(9))
+                    .andExpect(jsonPath("$.grade.espace").value(7))
+                    .andExpect(jsonPath("$.grade.proprete").value(5))
+                    .andExpect(jsonPath("$.graduationHistory").isArray());
+        }
+
+        @Test
+        @WithMockUser(roles = "USER")
+        @DisplayName("Noter une toilette inexistante renvoie 404")
+        void grade_NotFound_Error() throws Exception {
+            mockMvc.perform(put("/toilets/999999/grade")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(GRADE_JSON))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @WithMockUser(username = "visitor", roles = "GUEST")
+        @DisplayName("Un utilisateur sans rôle ne peut pas noter (403)")
+        void grade_withoutUserRole_Forbidden() throws Exception {
+            mockMvc.perform(put("/toilets/1/grade")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(GRADE_JSON))
+                    .andExpect(status().isForbidden());
+        }
+    }
 }

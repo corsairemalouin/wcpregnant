@@ -1,0 +1,94 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------< org.manu:wcpregnant >-------------------------
+[INFO] Building wcpregnant 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jacoco:0.8.16:prepare-agent (prepare-agent) @ wcpregnant ---
+[INFO] jacocoArgLine set to -javaagent:C:\\Users\\emman\\.m2\\repository\\org\\jacoco\\org.jacoco.agent\\0.8.16\\org.jacoco.agent-0.8.16-runtime.jar=destfile=C:\\Users\\emman\\IdeaProjects\\WcPregnant\\WcPregnantService\\target\\jacoco.exec,excludes=**/Mockito*:**/*Mock*
+[INFO] 
+[INFO] --- openapi-generator:7.12.0:generate (generate-customer-api) @ wcpregnant ---
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by com.github.benmanes.caffeine.cache.UnsafeAccess (file:/C:/Users/emman/.m2/repository/com/github/ben-manes/caffeine/caffeine/2.9.3/caffeine-2.9.3.jar)
+WARNING: Please consider reporting this to the maintainers of class com.github.benmanes.caffeine.cache.UnsafeAccess
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[INFO] Generating with dryRun=false
+[INFO] OpenAPI Generator: spring (server)
+[INFO] Generator 'spring' is considered stable.
+[INFO] ----------------------------------
+[INFO] Environment variable JAVA_POST_PROCESS_FILE not defined so the Java code may not be properly formatted. To define it, try 'export JAVA_POST_PROCESS_FILE="/usr/local/bin/clang-format -i"' (Linux/Mac)
+[INFO] NOTE: To enable file post-processing, 'enablePostProcessFile' must be set to `true` (--enable-post-process-file for CLI).
+[INFO] Invoker Package Name, originally not set, is now derived from api package name: org.manu.wcpregnant.web
+[INFO] Processing operation getCustomers
+[INFO] Processing operation createCustomer
+[INFO] Processing operation getCustomerByLogin
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\dto\Adress.java
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\dto\Customer.java
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\api\CustomerApi.java
+[INFO] Skipping generation of Webhooks.
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\pom.xml
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\README.md
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\api\ApiUtil.java
+[INFO] Skipped C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\.openapi-generator-ignore (Skipped by supportingFiles options supplied by user.)
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\.openapi-generator\VERSION
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\.openapi-generator\FILES
+################################################################################
+# Thanks for using OpenAPI Generator.                                          #
+# Please consider donation to help us maintain this project ?                 #
+# https://opencollective.com/openapi_generator/donate                          #
+################################################################################
+[INFO] 
+[INFO] --- openapi-generator:7.12.0:generate (generate-toilet-api) @ wcpregnant ---
+[INFO] Generating with dryRun=false
+[INFO] OpenAPI Generator: spring (server)
+[INFO] Generator 'spring' is considered stable.
+[INFO] ----------------------------------
+[INFO] Environment variable JAVA_POST_PROCESS_FILE not defined so the Java code may not be properly formatted. To define it, try 'export JAVA_POST_PROCESS_FILE="/usr/local/bin/clang-format -i"' (Linux/Mac)
+[INFO] NOTE: To enable file post-processing, 'enablePostProcessFile' must be set to `true` (--enable-post-process-file for CLI).
+[INFO] Invoker Package Name, originally not set, is now derived from api package name: org.manu.wcpregnant.web
+[INFO] Processing operation getToilets
+[INFO] Processing operation createToilet
+[INFO] Processing operation gradeToilet
+[INFO] Processing operation getToiletById
+[INFO] Processing operation updateToilet
+[INFO] Processing operation deleteToilet
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\dto\Adress.java
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\dto\ApiError.java
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\dto\GeoPosition.java
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\dto\Graduation.java
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\dto\GraduationHistoryEntry.java
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\dto\Toilet.java
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\api\ToiletApi.java
+[INFO] Skipping generation of Webhooks.
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\pom.xml
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\README.md
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\src\main\java\org\manu\wcpregnant\web\api\ApiUtil.java
+[INFO] Skipped C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\.openapi-generator-ignore (Skipped by supportingFiles options supplied by user.)
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\.openapi-generator\VERSION
+[INFO] writing file C:\Users\emman\IdeaProjects\WcPregnant\WcPregnantService\target\generated-sources\openapi\.openapi-generator\FILES
+################################################################################
+# Thanks for using OpenAPI Generator.                                          #
+# Please consider donation to help us maintain this project ?                 #
+# https://opencollective.com/openapi_generator/donate                          #
+################################################################################
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ wcpregnant ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 6 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ wcpregnant ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 45 source files with javac [debug parameters release 25] to target\classes
+[WARNING] /C:/Users/emman/IdeaProjects/WcPregnant/WcPregnantService/src/main/java/org/manu/wcpregnant/bdd/mapper/GraduationDAOMapper.java:[11,19] Unmapped target properties: "id, gradedAt".
+[WARNING] /C:/Users/emman/IdeaProjects/WcPregnant/WcPregnantService/src/main/java/org/manu/wcpregnant/bdd/mapper/ToiletteDAOMapper.java:[39,15] Unmapped target property: "id". Mapping from property "GeoPosition position" to "GeoPositionDAO position".
+[WARNING] /C:/Users/emman/IdeaProjects/WcPregnant/WcPregnantService/src/main/java/org/manu/wcpregnant/bdd/mapper/ToiletteDAOMapper.java:[43,10] Unmapped target property: "id". Mapping from property "GeoPosition position" to "GeoPositionDAO position".
+[WARNING] /C:/Users/emman/IdeaProjects/WcPregnant/WcPregnantService/src/main/java/org/manu/wcpregnant/bdd/mapper/AdressDAOMapper.java:[16,15] Unmapped target property: "id".
+[INFO] /C:/Users/emman/IdeaProjects/WcPregnant/WcPregnantService/target/generated-sources/openapi/src/main/java/org/manu/wcpregnant/web/dto/Adress.java: Some input files use or override a deprecated API.
+[INFO] /C:/Users/emman/IdeaProjects/WcPregnant/WcPregnantService/target/generated-sources/openapi/src/main/java/org/manu/wcpregnant/web/dto/Adress.java: Recompile with -Xlint:deprecation for details.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.991 s
+[INFO] Finished at: 2026-11-15T10:23:55+01:00
+[INFO] ------------------------------------------------------------------------

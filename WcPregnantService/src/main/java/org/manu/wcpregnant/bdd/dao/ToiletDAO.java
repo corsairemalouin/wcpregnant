@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -26,6 +29,15 @@ public class ToiletDAO {
     @OneToOne(cascade = CascadeType.ALL, optional = false, orphanRemoval = true)
     @JoinColumn(name = "grade_id")
     private GraduationDAO grade;
+
+    /**
+     * Historique des notes déposées par les visiteurs, de la plus récente à la
+     * plus ancienne. {@code grade} contient la moyenne de ces entrées.
+     */
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "toilet_id", referencedColumnName = "id")
+    @OrderBy("id DESC")
+    private List<GraduationDAO> graduationHistory = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL, optional = false, orphanRemoval = true)
     @JoinColumn(name = "position_id")

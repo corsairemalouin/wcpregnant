@@ -114,6 +114,65 @@ paths:
           description: Accès refusé (rôle ADMIN requis)
       security:
         - basicAuth: []
+  /toilets/{id}/grade:
+    put:
+      summary: Déposer une note après une visite
+      description: >
+        Enregistre une note (0-10 par critère) déposée par un visiteur connecté
+        après qu'il est arrivé à la toilette. La note est ajoutée à l'historique
+        de la toilette et la note affichée est la moyenne de toutes les visites.
+        Contrairement à PUT /toilets/{id}, réservé au rôle ADMIN, cette opération
+        est ouverte au rôle USER.
+      operationId: gradeToilet
+      tags:
+        - Toilet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './ObjectDefinitions.yaml#/components/schemas/Graduation'
+      responses:
+        '200':
+          description: Toilette mise à jour avec la moyenne de ses notes
+          content:
+            application/json:
+              schema:
+                $ref: './ObjectDefinitions.yaml#/components/schemas/Toilet'
+        '400':
+          description: Requête invalide (note hors de l'intervalle 0-10)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Authentification requise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Accès refusé (rôle insuffisant)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Toilette non trouvée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - basicAuth: []
 
   /toilets/{id}:
     parameters:

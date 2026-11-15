@@ -22,7 +22,7 @@ import java.util.Optional;
  * @deprecated Utilisez {@link ToiletteCrudService} et {@link ToiletteProximityService} séparément
  */
 @Deprecated(since = "1.0", forRemoval = false)
-public interface ToiletteService extends ToiletteCrudService, ToiletteProximityService {
+public interface ToiletteService extends ToiletteCrudService, ToiletteProximityService, ToiletteRatingService {
     // Méthodes héritées de ToiletteCrudService :
     //   Toilet addToilet(Toilet toiletteBO);
     //   List<Toilet> getAllToilets(Integer page, Integer size);

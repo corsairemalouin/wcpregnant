@@ -49,6 +49,36 @@ components:
           description: Note d'espace (0-10)
           minimum: 0
           maximum: 10
+    GraduationHistoryEntry:
+      type: object
+      description: >
+        Note déposée par un visiteur lors d'une visite, horodatée par le serveur
+        et conservée dans l'historique de la toilette. La note affichée sur la
+        fiche est la moyenne de toutes les entrées de cet historique.
+      properties:
+        proprete:
+          type: integer
+          format: int32
+          description: Note de propreté attribuée lors de la visite (0-10)
+          minimum: 0
+          maximum: 10
+        accueil:
+          type: integer
+          format: int32
+          description: Note d'accueil attribuée lors de la visite (0-10)
+          minimum: 0
+          maximum: 10
+        espace:
+          type: integer
+          format: int32
+          description: Note d'espace attribuée lors de la visite (0-10)
+          minimum: 0
+          maximum: 10
+        gradedAt:
+          type: string
+          format: date-time
+          description: Horodatage de la note, renseigné par le serveur
+
 
     GeoPosition:
       type: object
@@ -116,5 +146,11 @@ components:
           $ref: '#/components/schemas/Adress'
         grade:
           $ref: '#/components/schemas/Graduation'
+        graduationHistory:
+          type: array
+          description: Historique des notes déposées par les visiteurs (lecture seule)
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/GraduationHistoryEntry'
         position:
           $ref: '#/components/schemas/GeoPosition'

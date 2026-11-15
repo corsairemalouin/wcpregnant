@@ -3,7 +3,9 @@ package org.manu.wcpregnant.web;
 import lombok.RequiredArgsConstructor;
 import org.manu.wcpregnant.service.ToiletteCrudService;
 import org.manu.wcpregnant.service.ToiletteProximityService;
+import org.manu.wcpregnant.service.ToiletteRatingService;
 import org.manu.wcpregnant.web.api.ToiletApi;
+import org.manu.wcpregnant.web.dto.Graduation;
 import org.manu.wcpregnant.web.dto.GeoPosition;
 import org.manu.wcpregnant.web.dto.Toilet;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,7 @@ public class ToilettesApiImpl implements ToiletApi {
 
     private final ToiletteCrudService crudService;
     private final ToiletteProximityService proximityService;
+    private final ToiletteRatingService ratingService;
 
     /**
      * GET /toilets
@@ -80,6 +83,20 @@ public class ToilettesApiImpl implements ToiletApi {
         crudService.deleteToilet(id);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * PUT /toilets/{id}/grade
+     * Dépose une note (0-10 par critère) déposée par un visiteur sur une toilette.
+     */
+    @Override
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Toilet> gradeToilet(Long id, Graduation graduation) {
+        Assert.notNull(id, "Toilet id cannot be null");
+        Assert.notNull(graduation, "Graduation is mandatory");
+        Toilet graded = ratingService.gradeToilet(id, graduation);
+        return ResponseEntity.ok(graded);
+    }
+
 
     // --- Validation ---
 
