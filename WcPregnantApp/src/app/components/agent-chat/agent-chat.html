@@ -1,0 +1,83 @@
+<div class="agent-chat" [class.agent-chat--open]="open">
+  <button type="button" class="agent-launcher" (click)="toggle()"
+          [attr.aria-expanded]="open" aria-label="Ouvrir l'assistant agentique">
+    <span class="launcher-dot" aria-hidden="true"></span>
+    Assistant agentique
+  </button>
+
+  @if (open) {
+    <section class="agent-panel" aria-label="Assistant agentique">
+      <header class="agent-header">
+        <h2>Assistant agentique</h2>
+        <p class="agent-hint">
+          Inférence 100&nbsp;% locale : la question est traitée par le modèle servi
+          sur votre machine, aucune donnée ne quitte le réseau.
+        </p>
+      </header>
+
+      <form class="agent-form" (submit)="ask()">
+        <label for="agent-question">Question</label>
+        <input id="agent-question" name="agent-question" type="text"
+               [(ngModel)]="question"
+               placeholder="Ex. toilettes accessibles avec table à langer"
+               aria-label="Question posée à l'assistant">
+        <button type="submit" [disabled]="busy" aria-label="Interroger l'assistant">
+          {{ busy ? 'Réflexion…' : 'Interroger' }}
+        </button>
+      </form>
+
+      <div class="agent-suggestions" aria-label="Suggestions de questions">
+        @for (suggestion of suggestions; track suggestion) {
+          <button type="button" class="chip" (click)="askQuestion(suggestion)" [disabled]="busy">
+            {{ suggestion }}
+          </button>
+        }
+      </div>
+
+      @if (error) {
+        <p class="agent-error" role="alert">{{ error }}</p>
+      }
+
+      @if (steps.length > 0) {
+        <ol class="agent-steps" aria-label="Étapes de raisonnement de l'agent">
+          @for (step of steps; track $index) {
+            <li class="agent-step agent-step--{{ step.status }}">
+              <span class="step-label">{{ step.label }}</span>
+              @if (step.detail) {
+                <span class="step-detail">{{ step.detail }}</span>
+              }
+            </li>
+          }
+        </ol>
+      }
+
+      @if (answer) {
+        <div class="agent-answer" role="status">
+          <p>{{ answer }}</p>
+          @if (model) {
+            <small>Modèle local : {{ model }}</small>
+          }
+        </div>
+      }
+
+      @if (toilets.length > 0) {
+        <ul class="agent-results" aria-label="Équipements trouvés par l'agent">
+          @for (toilet of toilets; track toilet.id ?? $index) {
+            <li class="agent-card">
+              <button type="button" (click)="select(toilet)"
+                      [attr.aria-label]="'Afficher les détails de ' + toilet.libelle">
+                {{ toilet.libelle }}
+              </button>
+              <span class="agent-distance">{{ formatDistance(toilet) }}</span>
+              @if (toilet.adress) {
+                <span class="agent-address">
+                  {{ toilet.adress.voie }}, {{ toilet.adress.codePostal }} {{ toilet.adress.ville }}
+                </span>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>

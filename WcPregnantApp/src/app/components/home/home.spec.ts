@@ -223,4 +223,43 @@ describe('HomeComponent', () => {
 
     expect(settings.isDeveloperMode).toBeTrue();
   });
+
+  it('agentChat_shouldBeEmbedded_whenUserIsLoggedIn', () => {
+    component.loggedIn = true;
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('wc-agent-chat')).toBeTruthy();
+  });
+
+  it('onAgentResults_shouldReplaceListAndHighlightMap_whenAgentFindsToilets', () => {
+    component.toilets = [];
+    component.onAgentResults([sampleToilet]);
+
+    expect(component.toilets).toEqual([sampleToilet]);
+    expect(component.agentHighlight).toEqual(sampleToilet);
+    expect(component.notice).toContain('L\'agent a trouvé 1 équipement(s)');
+  });
+
+  it('onAgentResults_shouldKeepExistingList_whenAgentFindsNothing', () => {
+    component.toilets = [sampleToilet];
+    component.onAgentResults([]);
+
+    expect(component.toilets).toEqual([sampleToilet]);
+    expect(component.notice).toContain('aucun équipement');
+  });
+
+  it('selectFromAgent_shouldOpenDetailsAndHighlightToilet_whenAgentCardIsClicked', () => {
+    component.selectFromAgent(sampleToilet);
+
+    expect(component.selectedToilet).toEqual(sampleToilet);
+    expect(component.agentHighlight).toEqual(sampleToilet);
+  });
+
+  it('logout_shouldForgetAgentSelection_whenSessionEnds', () => {
+    component.login();
+    component.onAgentResults([sampleToilet]);
+    component.logout();
+
+    expect(component.agentHighlight).toBeNull();
+  });
 });

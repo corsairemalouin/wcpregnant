@@ -279,7 +279,7 @@ La couche agent est un **adaptateur** posé au-dessus des interfaces de service 
 | 4. Observe | le résultat (JSON de l'outil ou `ApiError`) est réinjecté comme message `tool` et la boucle recommence |
 | 5. Stop | la boucle s'arrête dès qu'une réponse textuelle est produite ou quand `maxIterations` est atteint (message de garde-fou) |
 
-La réponse expose `answer`, `model`, `iterations` et la trace `toolCalls` (`tool`, `arguments`, `status`, `output`) — utile pour l'audit et la démonstration du concours.
+La réponse expose `answer`, `model`, `iterations` et la trace `toolCalls` (`tool`, `arguments`, `status`, `result`, `message`) — utile pour l'audit et la démonstration du concours.
 
 #### Configuration de l'inférence (100 % locale)
 
@@ -293,6 +293,22 @@ La réponse expose `answer`, `model`, `iterations` et la trace `toolCalls` (`too
 | `agent.tools.max-results` | — | `10` |
 
 Aucune URL, clé ou nom de modèle n'est écrit en dur dans le code : `docker-compose.yml` et `k8s/configmap.yaml` injectent ces valeurs, et les tests d'intégration pointent volontairement vers un port fermé (`http://127.0.0.1:59999/v1`) pour vérifier le comportement **503** sans appel réseau.
+#### Intégration frontend (Angular)
+
+Le frontend ne réimplémente aucune logique agentique : il consomme les endpoints déjà exposés et rend la boucle lisible pour l'utilisateur.
+
+| Artefact | Rôle |
+|---|---|
+| `src/app/models/agent.model.ts` | interfaces `AgentChatRequest`, `AgentChatResponse`, `AgentToolCallTrace`, `AgentToolResult` calquées sur `AgentAPI.yaml` — aucun champ inventé |
+| `src/app/services/agent.service.ts` | client HTTP `POST /agent/chat` et `GET /agent/tools`, en-tête `Authorization` repris de `AuthService`, URL issue de `environment.agentApiUrl` |
+| `src/app/components/agent-chat/` | panneau de conversation : saisie de la question, suggestions, fil des étapes (position transmise, interrogation du modèle, un pas par outil exécuté, synthèse), cartes de résultats cliquables |
+| `src/environments/environment.ts` | clé `agentApiUrl: '/agent'` (chemin relatif, jamais d'host codé en dur) |
+| `src/proxy.conf.json` | règle `/agent` → `http://localhost:8081`, alignée sur celle de `/toilets` |
+| `src/app/components/map/map.ts` | nouvel `@Input() highlight` : marqueur distinctif (classe `agent-highlight`) centré sur l'équipement choisi par l'agent |
+| `src/app/components/home/home.ts` | `onAgentResults(toilets)` remplace la liste et synchronise la carte, `selectFromAgent(toilet)` ouvre la fiche de détails |
+
+La position de recherche (`searchPosition`, géolocalisée ou de référence) est passée au composant via `[position]` et transmise dans `AgentChatRequest.position` : le modèle local n'a donc besoin d'aucun géocodage externe. Les erreurs sont traduites en messages lisibles (403 → rôle `ADMIN` requis, 503 → serveur d'inférence injoignable) et aucune exception n'est propagée au composant parent.
+
 
 #### Contrat d'erreur des appels d'outils
 

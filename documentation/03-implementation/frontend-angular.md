@@ -12,9 +12,10 @@ Pour démarrer un serveur de développement local, exécutez :
 ng serve --proxy-config src/proxy.conf.json
 ```
 
-Le proxy transfère les requêtes `/toilets*` vers l'API Spring Boot sur `http://localhost:8081` :
-le backend doit donc être démarré. `src/environments/environment.ts` contient le chemin de base de
-l'API (`/toilets`) et la position de recherche par défaut.
+Le proxy transfère les requêtes `/toilets*`, `/actuator*` et `/agent*` vers l'API Spring Boot sur
+`http://localhost:8081` : le backend doit donc être démarré. `src/environments/environment.ts`
+contient le chemin de base de l'API (`/toilets`), celui des endpoints agentiques (`/agent`) et la
+position de recherche par défaut.
 
 Une fois le serveur lancé, ouvrez le navigateur sur `http://localhost:4200/`. L'application se
 recharge automatiquement à chaque modification d'un fichier source. Connectez-vous avec les comptes
@@ -40,6 +41,55 @@ Les champs de latitude/longitude n'apparaissent qu'en **mode développeur**, act
 |---|---|---|
 | Par défaut | masqués | géolocalisation du navigateur, repli sur `environment.defaultPosition` |
 | Développeur | visibles | saisie manuelle (utile pour debugger un point précis) |
+
+## Assistant agentique (Tool Calling)
+
+Le panneau **Assistant agentique** (bouton en haut de la page après la connexion) permet de poser
+une question en langage naturel — par exemple « toilettes accessibles avec table à langer dans un
+rayon de 500 m » — et de laisser l'agent du backend choisir et exécuter les outils métier.
+
+### Comment ça marche
+
+1. `AgentChatComponent` envoie `POST /agent/chat` avec `{ message, position }` via `AgentService`
+   (la position est celle de la recherche : géolocalisation ou position de référence).
+2. Le serveur orchestre la boucle **Reason → Act → Observe** contre le modèle servi localement
+   (Strata AI) et renvoie `answer`, `model`, `iterations` et la trace `toolCalls`.
+3. Le composant affiche les étapes de raisonnement, la synthèse du modèle et des cartes
+   d'équipements ; les résultats remontent à `HomeComponent` par l'`@Output() results`.
+4. `HomeComponent` remplace la liste des résultats et passe l'équipement mis en avant au composant
+   carte (`[highlight]`), qui centre la carte et dessine un marqueur distinctif.
+
+| Fichier | Contenu |
+|---|---|
+| `src/app/models/agent.model.ts` | contrats `AgentChatRequest`, `AgentChatResponse`, `AgentToolCallTrace`, `AgentToolResult` alignés sur `AgentAPI.yaml` |
+| `src/app/services/agent.service.ts` | `chat(request)` et `getTools()`, en-tête `Authorization` repris de `AuthService` |
+| `src/app/components/agent-chat/` | `agent-chat.ts` / `.html` / `.css` : formulaire, suggestions, fil d'étapes, cartes de résultats |
+| `src/app/components/map/map.ts` | `@Input() highlight` et méthode `renderHighlight()` (marqueur `agent-highlight`) |
+
+### Configuration
+
+Aucune URL d'inférence n'apparaît dans le frontend : le proxy Angular route `/agent` vers le
+backend, et le backend pointe vers le serveur local via `AGENT_INFERENCE_BASE_URL`, `AGENT_MODEL`
+et `AGENT_TIMEOUT_SECONDS`. Pour la démonstration :
+
+```bash
+# 1. serveur d'inférence local (API compatible OpenAI) sur 127.0.0.1:8000
+# 2. backend
+mvn -q spring-boot:run
+# 3. frontend
+ng serve --proxy-config src/proxy.conf.json
+```
+
+Si le serveur d'inférence n'est pas joignable, l'API répond **503** et le panneau affiche
+« Le serveur d'inférence local est injoignable » ; une opération d'écriture sans rôle `ADMIN`
+renvoie **403** avec un message explicite.
+
+### Tests
+
+`agent.service.spec.ts`, `agent-chat.spec.ts`, `home.spec.ts` et `map.spec.ts` couvrent les appels
+HTTP, la construction des étapes, la remontée des résultats, la gestion des erreurs 403/503 et le
+rendu du marqueur de mise en avant.
+
 
 
 ## Génération de code (scaffolding)

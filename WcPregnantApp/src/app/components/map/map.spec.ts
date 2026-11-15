@@ -57,4 +57,35 @@ describe('WcMapComponent', () => {
 
     expect(component.origin).toEqual({ latitude: 48.1119, longitude: -1.6745 });
   });
+
+  it('highlight_shouldBeNull_whenAgentMadeNoSelection', () => {
+    expect(component.highlight).toBeNull();
+  });
+
+  it('highlight_shouldBeStored_whenAgentSelectsAToilet', () => {
+    const selected: Toilet = {
+      id: 7,
+      libelle: 'WC de la Gare',
+      distance: 1500,
+      adress: { codePostal: '35000' },
+      position: { latitude: 48.12, longitude: -1.68 }
+    };
+
+    component.highlight = selected;
+
+    expect(component.highlight).toEqual(selected);
+  });
+
+  it('ngOnChanges_shouldNotThrow_whenHighlightChangesBeforeMapInit', () => {
+    const selected: Toilet = {
+      libelle: 'WC du Parc',
+      adress: { codePostal: '35000' },
+      position: { latitude: 48.11, longitude: -1.67 }
+    };
+
+    component.highlight = selected;
+    component.ngOnChanges({ highlight: new SimpleChange(null, selected, true) });
+
+    expect(component.highlight).toEqual(selected);
+  });
 });

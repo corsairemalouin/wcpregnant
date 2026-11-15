@@ -63,8 +63,9 @@ Le calcul de distance reste celui de la stratégie `DistanceCalculator` (`Havers
 | Le géocodage externe n'est pas branché | ✅ conforme à la contrainte "100 % local" | la position est fournie par le client (`position` dans la requête `/agent/chat`) |
 | Collection Bruno alignée | ✅ alignée | `agentListTools`, `agentCallToolProximity`, `agentChat` |
 | Tests de la couche agent | ✅ ajoutés | `ToiletToolRegistryTest`, `ToiletToolExecutorTest`, `AgentServiceImplTest`, `LocalInferenceClientTest`, `AgentApiImplTest`, `AgentApiIntegrationTest`, `AgentChatEndToEndTest` |
+| Interface conversationnelle utilisateur | ✅ ajoutée | `WcPregnantApp` : `AgentChatComponent` (question, suggestions, fil des étapes, cartes de résultats), `AgentService`, `models/agent.model.ts`, proxy `/agent` et marqueur de mise en avant sur la carte Leaflet |
 
-**Reste à faire** : brancher un serveur Strata AI réel pour la démonstration end-to-end. La boucle Reason → Act → Observe est déjà prouvée en test par `AgentChatEndToEndTest`, qui démarre un faux serveur d'inférence OpenAI-compatible sur `127.0.0.1:58301` : **aucune requête réseau n'est émise pendant `mvn test`**.
+**Reste à faire** : brancher un serveur Strata AI réel pour la démonstration end-to-end. La boucle Reason → Act → Observe est déjà prouvée en test par `AgentChatEndToEndTest`, qui démarre un faux serveur d'inférence OpenAI-compatible sur `127.0.0.1:58301` : **aucune requête réseau n'est émise pendant `mvn test`**. Côté frontend, le panneau `Assistant agentique` est déjà branché sur `POST /agent/chat` — il suffit de démarrer le serveur d'inférence local pour voir la conversation s'afficher et la carte se synchroniser.
 
 ---
 

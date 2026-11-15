@@ -22,9 +22,16 @@ export class WcMapComponent {
    */
   @Input() origin: GeoPosition | null = null;
 
+  /**
+   * Équipement mis en avant par l'assistant agentique : il est dessiné
+   * avec un marqueur distinctif et la carte se centre dessus.
+   */
+  @Input() highlight: Toilet | null = null;
+
   private map: L.Map | null = null;
   private markers: L.Marker[] = [];
   private originMarker: L.CircleMarker | null = null;
+  private highlightMarker: L.CircleMarker | null = null;
 
   ngAfterViewInit(): void {
     this.map = L.map('map').setZoom(13);
@@ -37,16 +44,26 @@ export class WcMapComponent {
   }
 
   ngOnChanges(changes: Record<string, SimpleChange>): void {
-    if (this.map && (changes['toilets'] || changes['origin'])) {
+    if (!this.map) {
+      return;
+    }
+
+    if (changes['toilets'] || changes['origin']) {
       this.renderMarkers();
+    }
+
+    if (changes['highlight']) {
+      this.renderHighlight();
     }
   }
 
   ngOnDestroy(): void {
     this.markers.forEach(marker => marker.remove());
     this.originMarker?.remove();
+    this.highlightMarker?.remove();
     this.markers = [];
     this.originMarker = null;
+    this.highlightMarker = null;
     this.map?.remove();
     this.map = null;
   }
@@ -70,8 +87,12 @@ export class WcMapComponent {
     });
 
     this.renderOrigin();
+    this.renderHighlight();
 
-    const target = this.origin ?? (this.toilets.length > 0 ? this.toilets[0].position : null);
+    const target = this.highlight?.position
+      ?? this.origin
+      ?? (this.toilets.length > 0 ? this.toilets[0].position : null);
+
     if (target) {
       this.map.panTo([target.latitude, target.longitude]);
     }
@@ -99,6 +120,31 @@ export class WcMapComponent {
       fillOpacity: 0.35
     }).addTo(this.map);
     this.originMarker.bindTooltip('Position de recherche');
+  }
+
+  /**
+   * Dessine le marqueur de l'équipement mis en avant par l'agent, s'il existe.
+   */
+  private renderHighlight(): void {
+    if (!this.map) {
+      return;
+    }
+
+    this.highlightMarker?.remove();
+    this.highlightMarker = null;
+
+    if (!this.highlight) {
+      return;
+    }
+
+    this.highlightMarker = L.circleMarker([this.highlight.position.latitude, this.highlight.position.longitude], {
+      radius: 12,
+      color: '#b00020',
+      fillColor: '#f48fb1',
+      fillOpacity: 0.45,
+      className: 'agent-highlight'
+    }).addTo(this.map);
+    this.highlightMarker.bindTooltip(`Sélection de l'agent : ${this.highlight.libelle}`);
   }
 
   /**

@@ -5,6 +5,8 @@
  */
 export const environment = {
   apiUrl: '/toilets',
+  /** Base des endpoints agentiques (Tool Calling) du service Spring Boot. */
+  agentApiUrl: '/agent',
   defaultPosition: {
     latitude: 48.1119,
     longitude: -1.6745

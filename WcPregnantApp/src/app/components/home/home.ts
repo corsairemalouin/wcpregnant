@@ -9,6 +9,7 @@ import { environment } from '../../../environments/environment';
 import { WcMapComponent } from '../map/map';
 import { ToiletFormComponent } from '../toilet-form/toilet-form';
 import { ToiletDetailsComponent } from '../toilet-details/toilet-details';
+import { AgentChatComponent } from '../agent-chat/agent-chat';
 
 /** Origine du point de recherche : géolocalisation ou position de référence. */
 export type PositionSource = 'geolocation' | 'default';
@@ -24,7 +25,7 @@ export type PositionSource = 'geolocation' | 'default';
 @Component({
   selector: 'wc-home',
   standalone: true,
-  imports: [FormsModule, WcMapComponent, ToiletFormComponent, ToiletDetailsComponent],
+  imports: [FormsModule, WcMapComponent, ToiletFormComponent, ToiletDetailsComponent, AgentChatComponent],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
@@ -41,6 +42,8 @@ export class HomeComponent {
   settingsOpen = false;
   positionSource: PositionSource = 'default';
   searchPosition: GeoPosition = { ...environment.defaultPosition };
+  /** Équipement mis en avant sur la carte après une réponse de l'agent. */
+  agentHighlight: Toilet | null = null;
 
   constructor(
     private toiletService: ToiletService,
@@ -72,6 +75,7 @@ export class HomeComponent {
     this.loggedIn = false;
     this.toilets = [];
     this.selectedToilet = null;
+    this.agentHighlight = null;
     this.error = null;
     this.notice = null;
   }
@@ -106,8 +110,8 @@ export class HomeComponent {
     this.error = null;
     this.searchPosition = { latitude: this.lat, longitude: this.lng };
     this.toiletService.findNearest(this.lat, this.lng).subscribe({
-      next: toilets => this.toilets = toilets,
-      error: err => this.error = err.message ?? 'Unable to load toilets'
+      next: (toilets: Toilet[]) => this.toilets = toilets,
+      error: (err: Error) => this.error = err.message ?? 'Unable to load toilets'
     });
   }
 
@@ -117,8 +121,8 @@ export class HomeComponent {
   loadAll(): void {
     this.error = null;
     this.toiletService.getToilets().subscribe({
-      next: toilets => this.toilets = toilets,
-      error: err => this.error = err.message ?? 'Unable to load toilets'
+      next: (toilets: Toilet[]) => this.toilets = toilets,
+      error: (err: Error) => this.error = err.message ?? 'Unable to load toilets'
     });
   }
 
@@ -152,6 +156,34 @@ export class HomeComponent {
   }
 
   /**
+   * Remplace la liste affichée par les équipements trouvés par l'assistant
+   * agentique et synchronise la carte Leaflet.
+   *
+   * @param toilets équipements renvoyés par la boucle Tool Calling
+   */
+  onAgentResults(toilets: Toilet[]): void {
+    if (toilets.length === 0) {
+      this.notice = 'L\'agent n\'a trouvé aucun équipement dans ce rayon.';
+
+      return;
+    }
+
+    this.toilets = toilets;
+    this.agentHighlight = toilets[0];
+    this.notice = `L'agent a trouvé ${toilets.length} équipement(s) : la carte a été mise à jour.`;
+  }
+
+  /**
+   * Sélectionne un équipement proposé par l'agent et le met en avant sur la carte.
+   *
+   * @param toilet équipement choisi dans la liste de l'assistant
+   */
+  selectFromAgent(toilet: Toilet): void {
+    this.selectedToilet = toilet;
+    this.agentHighlight = toilet;
+  }
+
+  /**
    * Ajoute une toilette créée depuis le formulaire à la liste.
    *
    * @param toilet toilette retournée par l'API
@@ -177,7 +209,7 @@ export class HomeComponent {
           this.selectedToilet = null;
         }
       },
-      error: err => this.error = err.message ?? 'Unable to delete toilet'
+      error: (err: Error) => this.error = err.message ?? 'Unable to delete toilet'
     });
   }
 

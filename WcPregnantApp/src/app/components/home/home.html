@@ -55,6 +55,10 @@
       </section>
     }
 
+    <wc-agent-chat [position]="searchPosition"
+                   (results)="onAgentResults($event)"
+                   (toiletSelected)="selectFromAgent($event)"></wc-agent-chat>
+
     @if (notice) {
       <p class="notice" role="status">{{ notice }}</p>
     }
@@ -91,7 +95,7 @@
       </section>
 
       <section class="map-section" aria-label="Carte des toilettes">
-        <wc-map [toilets]="toilets" [origin]="searchPosition"></wc-map>
+        <wc-map [toilets]="toilets" [origin]="searchPosition" [highlight]="agentHighlight"></wc-map>
       </section>
     </div>
 

@@ -1,0 +1,15 @@
+/* Marqueur de l'équipement sélectionné par l'assistant agentique */
+.agent-highlight {
+  animation: agent-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes agent-pulse {
+  0%, 100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 0.9;
+  }
+}
+
