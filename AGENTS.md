@@ -1,6 +1,10 @@
 # AGENTS.md — WcPregnant
 
-Monorepo : `WcPregnantService` (Spring Boot 4.1 / Java 25 / Maven), `WcPregnantApp` (Angular 20), `Bruno` (tests d'API), `k8s` + `Dockerfile` (déploiement), `architecture` (docs). `Waste/` et `developpement/` sont du code mort : **ne pas toucher**.
+Monorepo : `WcPregnantService` (Spring Boot 4.1 / Java 25 / Maven), `WcPregnantApp` (Angular 20), `Bruno` (tests d'API), `WcPregnantService/k8s` + `Dockerfile` (déploiement), `documentation/` (documentation unifiée par phase SDLC). `Waste/` et `developpement/` sont du code mort : **ne pas toucher**.
+
+## Documentation
+
+Toute la documentation vit dans [`documentation/`](documentation/README.md), organisée par phase : `01-exigences`, `02-conception`, `03-implementation`, `04-tests`, `05-deploiement`, `06-outils`, `assets` (artefacts `.docx`/`.pptx` d'origine).
 
 ## Règles clés
 
@@ -14,4 +18,4 @@ Monorepo : `WcPregnantService` (Spring Boot 4.1 / Java 25 / Maven), `WcPregnantA
 
 - Règles de workspace : `.clinerules/` (règles universelles + règles conditionnelles par `paths`)
 - Skills spécialisés : `.cline/skills/`
-- Usage détaillé : `CLINE-CONFIG.md`
+- Usage détaillé : `documentation/06-outils/configuration-cline.md`

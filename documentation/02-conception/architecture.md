@@ -1,0 +1,363 @@
+> 📂 **Documentation** — [index](../README.md) · Phase **2 — Conception** · Documents liés : [modele-de-donnees.md](modele-de-donnees.md), [diagrammes.md](diagrammes.md), [contrat-api-openapi.md](contrat-api-openapi.md)
+
+# Architecture et conception — WcPregnant Service
+
+## 1. Vue d'ensemble
+
+`WcPregnantService` est l'API backend qui fournit les services de localisation de toilettes accessibles aux femmes enceintes.
+
+| Profil | Usage |
+|---|---|
+| **Administrateur** | Gère les toilettes depuis l'IHM |
+| **Propriétaire de toilette** | Dépose une demande via le support, traitée par un administrateur |
+| **Femme enceinte** | Consulte la carte et la liste des toilettes les plus proches |
+
+---
+
+## 2. Pattern d'architecture : couches (Clean Architecture)
+
+```text
+┌─────────────────────────────────────┐
+│        Couche API REST (web)        │  ← Controllers (ToilettesApiImpl, CustomerApiImpl)
+├─────────────────────────────────────┤
+│        Couche métier (service)      │  ← Interfaces + implémentations (ToiletteServiceImpl)
+├─────────────────────────────────────┤
+│        Couche d'accès (bdd)         │  ← Repositories Spring Data JPA
+├─────────────────────────────────────┤
+│        Base de données (PostgreSQL) │  ← Entités JPA (ToiletDAO, …)
+└─────────────────────────────────────┘
+```
+
+Composants transverses :
+
+- **Mappers** — MapStruct pour la conversion DTO ↔ DAO ;
+- **Stratégie de distance** — `DistanceCalculator` / `HaversineDistanceCalculator` ;
+- **Utils** — calculs géographiques (`GeoPositionUtils`) ;
+- **Configuration** — `ToiletteServiceConfig`, `AppSecurityConfiguration` ;
+- **Sécurité** — Spring Security (Basic auth + RBAC).
+
+---
+
+## 3. Composants clés
+
+### 3.1 Modèles de domaine
+
+**`Toilet`** (DTO généré par OpenAPI)
+
+- Champs : `id`, `libelle`, `adress`, `grade`, `position`, `distance` ;
+- Utilisé dans les réponses REST ;
+- La `distance` est calculée par le service et n'est **jamais** persistée.
+
+**`ToiletDAO`** (entité JPA)
+
+- Relations `@OneToOne(cascade = ALL, optional = false, orphanRemoval = true)` vers `AdressDAO`, `GraduationDAO` et `GeoPositionDAO` ;
+- Le détail des tables est décrit dans [modele-de-donnees.md](modele-de-donnees.md).
+
+### 3.2 Services
+
+L'interface historique `ToiletteService` est **dépréciée** : elle agrège désormais deux interfaces distinctes (principe ISP) :
+
+| Interface | Rôle | Méthodes |
+|---|---|---|
+| `ToiletteCrudService` | CRUD des toilettes | `addToilet`, `getAllToilets(page, size)`, `lireToilet(id)`, `updateToilet(id, toilet)`, `deleteToilet(id)` |
+| `ToiletteProximityService` | Recherche de proximité | `getNearestToilets(currentPosition)` |
+| `CustomerService` | Comptes clients | lecture des clients |
+
+`ToiletteServiceImpl` implémente les deux interfaces. La recherche de proximité suit quatre étapes : chargement des toilettes, enrichissement de la distance, filtre `distance < app.distance.max`, tri croissant puis limitation à `app.result.max`.
+
+### 3.3 Contrôleurs (API REST)
+
+**`ToilettesApiImpl`** implémente l'interface `ToiletApi` générée depuis le YAML OpenAPI :
+
+| Méthode | Endpoint | Accès | Description |
+|---|---|---|---|
+| `GET` | `/toilets` | `USER` | Liste paginée, ou recherche par coordonnées (`latitude` / `longitude`) |
+| `POST` | `/toilets` | `ADMIN` | Création |
+| `GET` | `/toilets/{id}` | `USER` | Lecture d'une toilette |
+| `PUT` | `/toilets/{id}` | `ADMIN` | Mise à jour |
+| `DELETE` | `/toilets/{id}` | `ADMIN` | Suppression |
+
+**`CustomerApiImpl`** expose les endpoints clients (`GET /customers`, `POST /customers`, `GET /customers/{login}`).
+
+**Sécurité** (voir `AppSecurityConfiguration`) :
+
+- `@PreAuthorize("hasRole('USER')")` pour les lectures ;
+- `@PreAuthorize("hasRole('ADMIN')")` pour les écritures et suppressions ;
+- Basic auth sans session (`SessionCreationPolicy.STATELESS`) ; CSRF désactivé sur la chaîne API ;
+- Profil `dev` : utilisateurs en mémoire `manu/manu` (rôle `USER`) et `admin/admin` (rôles `USER` + `ADMIN`) ; profil `prod` : `JdbcUserDetailsManager`.
+
+### 3.4 Accès aux données
+
+**Repositories** (Spring Data JPA) :
+
+- `ToiletteRepository extends JpaRepository<ToiletDAO, Long>` ;
+- `CustomerRepository`, `UserRepository` ;
+- CRUD de base, extensible par des requêtes personnalisées.
+
+**Entités JPA** :
+
+- Suppression en cascade : `ToiletDAO` → `AdressDAO`, `GraduationDAO`, `GeoPositionDAO` ;
+- Toutes portent un `id` généré et les annotations JPA standard.
+
+**`DataSeeder`** (profil `dev`) : alimente la base avec un jeu de démonstration autour de Rennes, uniquement si elle est vide.
+
+### 3.5 Mappers (MapStruct)
+
+| Mapper | Transformation |
+|---|---|
+| `ToiletteDAOMapper` | `daoToBo()` : `ToiletDAO` → `Toilet` (DTO) ; `boToDao()` : DTO → DAO ; `updateToiletteDAOFromBO()` : mise à jour partielle |
+| `AdressDAOMapper` | Met `voie` et `ville` en majuscules lors du mapping |
+| `GraduationDAOMapper` | Mapping simple des champs `accueil`, `espace`, `proprete` |
+| `ToiletConverter` / `ToiletConverterImpl` | Conversion objet métier ↔ DTO |
+
+### 3.6 Stratégie de distance
+
+**`DistanceCalculator`** (interface) et **`HaversineDistanceCalculator`** (implémentation `@Component`) :
+
+- Formule de Haversine, unité **mètres** (`EARTH_RADIUS_KM * c * 1000`) ;
+- Position ou coordonnée `null` → `Double.MAX_VALUE`, converti en `distance = null` côté service ;
+- Toute nouvelle algorithmique s'ajoute comme une implémentation supplémentaire, sans modifier le service (OCP).
+
+**`GeoPositionUtils`** :
+
+- `distance(lat1, lon1, lat2, lon2, el1, el2)` : formule de Haversine ;
+- `distance(GeoPosition p1, GeoPosition p2)` : surcharge de confort ;
+- `setDistance(toilet, position)` : calcule et affecte la distance d'une toilette ;
+- `compareWithDistance(t1, t2)` : comparateur pour le tri.
+
+**Correctifs déjà appliqués** : ordre des paramètres de la méthode primitive corrigé ; contrôles de nullité ajoutés (retour de `Double.MAX_VALUE` en cas de donnée manquante).
+
+### 3.7 Configuration
+
+**`ToiletteServiceConfig`** lit les propriétés d'`application.properties` :
+
+| Propriété | Défaut code | Valeur locale | Effet |
+|---|---|---|---|
+| `app.distance.max` | `100.0` km | `50` | Distance maximale de recherche |
+| `app.result.max` | `5` | `10` | Nombre maximal de résultats renvoyés |
+
+### 3.8 Documentation API (OpenAPI / Swagger)
+
+**Fichiers** : `src/main/resources/api/*.yaml`
+
+- `ToiletAPI.yaml` : opérations CRUD toilettes ;
+- `CustomerAPI.yaml` : opérations clients ;
+- `ObjectDefinitions.yaml` : schémas partagés.
+
+**Code généré** (plugin Maven) : interfaces dans `target/generated-sources/openapi/`, DTO dans `org.manu.wcpregnant.web.dto`. Les contrôleurs implémentent ces interfaces et **ne doivent jamais être édités à la main**. Détail du contrat : [contrat-api-openapi.md](contrat-api-openapi.md).
+
+---
+
+## 4. Stratégie de tests
+
+| Niveau | Outils | Cibles principales |
+|---|---|---|
+| **Tests unitaires** | JUnit 5, Mockito, AssertJ | `GeoPositionUtils`, `ToiletteServiceImpl`, mappers, services |
+| **Tests d'intégration API** | `@SpringBootTest` + MockMvc | `ToilettesApiImplTest` |
+| **Tests de sécurité** | `spring-security-test` | `SecurityIntegrationTest` |
+| **Tests BDD** | Cucumber | `src/test/resources/features/api/*.feature` |
+| **Couverture** | JaCoCo | rapport dans `target/site/jacoco/` |
+
+Objectif : **plus de 80 %** de couverture, en priorité sur la logique métier (services, utilitaires) et la sécurité (endpoints). La stratégie complète est détaillée dans [strategie-de-tests.md](../04-tests/strategie-de-tests.md).
+
+---
+
+## 5. CI/CD
+
+Le workflow `WcPregnantService/.github/workflows/docker-image.yml` se déclenche sur les pushes vers `main` ou `master` :
+
+1. Récupération du code (`actions/checkout@v4`) ;
+2. Installation du JDK 25 (`actions/setup-java@v4`, distribution Temurin) ;
+3. Build Maven (`mvn -B -DskipTests package`) ;
+4. Connexion à GHCR (`docker/login-action@v2`) ;
+5. Build et push de l'image Docker (`docker/build-push-action@v4`, tag `ghcr.io/<owner>/wcpregnant:latest`).
+
+> Le dépôt est hébergé sur GitLab (`https://gitlab.com/manix35400/wcpregnant`) : ce workflow GitHub Actions n'est actif que si le dépôt est mirroré sur GitHub.
+
+---
+
+## 6. Architecture de déploiement
+
+### 6.1 Docker
+
+`WcPregnantService/Dockerfile` — **multi-stage** :
+
+| Étape | Base | Rôle |
+|---|---|---|
+| `builder` | `eclipse-temurin:26-jdk-alpine` | `mvn -DskipTests package -q` |
+| `runtime` | `eclipse-temurin:26-jre-alpine` | Copie du jar, utilisateur non root `appuser` |
+
+- Port exposé : **8080** ;
+- `JAVA_OPTS` configurable (`-Xms256m -Xmx512m`) ;
+- `HEALTHCHECK` toutes les 30 s sur `http://localhost:8080/api/actuator/health`.
+
+### 6.2 Kubernetes
+
+**Espace de noms** : `wcpregnant` (isolation).
+
+**Déploiement applicatif** (`k8s/deployment.yaml`) :
+
+- 2 réplicas (minimum), 5 maximum via HPA ;
+- Sonde de disponibilité : `GET /api/actuator/health/readiness` (20 s initiales, 5 s d'intervalle) ;
+- Sonde de survie : `GET /api/actuator/health` (30 s initiales, 10 s d'intervalle) ;
+- Ressources demandées : 256 Mi mémoire, 250 m CPU ;
+- Limites : 512 Mi mémoire, 500 m CPU.
+
+**Déploiement base de données** : PostgreSQL 15 Alpine, 1 réplica (point unique de failure dans la configuration de base), volume persistant de 10 Gi, contrôle de santé `pg_isready -U wcpregnant`.
+
+**Service** : `ClusterIP` (port 80 → 8080).
+
+**Ingress** (nginx, optionnel) : hôte `wcpregnant.example.com` configurable, TLS via cert-manager (Let's Encrypt).
+
+**Réseau** : la `NetworkPolicy` restreint la communication entre pods — l'application accède à PostgreSQL sur le port 5432, et accepte les requêtes venant du frontend / de l'Ingress.
+
+**Haute disponibilité** :
+
+- `PodDisruptionBudget` : au moins 1 pod disponible ;
+- Autoscaling : montée en charge à 70 % d'utilisation CPU.
+
+**Secrets et configuration** : les identifiants de base de données et les URL sont dans un `Secret` ; les propriétés applicatives dans un `ConfigMap`.
+
+Les manifestes détaillés sont décrits dans [kubernetes.md](../05-deploiement/kubernetes.md).
+
+---
+
+## 7. Axes d'optimisation
+
+### 7.1 Améliorations déjà réalisées
+
+1. Correction du bug de distance (ordre des paramètres) ;
+2. Robustesse face aux `null` dans les utilitaires ;
+3. Élargissement de la couverture des tests unitaires ;
+4. Intégration de JaCoCo pour le suivi de la couverture ;
+5. Séparation des interfaces CRUD / proximité (ISP) ;
+6. Stratégie de distance injectable (`DistanceCalculator`).
+
+### 7.2 Pistes futures
+
+| Piste | Détail |
+|---|---|
+| **Indexation** | Index sur `adress.codePostal` et `position.latitude/longitude` |
+| **Cache** | Redis pour les positions consultées fréquemment |
+| **Pagination** | Pagination repository pour les gros volumes |
+| **Requêtes** | JPQL personnalisé au lieu du filtrage en stream |
+| **Validation** | Annotations JSR-380 plus poussées |
+| **Logs** | Logging structuré pour l'observabilité |
+| **Monitoring** | Export des métriques Prometheus |
+| **Sécurité** | Validation de tokens OAuth2 / JWT |
+
+---
+
+## 8. Structure du projet
+
+```text
+WcPregnant/
+├── WcPregnantService/
+│   ├── src/
+│   │   ├── main/java/org/manu/wcpregnant/
+│   │   │   ├── WcpregnantApplication.java      ← point d'entrée Spring Boot
+│   │   │   ├── config/                         ← ToiletteServiceConfig, AppSecurityConfiguration
+│   │   │   ├── service/                        ← interfaces, bo/, strategy/, utils/
+│   │   │   │   └── impl/                       ← ToiletteServiceImpl, CustomerServiceImpl
+│   │   │   ├── web/                            ← ToilettesApiImpl, CustomerApiImpl, dto/ (généré)
+│   │   │   └── bdd/
+│   │   │       ├── dao/                        ← ToiletDAO, AdressDAO, GeoPositionDAO, …
+│   │   │       ├── mapper/                     ← MapStruct
+│   │   │       ├── repository/                 ← Spring Data JPA
+│   │   │       └── seed/                       ← DataSeeder
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       └── api/                            ← YAML OpenAPI (source de vérité)
+│   ├── src/test/java/org/manu/wcpregnant/      ← tests unitaires, intégration, BDD
+│   ├── src/test/resources/features/api/        ← scénarios Cucumber
+│   ├── k8s/                                    ← manifestes Kubernetes + deploy.ps1 / deploy.sh
+│   ├── .github/workflows/docker-image.yml      ← CI/CD
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── pom.xml
+├── WcPregnantApp/                              ← frontend Angular 20
+├── Bruno/WcPregnant/WC Pregnant API/           ← collection de tests d'API
+├── documentation/                              ← documentation unifiée (ce dossier)
+├── .clinerules/ , .cline/skills/               ← règles et skills Cline
+└── Waste/ , developpement/                     ← code mort / archives (ne pas toucher)
+```
+
+---
+
+## 9. Considérations de performance
+
+### 9.1 Goulets d'étranglement actuels
+
+1. **Filtrage en stream** : `getNearestToilettes()` charge, mappe puis filtre l'ensemble des toilettes — acceptable pour un petit jeu de données, problématique à l'échelle ;
+2. **Absence d'index** : les requêtes ne s'appuient sur aucun index explicite ;
+3. **Absence de cache** : les distances sont recalculées à chaque requête.
+
+### 9.2 Optimisations recommandées
+
+| Optimisation | Détail |
+|---|---|
+| **Requêtes spatiales** | Extension PostGIS pour les requêtes géographiques côté serveur |
+| **Pagination** | Pagination repository pour les grands volumes |
+| **Cache** | Redis pour les positions (invalidation à la mise à jour) |
+| **Pool de connexions** | HikariCP (déjà actif par défaut dans Spring Boot) |
+| **Timeouts** | Fixer des délais d'expiration sur les requêtes |
+
+---
+
+## 10. Considérations de sécurité
+
+### 10.1 Mise en œuvre actuelle
+
+- Spring Security avec Basic auth et `@EnableMethodSecurity` ;
+- Autorisation par rôle via `@PreAuthorize` ;
+- CSRF désactivé sur la chaîne API (stateless) ;
+- Mots de passe hachés via `PasswordEncoderFactories.createDelegatingPasswordEncoder()` ;
+- Filtre de logs de requêtes (`CommonsRequestLoggingFilter`).
+
+### 10.2 Recommandations
+
+- [ ] Valider toutes les entrées (Bean Validation JSR-380) ;
+- [ ] HTTPS uniquement (imposé par le reverse proxy / Ingress K8s) ;
+- [ ] Prévention des injections SQL (JPA/Hibernate s'en charge ; éviter le SQL brut) ;
+- [ ] Prévention XSS (backend API uniquement, pas de templates) ;
+- [ ] Limitation de débit (nginx-ingress ou Spring Cloud) ;
+- [ ] Journalisation d'audit (toute mutation tracée avec utilisateur / horodatage) ;
+- [ ] Rotation des secrets (gestion des `Secret` Kubernetes).
+
+---
+
+## 11. Monitoring et observabilité
+
+| Axe | État |
+|---|---|
+| **Logs** | Niveaux configurés dans `application.properties` ; logging structuré (JSON) recommandé |
+| **Métriques** | Endpoints Actuator : `/api/actuator`, `/api/actuator/health`, `/api/actuator/metrics` ; export Prometheus + Grafana possible |
+| **Traçabilité** | Non implémenté (Spring Cloud Sleuth envisagé) |
+
+---
+
+## 12. Checklist de déploiement
+
+- [ ] Les tests passent en local : `mvn test`
+- [ ] Le jar est construit : `mvn clean package`
+- [ ] L'image Docker se construit : `docker build -t wcpregnant:latest .`
+- [ ] `docker-compose up` fonctionne
+- [ ] Les manifestes K8s sont validés : `kubectl apply --dry-run=client -f k8s/`
+- [ ] Les secrets sont configurés proprement (aucun identifiant dans les manifestes)
+- [ ] Les migrations de base sont gérées (Flyway ou Liquibase recommandés)
+- [ ] Les contrôles de santé sont accessibles
+- [ ] Les logs sont accessibles et structurés
+- [ ] Le monitoring / les alertes sont configurés
+
+---
+
+## 13. Prochaines étapes
+
+1. Exécuter la suite de tests complète et analyser le rapport JaCoCo ;
+2. Ajouter les tests manquants sur les DTO et utilitaires non couverts ;
+3. Mettre en place un cluster K8s local (Docker Desktop, Minikube ou KinD) ;
+4. Déployer en local avec docker-compose et les scripts K8s ;
+5. Créer un environnement de pré-production ;
+6. Tests de performance en charge (JMeter, Gatling) ;
+7. Audit de sécurité et tests d'intrusion.
+

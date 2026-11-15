@@ -10,7 +10,7 @@ Application de localisation de toilettes publiques accessibles aux personnes enc
 | `WcPregnantApp/` | Front utilisateur | Angular 20, TypeScript 5.8, Leaflet, Karma/Jasmine |
 | `Bruno/` | Collection de tests d'API | fichiers `.bru` |
 | `k8s/` | Manifestes Kubernetes | Deployment, Service, Ingress, HPA, NetworkPolicy, PDB |
-| `architecture/` | Documentation technique | `ARCHITECTURE.md`, `DEVELOPMENT-PLAN.md` |
+| `documentation/` | Documentation unifiée | index `README.md` + phases `01-exigences` … `06-outils` + `assets/` |
 | `Waste/`, `developpement/` | Code mort / archives | **ne jamais modifier** |
 
 ## Conventions de nommage

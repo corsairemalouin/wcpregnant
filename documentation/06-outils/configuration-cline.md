@@ -1,3 +1,5 @@
+> 📂 **Documentation** — [index](../README.md) · Phase **6 — Outils & gouvernance**
+
 # Configuration Cline du projet WcPregnant
 
 Cette configuration suit la documentation officielle Cline ([Rules](https://docs.cline.bot/customization/cline-rules), [Skills](https://docs.cline.bot/customization/skills)).
@@ -16,7 +18,7 @@ Toutes les règles du workspace sont combinées en un ensemble unique. Les fichi
 | `05-openapi-contrat.md` | contrat d'API, génération | `src/main/resources/api/**`, `Bruno/**` |
 | `06-frontend-angular.md` | Angular 20, Leaflet, Karma | `WcPregnantApp/**` |
 | `07-devops-deploiement.md` | Docker, K8s, CI | `Dockerfile`, `docker-compose.yml`, `k8s/**`, `.github/**` |
-| `08-documentation.md` | style documentaire | `**/*.md`, `architecture/**` |
+| `08-documentation.md` | style documentaire | `**/*.md`, `documentation/**` |
 
 **Activer/désactiver** : icône balance en bas du panneau Cline → onglet *Rules*. Une règle conditionnelle désactivée ne s'active même si les paths correspondent.
 

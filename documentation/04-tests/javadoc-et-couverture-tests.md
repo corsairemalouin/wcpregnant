@@ -1,3 +1,5 @@
+> 📂 **Documentation** — [index](../README.md) · Phase **4 — Tests** · Vue d'ensemble : [strategie-de-tests.md](strategie-de-tests.md)
+
 # Prompt Cline : Ajout Javadoc + TU couverture >80%
 
 ## Objectif
