@@ -1,0 +1,250 @@
+openapi: 3.0.0
+info:
+  title: Agent API
+  description: |
+    Registre d'outils (Tool Calling) exposés au LLM local Strata AI
+    (Qwen-3.8-Flash-Next, API compatible OpenAI) et exécution d'un appel d'outil.
+    Aucune donnée ne quitte l'environnement : l'inférence est 100 % locale.
+  version: 1.0.0
+  contact:
+    name: WcPregnant Team
+
+servers:
+  - url: http://localhost:8080
+    description: Développement local
+  - url: http://wcpregnant-service
+    description: Cluster Kubernetes
+
+paths:
+  /agent/chat:
+    post:
+      tags:
+        - Agent
+      summary: Conversation agentique avec le modèle local
+      description: >
+        Envoie une requête en langage naturel au modèle servi localement par Strata AI
+        (Qwen-3.8-Flash-Next, API compatible OpenAI). Le modèle peut appeler les outils
+        du registre : chaque appel d'outil est intercepté par le serveur, exécuté par les
+        services métier existants (Haversine, CRUD, notation) avec le RBAC en vigueur,
+        puis le résultat est renvoyé au modèle pour la réponse finale.
+      operationId: chatWithAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentChatRequest'
+      responses:
+        200:
+          description: Réponse finale du modèle, avec la trace des outils exécutés
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentChatResponse'
+        400:
+          description: Message vide ou arguments invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        401:
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        403:
+          description: Rôle insuffisant (ADMIN requis pour le CRUD)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        503:
+          description: Serveur d'inférence local injoignable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /agent/tools:
+    get:
+      tags:
+        - Agent
+      summary: Liste des outils agentiques au format OpenAI Function Calling
+      description: |
+        Retourne le registre des outils que le modèle local peut appeler :
+        recherche de proximité Haversine, consultation d'un équipement et
+        gestion CRUD des équipements.
+      operationId: getAgentTools
+      responses:
+        '200':
+          description: Registre des outils (tableau d'enveloppes OpenAI)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - basicAuth: []
+
+  /agent/tools/call:
+    post:
+      tags:
+        - Agent
+      summary: Exécute un outil du registre
+      description: |
+        L'appel est validé contre le registre : un outil inconnu ou des
+        arguments invalides renvoient un 400. Les opérations d'écriture
+        exigent le rôle ADMIN (RBAC identique aux endpoints REST).
+      operationId: callAgentTool
+      requestBody:
+        description: Appel d'outil émis par le modèle
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToolCallRequest'
+      responses:
+        '200':
+          description: Résultat normalisé de l'appel d'outil
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Outil inconnu ou arguments invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Rôle insuffisant (ADMIN requis pour le CRUD)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Équipement non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security:
+        - basicAuth: []
+
+components:
+  schemas:
+    ToolCallRequest:
+      type: object
+      description: Appel d'outil au format OpenAI Function Calling
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Nom de l'outil à exécuter
+        arguments:
+          type: object
+          description: Arguments JSON de l'outil (latitude, longitude, rayon_metres, action, id, payload...)
+    ApiError:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: Code HTTP
+        message:
+          type: string
+          description: Message d'erreur
+        timestamp:
+          type: string
+          format: date-time
+          description: Horodatage de l'erreur
+      required:
+        - status
+        - message
+        - timestamp
+
+    AgentChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Question ou instruction exprimée en langage naturel
+          example: "Y a-t-il des toilettes accessibles près de la mairie de Paris ?"
+        position:
+          $ref: './ObjectDefinitions.yaml#/components/schemas/GeoPosition'
+          description: Position de l'utilisateur, injectée dans le contexte pour aider le modèle
+        maxIterations:
+          type: integer
+          minimum: 1
+          maximum: 10
+          description: Nombre maximal d'allers-retours avec le modèle (borné par la configuration)
+          example: 4
+
+    AgentChatResponse:
+      type: object
+      properties:
+        answer:
+          type: string
+          description: Réponse finale générée par le modèle local
+        model:
+          type: string
+          description: Modèle d'inférence utilisé (servi localement)
+        iterations:
+          type: integer
+          description: Nombre d'appels effectués auprès du modèle
+        toolCalls:
+          type: array
+          description: Trace des outils interceptés et exécutés côté serveur
+          items:
+            $ref: '#/components/schemas/AgentToolCallTrace'
+        elapsedMillis:
+          type: integer
+          description: Durée totale de la conversation agentique en millisecondes
+
+    AgentToolCallTrace:
+      type: object
+      required:
+        - tool
+        - status
+      properties:
+        tool:
+          type: string
+          description: Nom de l'outil exécuté
+        arguments:
+          type: object
+          description: Arguments transmis à l'outil
+        result:
+          type: object
+          description: Résultat renvoyé par l'outil
+        status:
+          type: string
+          enum:
+            - OK
+            - ERROR
+          description: État de l'exécution de l'outil
+        message:
+          type: string
+          description: Message d'erreur le cas échéant
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic

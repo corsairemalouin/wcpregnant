@@ -68,7 +68,7 @@ public class AppSecurityConfiguration {
     @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/toilets/**", "/toilets", "/api/**") // Ajoute /toilets
+                .securityMatcher("/toilets/**", "/toilets", "/api/**", "/agent/**") // Ajoute /toilets et les endpoints agentiques
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/toilets/**", "/toilets").hasRole("ADMIN")

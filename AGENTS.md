@@ -14,6 +14,14 @@ Toute la documentation vit dans [`documentation/`](documentation/README.md), org
 - Ne jamais modifier le comportement métier existant lors d'ajouts de documentation ou de tests.
 - Validation : `mvn -q test` (backend), `npm run build` / `npm run test` (frontend) avant de conclure.
 
+## Objectif agentique — Tool Calling
+
+- **Stack backend** : Java 25, Spring Boot 4.1.0, Maven, PostgreSQL. **Stack frontend** : Angular 20, TypeScript 5.8, Leaflet.
+- **Inférence** : **Strata AI** (`Qwen-3.8-Flash-Next`) servi **en local** (API compatible OpenAI) — aucune donnée ne quitte l'environnement.
+- **But** : transformer l'application CRUD existante en **système agentique avec Tool Calling** (concours **ASUS Agent Computer Challenge**) : recherche de proximité Haversine, gestion des équipements, vérification RBAC.
+- **Contraintes** : architecture en couches existante respectée, couverture JaCoCo maintenue, **zéro fuite de données vers le cloud (100 % local)**.
+- Règle exécutable : `.clinerules/09-agent-ai-tool-calling.md` · détail : [`documentation/01-exigences/objectif-agentique.md`](documentation/01-exigences/objectif-agentique.md).
+
 ## Configuration Cline
 
 - Règles de workspace : `.clinerules/` (règles universelles + règles conditionnelles par `paths`)

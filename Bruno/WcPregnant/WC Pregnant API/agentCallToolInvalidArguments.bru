@@ -1,0 +1,26 @@
+meta {
+  name: agentCallToolInvalidArguments
+  type: http
+  seq: 12
+}
+
+post {
+  url: http://localhost:8080/agent/tools/call
+  body: json
+  auth: basic
+}
+
+auth:basic {
+  username: manu
+  password: manu
+}
+
+body:json {
+  {
+    "name": "search_toilettes_proches",
+    "arguments": {
+      "latitude": 200,
+      "longitude": 2.35
+    }
+  }
+}

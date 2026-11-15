@@ -10,7 +10,7 @@ Les documents jusqu'ici dispersés à la racine, dans `WcPregnantService/`, `WcP
 
 | # | Phase | Documents |
 |---|-------|-----------|
-| 1 | **Exigences** | [contexte-et-objectifs.md](01-exigences/contexte-et-objectifs.md) · [exigences-metier.md](01-exigences/exigences-metier.md) · [contraintes-techniques.md](01-exigences/contraintes-techniques.md) · [prompt-initial-copilot.md](01-exigences/prompt-initial-copilot.md) |
+| 1 | **Exigences** | [contexte-et-objectifs.md](01-exigences/contexte-et-objectifs.md) · [exigences-metier.md](01-exigences/exigences-metier.md) · [contraintes-techniques.md](01-exigences/contraintes-techniques.md) · [objectif-agentique.md](01-exigences/objectif-agentique.md) · [prompt-initial-copilot.md](01-exigences/prompt-initial-copilot.md) |
 | 2 | **Conception** | [architecture.md](02-conception/architecture.md) · [modele-de-donnees.md](02-conception/modele-de-donnees.md) · [diagrammes.md](02-conception/diagrammes.md) · [contrat-api-openapi.md](02-conception/contrat-api-openapi.md) |
 | 3 | **Implémentation** | [conventions-de-code.md](03-implementation/conventions-de-code.md) · [frontend-angular.md](03-implementation/frontend-angular.md) |
 | 4 | **Tests** | [strategie-de-tests.md](04-tests/strategie-de-tests.md) · [javadoc-et-couverture-tests.md](04-tests/javadoc-et-couverture-tests.md) |
@@ -81,10 +81,10 @@ Certains fichiers restent à leur emplacement d'origine parce qu'ils sont consom
 
 | Phase | Statut |
 |---|---|
-| 1 — Exigences | ✅ Rédigée (convertie depuis le `.docx` et le brief Copilot) |
-| 2 — Conception | ✅ Rédigée (architecture, modèle de données, diagrammes Mermaid, contrat API) |
+| 1 — Exigences | ✅ Rédigée (convertie depuis le `.docx` et le brief Copilot) + objectif agentique Tool Calling et son **état d'implémentation** |
+| 2 — Conception | ✅ Rédigée (architecture, modèle de données, diagrammes Mermaid, contrat API) — §7.3 décrit la couche agentique (registre d'outils, boucle Reason → Act → Observe, configuration d'inférence) |
 | 3 — Implémentation | ✅ Rédigée (conventions de code, frontend Angular) |
-| 4 — Tests | ✅ Rédigée (stratégie de tests, couverture JaCoCo) |
+| 4 — Tests | ✅ Rédigée (stratégie de tests, couverture JaCoCo) — tests de la couche agent (registre, executor, orchestrateur, client d'inférence, API) et **test bout en bout** `AgentChatEndToEndTest` avec faux serveur d'inférence local |
 | 5 — Déploiement | ✅ Rédigée (environnement, Docker, Kubernetes) |
 | 6 — Outils | ✅ Rédigée (configuration Cline) |
 

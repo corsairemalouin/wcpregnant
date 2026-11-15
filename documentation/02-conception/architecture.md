@@ -248,6 +248,71 @@ Les manifestes détaillés sont décrits dans [kubernetes.md](../05-deploiement/
 | **Logs** | Logging structuré pour l'observabilité |
 | **Monitoring** | Export des métriques Prometheus |
 | **Sécurité** | Validation de tokens OAuth2 / JWT |
+| **Agent / Tool Calling** | ✅ **Implémenté** — couche d'orchestration **locale** (Strata AI, API compatible OpenAI) exposant les services existants comme outils, sans modifier les couches `web`/`service` — voir §7.3 et [objectif-agentique.md](../01-exigences/objectif-agentique.md) |
+
+### 7.3 Couche agentique (Tool Calling)
+
+La couche agent est un **adaptateur** posé au-dessus des interfaces de service existantes : elle ne contient ni SQL, ni mapping manuel, et hérite du RBAC déjà en place.
+
+| Élément | Rôle |
+|---|---|
+| `agent/tool/ToolCall`, `agent/tool/ToolResult` | types immuables représentant un appel d'outil et son résultat |
+| `agent/tool/ToiletToolRegistry` | registre des 3 outils (`search_toilettes_proches`, `get_details_toilette`, `gerer_equipement_crud`) au format OpenAI Function Calling |
+| `agent/tool/CrudAction` | énumération des actions CRUD acceptées (`CREATE`, `UPDATE`, `DELETE`) |
+| `agent/tool/ToiletToolExecutor` | validation stricte des arguments puis délégation à `ToiletteCrudService`, `ToiletteProximityService`, `ToiletteRatingService` |
+| `agent/AgentService` (interface) | contrat de la conversation agentique : `chat(message, position, maxIterations)` |
+| `agent/AgentServiceImpl` | orchestrateur **Reason → Act → Observe** : prompt système, envoi au modèle, interception des `tool_calls`, exécution, réinjection des observations |
+| `agent/inference/InferenceClient` (interface) | abstraction du serveur d'inférence (DIP) — testable sans réseau |
+| `agent/inference/LocalInferenceClient` | appel HTTP `POST {base-url}/chat/completions` du serveur **local** Strata AI via le `HttpClient` JDK, timeout explicite |
+| `agent/inference/ChatMessage`, `InferenceRequest`, `InferenceResponse`, `ToolCallPayload` | records du payload OpenAI-compatible (rôles `system`/`user`/`assistant`/`tool`) |
+| `agent/inference/InferenceException` | erreur métier traduite en **503** quand le serveur local est injoignable |
+| `web/AgentApiImpl` | endpoints `GET /agent/tools`, `POST /agent/tools/call` et `POST /agent/chat` (contrat `api/AgentAPI.yaml`) |
+| `config/AgentToolConfig` | rayon par défaut / maximal, nombre maximal de résultats, URL du modèle, timeout et nombre maximal d'iterations, alimenté par `application.properties` ; fabrique le bean `InferenceClient` |
+
+#### Boucle agentique `POST /agent/chat`
+
+| Étape | Ce qui se passe |
+|---|---|
+| 1. Seed | un message `system` (rôle, limites, langue) est ajouté ; si une `position` est fournie, elle est injectée dans le message `user` pour permettre les recherches de proximité |
+| 2. Reason | `LocalInferenceClient` envoie `{model, messages, tools}` au serveur local ; le modèle répond soit par du texte, soit par des `tool_calls` |
+| 3. Act | chaque `tool_call` est converti en `ToolCall` et exécuté par `ToiletToolExecutor` → appel direct des services métier existants (RBAC appliqué) |
+| 4. Observe | le résultat (JSON de l'outil ou `ApiError`) est réinjecté comme message `tool` et la boucle recommence |
+| 5. Stop | la boucle s'arrête dès qu'une réponse textuelle est produite ou quand `maxIterations` est atteint (message de garde-fou) |
+
+La réponse expose `answer`, `model`, `iterations` et la trace `toolCalls` (`tool`, `arguments`, `status`, `output`) — utile pour l'audit et la démonstration du concours.
+
+#### Configuration de l'inférence (100 % locale)
+
+| Clé `application.properties` | Variable d'environnement | Défaut |
+|---|---|---|
+| `agent.inference.base-url` | `AGENT_INFERENCE_BASE_URL` | `http://localhost:8000/v1` |
+| `agent.inference.model` | `AGENT_MODEL` | `Qwen-3.8-Flash-Next` |
+| `agent.inference.timeout-seconds` | `AGENT_TIMEOUT_SECONDS` | `30` |
+| `agent.max-iterations` | `AGENT_MAX_ITERATIONS` | `4` |
+| `agent.tools.default-radius` / `agent.tools.max-radius` | — | `200.0` / `5000.0` m |
+| `agent.tools.max-results` | — | `10` |
+
+Aucune URL, clé ou nom de modèle n'est écrit en dur dans le code : `docker-compose.yml` et `k8s/configmap.yaml` injectent ces valeurs, et les tests d'intégration pointent volontairement vers un port fermé (`http://127.0.0.1:59999/v1`) pour vérifier le comportement **503** sans appel réseau.
+
+#### Contrat d'erreur des appels d'outils
+
+Toute invalidité d'un appel d'outil est renvoyée sous la forme du schéma `ApiError` (`status`, `message`, `timestamp`) afin que le LLM puisse se corriger :
+
+| Cas | Code HTTP | Message |
+|---|---|---|
+| nom d'outil absent ou vide | 400 | `tool name is mandatory` |
+| `arguments` qui n'est pas un objet JSON | 400 | `arguments must be a JSON object` |
+| outil inconnu | 400 | `Unknown tool 'x'. Available tools: [...]` |
+| action CRUD inconnue | 400 | `Unknown action 'TELEPORT'. Allowed values: [CREATE, UPDATE, DELETE]` |
+| latitude / longitude hors bornes | 400 | `latitude must be between -90 and 90` |
+| rayon nul ou trop grand | 400 | `rayon_metres must be greater than 0` / `rayon_metres must not exceed 5000.0` |
+| `id` manquant pour `UPDATE` / `DELETE` | 400 | `id is required` |
+| `payload` absent ou mal formé | 400 | `payload is required for CREATE and UPDATE actions` |
+| `libelle` vide | 400 | `libelle is mandatory` |
+| `adress` / `codePostal` absents | 400 | `adress is mandatory`, `codePostal is mandatory` |
+| `grade` absent ou incomplet | 400 | `grade is mandatory (proprete, accueil, espace)`, `grade.proprete is mandatory` |
+| équipement inexistant | 404 | `Toilette not found with id: 999` |
+| rôle insuffisant pour une écriture | 403 | `The tool gerer_equipement_crud requires the ADMIN role` |
 
 ---
 
@@ -262,7 +327,10 @@ WcPregnant/
 │   │   │   ├── config/                         ← ToiletteServiceConfig, AppSecurityConfiguration
 │   │   │   ├── service/                        ← interfaces, bo/, strategy/, utils/
 │   │   │   │   └── impl/                       ← ToiletteServiceImpl, CustomerServiceImpl
-│   │   │   ├── web/                            ← ToilettesApiImpl, CustomerApiImpl, dto/ (généré)
+│   │   │   ├── agent/                          ← AgentService, AgentServiceImpl
+│   │   │   │   ├── tool/                       ← ToolCall, ToolResult, ToiletToolRegistry, ToiletToolExecutor
+│   │   │   │   └── inference/                  ← InferenceClient, LocalInferenceClient, ChatMessage, InferenceRequest/Response
+│   │   │   ├── web/                            ← ToilettesApiImpl, CustomerApiImpl, AgentApiImpl, dto/ (généré)
 │   │   │   └── bdd/
 │   │   │       ├── dao/                        ← ToiletDAO, AdressDAO, GeoPositionDAO, …
 │   │   │       ├── mapper/                     ← MapStruct

@@ -100,6 +100,25 @@ docker run -e POSTGRES_PASSWORD=changeme -e POSTGRES_DB=wcpregnant -p 5432:5432 
 
 > En local sans PostgreSQL, `application.properties` utilise H2 en mémoire (`spring.h2.console.enabled=true`).
 
+### 1.7 Serveur d'inférence local (Strata AI) — optionnel
+
+La couche agentique (`/agent/tools`, `/agent/tools/call`, `/agent/chat`) fonctionne sans base externe, mais `/agent/chat` nécessite un serveur d'inférence **accessible sur le réseau privé**, exposant une API compatible OpenAI (`POST {base-url}/chat/completions`).
+
+| Variable d'environnement | Clé `application.properties` | Défaut |
+|---|---|---|
+| `AGENT_INFERENCE_BASE_URL` | `agent.inference.base-url` | `http://localhost:8000/v1` |
+| `AGENT_MODEL` | `agent.inference.model` | `Qwen-3.8-Flash-Next` |
+| `AGENT_TIMEOUT_SECONDS` | `agent.inference.timeout-seconds` | `30` |
+| `AGENT_MAX_ITERATIONS` | `agent.max-iterations` | `4` |
+
+```powershell
+$env:AGENT_INFERENCE_BASE_URL = "http://localhost:8000/v1"
+$env:AGENT_MODEL              = "Qwen-3.8-Flash-Next"
+mvn spring-boot:run
+```
+
+> **Aucune clé API n'est requise** : le serveur est local. Si le modèle n'est pas joignable, `POST /agent/chat` renvoie **503** et le CRUD reste pleinement utilisable. Les tests (`mvn test`) ne contactent jamais le serveur : l'inférence est mockée (Mockito) ou pointée vers un port fermé.
+
 ---
 
 ## 2. Outillage CI/CD et Kubernetes

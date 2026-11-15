@@ -21,6 +21,12 @@ services:
       SPRING_DATASOURCE_USERNAME: wcpregnant
       SPRING_DATASOURCE_PASSWORD: changeme
       JAVA_OPTS: "-Xms256m -Xmx512m"
+      # Couche agentique (Tool Calling) : inférence locale Strata AI.
+      # Surchargeable via un fichier .env ou le shell (jamais de clé en dur).
+      AGENT_INFERENCE_BASE_URL: ${AGENT_INFERENCE_BASE_URL:-http://host.docker.internal:8000/v1}
+      AGENT_MODEL: ${AGENT_MODEL:-Qwen-3.8-Flash-Next}
+      AGENT_TIMEOUT_SECONDS: ${AGENT_TIMEOUT_SECONDS:-30}
+      AGENT_MAX_ITERATIONS: ${AGENT_MAX_ITERATIONS:-4}
     ports:
       - "8080:8080"
 

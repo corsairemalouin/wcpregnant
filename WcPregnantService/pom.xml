@@ -252,6 +252,27 @@
                             </configOptions>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>generate-agent-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/api/AgentAPI.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>org.manu.wcpregnant.web.api</apiPackage>
+                            <modelPackage>org.manu.wcpregnant.web.dto</modelPackage>
+                            <configOptions>
+                                <interfaceOnly>true</interfaceOnly>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <useTags>true</useTags>
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                                <generateConstructorWithAllArgs>true</generateConstructorWithAllArgs>
+                                <additionalModelTypeAnnotations>@lombok.Builder @lombok.Data</additionalModelTypeAnnotations>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+
                 </executions>
             </plugin>
         </plugins>

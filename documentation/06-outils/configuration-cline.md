@@ -19,6 +19,7 @@ Toutes les règles du workspace sont combinées en un ensemble unique. Les fichi
 | `06-frontend-angular.md` | Angular 20, Leaflet, Karma | `WcPregnantApp/**` |
 | `07-devops-deploiement.md` | Docker, K8s, CI | `Dockerfile`, `docker-compose.yml`, `k8s/**`, `.github/**` |
 | `08-documentation.md` | style documentaire | `**/*.md`, `documentation/**` |
+| `09-agent-ai-tool-calling.md` | objectif agentique, Tool Calling, inférence locale Strata AI, RBAC | toujours |
 
 **Activer/désactiver** : icône balance en bas du panneau Cline → onglet *Rules*. Une règle conditionnelle désactivée ne s'active même si les paths correspondent.
 

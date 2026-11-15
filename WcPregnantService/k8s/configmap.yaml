@@ -14,4 +14,11 @@ data:
     app.distance.max=100.0
     app.result.max=5
     server.servlet.context-path=/api
+  # Paramètres de la couche agentique (Tool Calling) injectés au Deployment
+  # via envFrom/configMapKeyRef. L'inférence reste 100 % locale : l'URL pointe
+  # vers le serveur Strata AI du réseau privé (à adapter à votre installation).
+  AGENT_INFERENCE_BASE_URL: http://strata-ai:8000/v1
+  AGENT_MODEL: Qwen-3.8-Flash-Next
+  AGENT_TIMEOUT_SECONDS: "30"
+  AGENT_MAX_ITERATIONS: "4"
 

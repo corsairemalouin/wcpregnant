@@ -38,6 +38,28 @@ spec:
                   key: db-password
             - name: JAVA_OPTS
               value: "-Xms256m -Xmx512m"
+            # Inférence agentique (Strata AI local) : valeurs injectées
+            # depuis le ConfigMap, jamais en dur dans le Deployment.
+            - name: AGENT_INFERENCE_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: wcpregnant-config
+                  key: AGENT_INFERENCE_BASE_URL
+            - name: AGENT_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: wcpregnant-config
+                  key: AGENT_MODEL
+            - name: AGENT_TIMEOUT_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: wcpregnant-config
+                  key: AGENT_TIMEOUT_SECONDS
+            - name: AGENT_MAX_ITERATIONS
+              valueFrom:
+                configMapKeyRef:
+                  name: wcpregnant-config
+                  key: AGENT_MAX_ITERATIONS
           volumeMounts:
             - name: app-config
               mountPath: /etc/app

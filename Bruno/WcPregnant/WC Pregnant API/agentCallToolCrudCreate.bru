@@ -1,0 +1,31 @@
+meta {
+  name: agentCallToolCrudCreate
+  type: http
+  seq: 13
+}
+
+post {
+  url: http://localhost:8080/agent/tools/call
+  body: json
+  auth: basic
+}
+
+auth:basic {
+  username: admin
+  password: admin
+}
+
+body:json {
+  {
+    "name": "gerer_equipement_crud",
+    "arguments": {
+      "action": "CREATE",
+      "payload": {
+        "libelle": "WC Agent",
+        "adress": { "ville": "Paris", "codePostal": "75010" },
+        "position": { "latitude": 48.87, "longitude": 2.35 },
+        "grade": { "proprete": 5, "accueil": 6, "espace": 7 }
+      }
+    }
+  }
+}
