@@ -24,6 +24,23 @@ Application de localisation de toilettes publiques accessibles aux personnes enc
 
 ## Démarrage rapide
 
+### Démarrage et arrêt complets (recommandé)
+
+```powershell
+# Windows / PowerShell
+.\start.ps1     # PostgreSQL (Docker) + API sur 8081 + frontend Angular sur 4200
+.\stop.ps1      # arrêt complet de la stack
+```
+
+```bash
+# Linux / macOS
+./start.sh      # même orchestration
+./stop.sh
+```
+
+Options disponibles (`-Mode docker`, `-NoDb`, `-NoFront`, `-DryRun`, `-PurgeVolumes`, `-Status`) :
+voir [documentation/05-deploiement/scripts-de-demarrage.md](documentation/05-deploiement/scripts-de-demarrage.md).
+
 ### Backend
 
 ```powershell

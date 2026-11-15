@@ -14,7 +14,7 @@ Les documents jusqu'ici dispersés à la racine, dans `WcPregnantService/`, `WcP
 | 2 | **Conception** | [architecture.md](02-conception/architecture.md) · [modele-de-donnees.md](02-conception/modele-de-donnees.md) · [diagrammes.md](02-conception/diagrammes.md) · [contrat-api-openapi.md](02-conception/contrat-api-openapi.md) |
 | 3 | **Implémentation** | [conventions-de-code.md](03-implementation/conventions-de-code.md) · [frontend-angular.md](03-implementation/frontend-angular.md) |
 | 4 | **Tests** | [strategie-de-tests.md](04-tests/strategie-de-tests.md) · [javadoc-et-couverture-tests.md](04-tests/javadoc-et-couverture-tests.md) |
-| 5 | **Déploiement** | [environnement-developement.md](05-deploiement/environnement-developement.md) · [build-et-deploiement.md](05-deploiement/build-et-deploiement.md) · [kubernetes.md](05-deploiement/kubernetes.md) |
+| 5 | **Déploiement** | [environnement-developement.md](05-deploiement/environnement-developement.md) · [build-et-deploiement.md](05-deploiement/build-et-deploiement.md) · [scripts-de-demarrage.md](05-deploiement/scripts-de-demarrage.md) · [kubernetes.md](05-deploiement/kubernetes.md) |
 | 6 | **Outils & gouvernance** | [configuration-cline.md](06-outils/configuration-cline.md) · [workflow-git.md](06-outils/workflow-git.md) |
 
 ---
@@ -56,6 +56,7 @@ Certains fichiers restent à leur emplacement d'origine parce qu'ils sont consom
 
 | Artefact | Emplacement | Document qui le référence |
 |---|---|---|
+| `start.ps1`, `stop.ps1`, `start.sh`, `stop.sh`, `.env.example` | racine du monorepo | [scripts-de-demarrage.md](05-deploiement/scripts-de-demarrage.md) |
 | `ToiletAPI.yaml`, `CustomerAPI.yaml`, `ObjectDefinitions.yaml`, `Siren.json` | `WcPregnantService/src/main/resources/api/` | [contrat-api-openapi.md](02-conception/contrat-api-openapi.md) |
 | `Dockerfile`, `docker-compose.yml` | `WcPregnantService/` | [build-et-deploiement.md](05-deploiement/build-et-deploiement.md) |
 | Manifestes Kubernetes + `deploy.ps1` / `deploy.sh` | `WcPregnantService/k8s/` | [kubernetes.md](05-deploiement/kubernetes.md) |
@@ -85,7 +86,7 @@ Certains fichiers restent à leur emplacement d'origine parce qu'ils sont consom
 | 2 — Conception | ✅ Rédigée (architecture, modèle de données, diagrammes Mermaid, contrat API) — §7.3 décrit la couche agentique (registre d'outils, boucle Reason → Act → Observe, configuration d'inférence) |
 | 3 — Implémentation | ✅ Rédigée (conventions de code, frontend Angular) — frontend enrichi de l'**assistant agentique** (composant de conversation, service `/agent`, synchronisation carte Leaflet) |
 | 4 — Tests | ✅ Rédigée (stratégie de tests, couverture JaCoCo) — tests de la couche agent (registre, executor, orchestrateur, client d'inférence, API) et **test bout en bout** `AgentChatEndToEndTest` avec faux serveur d'inférence local |
-| 5 — Déploiement | ✅ Rédigée (environnement, Docker, Kubernetes) |
+| 5 — Déploiement | ✅ Rédigée (environnement, Docker, Kubernetes) + **scripts de démarrage et d'arrêt complet** de la solution (`start.ps1`/`stop.ps1`, `start.sh`/`stop.sh`) |
 | 6 — Outils | ✅ Rédigée (configuration Cline + **workflow Git : un commit/push et une maj de doc par évolution fonctionnelle**) |
 
 > **Note** : les documents historiques rédigés en anglais (`architecture.md`, `environnement-developement.md`, `kubernetes.md`, `frontend-angular.md`) ont été **traduits en français** et alignés sur le code réel (interfaces `ToiletteCrudService` / `ToiletteProximityService`, stratégie `DistanceCalculator`, Docker multi-stage Temurin 26, workflow CI existant).

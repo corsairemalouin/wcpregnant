@@ -53,6 +53,10 @@ docker-compose up --build
 
 L'application est accessible sur <http://localhost:8080>
 
+> 💡 Les scripts racine [`start.ps1`](../../start.ps1) / [`stop.ps1`](../../stop.ps1)
+> (et `start.sh` / `stop.sh`) orchestrent la même chose — base, API et frontend — avec un
+> arrêt complet : voir [scripts-de-demarrage.md](scripts-de-demarrage.md).
+
 ## 5. Déployer sur Kubernetes
 
 Éditez `k8s/deployment.yaml` pour remplacer `ghcr.io/<OWNER>/wcpregnant:latest` par votre image publiée.
