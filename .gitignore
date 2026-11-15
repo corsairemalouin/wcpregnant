@@ -20049,3 +20049,14 @@ target_test_errors.txt
 target_test_output.txt
 .idea/
 .vscode/
+/WcPregnantService/target/test-classes/org/manu/wcpregnant/bdd/mapper/GraduationDAOMapperTest.class
+/WcPregnantService/target/test-classes/org/manu/wcpregnant/bdd/mapper/ToiletteDAOMapperTest.class
+/WcPregnantService/target/test-classes/org/manu/wcpregnant/bdd/steps/ToiletApiSteps.class
+/WcPregnantService/target/test-classes/org/manu/wcpregnant/bdd/ApiTestContext.class
+/WcPregnantService/target/test-classes/org/manu/wcpregnant/bdd/NonRegressionApiTest.class
+/WcPregnantService/target/test-classes/org/manu/wcpregnant/service/strategy/HaversineDistanceCalculatorTest.class
+/WcPregnantService/target/test-classes/org/manu/wcpregnant/service/utils/GeoPositionUtilsTest.class
+/WcPregnantService/target/test-classes/org/manu/wcpregnant/service/CustomerServiceImplTest.class
+/WcPregnantService/target/test-classes/org/manu/wcpregnant/service/test.json
+/WcPregnantService/target/test-classes/org/manu/wcpregnant/service/ToiletteServiceImplUnitTest.class
+/WcPregnantService/target/test-classes/org/manu/wcpregnant/web/ToilettesApiImplTest$GradeTests.class
