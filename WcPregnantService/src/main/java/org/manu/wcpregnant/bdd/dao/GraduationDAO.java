@@ -44,6 +44,13 @@ public class GraduationDAO {
     @Column(name = "graded_at")
     private Instant gradedAt;
 
+    /**
+     * Constructeur par défaut : horodate la note à l'instant de création de l'entité.
+     *
+     * <p>Le champ {@code gradedAt} n'est jamais laissé {@code null}, ce qui garantit
+     * que chaque entrée de l'historique des visites est datée, même lorsque la note
+     * provient d'un seed de démonstration.</p>
+     */
     public GraduationDAO() {
         this.gradedAt = Instant.now();
     }
