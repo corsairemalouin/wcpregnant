@@ -223,6 +223,43 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
 2. Recharger les projets (vérifier que `pom.xml` est reconnu) ;
 3. Exécuter les objectifs : Lifecycle → `clean` → `package`.
 
+### Plugins Android (optionnel — développement mobile)
+
+Le support Android **n'est pas bundled** avec IntelliJ IDEA : il faut installer les deux
+plugins du JetBrains Marketplace, comme l'indique la documentation officielle
+([Create your first Android application](https://jetbrains.com/help/idea/create-your-first-android-application.html)).
+
+| Plugin | Page Marketplace | Plugin ID | Version compatible IDEA 2026.2 (build `262.10968.63`) |
+|---|---|---|---|
+| **Android** | [plugin/22989-android](https://plugins.jetbrains.com/plugin/22989-android) | `org.jetbrains.android` | `262.10968.63` |
+| **Android Design Tools** | [plugin/22990-android-design-tools](https://plugins.jetbrains.com/plugin/22990-android-design-tools) | `com.android.tools.design` | `262.10968.63` |
+
+> ⚠️ La compatibilité est indexée sur le **build de l'IDE** : les versions `263.x` (Android
+> Studio Quail 2) visent IDEA 2026.3 et **ne s'installent pas** sur IDEA 2026.2. Choisir la
+> version dont la plage `since … until` couvre le build affiché dans
+> *Aide → À propos* (ici `IU-262.10968.63`).
+
+**Méthode recommandée (interface)** : *Réglages → Plugins → Marketplace*, rechercher
+« Android » puis « Android Design Tools », **Install**, puis **Restart IDE**.
+
+**Méthode par archive** (utilisée lorsque l'interface n'est pas accessible) : télécharger les
+`.zip` du Marketplace et les déposer dans le dossier des plugins de l'instance, puis relancer IDEA :
+
+```powershell
+# Dossier des plugins de l'instance en cours
+$plugins = "$env:LOCALAPPDATA\JetBrains\IntelliJIdea2026.2\plugins"
+
+curl.exe -L "https://plugins.jetbrains.com/plugin/download?rel=true&updateId=1171966" `
+  -o "$plugins\android-262.10968.63.zip"          # Android (org.jetbrains.android)
+
+curl.exe -L "https://plugins.jetbrains.com/plugin/download?rel=true&updateId=1171993" `
+  -o "$plugins\design-tools-262.10968.63.zip"     # Android Design Tools (com.android.tools.design)
+```
+
+Les archives sont chargées au **démarrage** suivant de l'IDE ; elles apparaissent ensuite dans
+*Réglages → Plugins → Installées*. Le plugin *Android Design Tools* est notamment requis pour
+les aperçus **Jetpack Compose** et les outils de layout.
+
 ---
 
 ## 4. Checklist de mise en place
@@ -236,6 +273,7 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
 - [ ] Tests passants : `mvn test`
 - [ ] Docker Desktop démarré (pour les images locales)
 - [ ] `kubectl` configuré vers un cluster (pour les commandes K8s)
+- [ ] Plugins **Android** et **Android Design Tools** installés dans l'IDE si un module Android est prévu
 
 ---
 
@@ -274,6 +312,8 @@ cd k8s
 | Version de Java différente | Vérifier que `java -version` renvoie Java 25 ; définir la variable `JAVA_HOME` |
 | Échec de construction de l'image Docker | S'assurer que `mvn package` a bien été exécuté pour produire `target/*.jar` |
 | Contexte `kubectl` non défini | Exécuter `kubectl config current-context`, puis `kubectl config use-context <nom-du-cluster>` |
+| `wsl --terminate docker-desktop` renvoie `Wsl/0x80070422` (« Le service ne peut pas être démarré… ») | Le service WSL est désactivé sur Windows : relancer `wsl --install` / activer la fonctionnalité *Windows Subsystem for Linux*, ou basculer Docker Desktop sur l'arrière-plan **Hyper-V** (*Settings → Resources → Virtualization*). Sans WSL ni Hyper-V, Docker Desktop ne peut pas démarrer son moteur |
+| Plugin Marketplace non chargé après installation | Redémarrer l'IDE : les archives déposées dans `%LOCALAPPDATA%\JetBrains\IntelliJIdea<version>\plugins` ne sont lues qu'au démarrage |
 | Le pod Kubernetes ne démarre pas | Consulter les logs : `kubectl logs <nom-du-pod> -n wcpregnant` ; consulter les événements : `kubectl describe pod <nom-du-pod> -n wcpregnant` |
 
 ---
