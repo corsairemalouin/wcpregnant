@@ -20,6 +20,7 @@ Toutes les règles du workspace sont combinées en un ensemble unique. Les fichi
 | `07-devops-deploiement.md` | Docker, K8s, CI | `Dockerfile`, `docker-compose.yml`, `k8s/**`, `.github/**` |
 | `08-documentation.md` | style documentaire | `**/*.md`, `documentation/**` |
 | `09-agent-ai-tool-calling.md` | objectif agentique, Tool Calling, inférence locale Strata AI, RBAC | toujours |
+| `11-graphify-graphe-de-connaissances.md` | interrogation du graphe `graphify-out/` avant toute recherche dans le code | toujours |
 
 **Activer/désactiver** : icône balance en bas du panneau Cline → onglet *Rules*. Une règle conditionnelle désactivée ne s'active même si les paths correspondent.
 
@@ -36,6 +37,7 @@ Chaque skill est un dossier contenant un `SKILL.md` avec `name` (identique au no
 | `k8s-deploy` | déploiement Docker/K8s | `docs/troubleshooting.md` |
 | `bruno-api-test` | requêtes et scénarios d'API | `templates/request.bru` |
 | `proximity-search` | calcul de distance, stratégies, optimisations | — |
+| `graphify` | interrogation du graphe de connaissances du monorepo (dépendances, impact, hubs) | voir [graphify.md](graphify.md) |
 
 **Déclenchement** : automatique via la description, ou explicite avec un slash command (ex. `/javadoc-test-coverage`).
 
@@ -43,7 +45,14 @@ Chaque skill est un dossier contenant un `SKILL.md` avec `name` (identique au no
 
 `AGENTS.md` à la racine est lu par Cline et par les autres agents (Copilot, Junie). Il reprend l'essentiel des règles universelles.
 
-## 4. Vérification
+## 4. Serveur MCP
+
+Les serveurs MCP de Cline sont déclarés dans `~/.cline/data/settings/cline_mcp_settings.json`
+(onglet *MCP Servers* du panneau Cline). Le projet y ajoute le serveur **graphify** (stdio) qui
+expose le graphe de connaissances sans lecture de fichier — configuration détaillée dans
+[graphify.md](graphify.md).
+
+## 5. Vérification
 
 ```powershell
 # Liste des règles et skills
@@ -53,6 +62,6 @@ Get-ChildItem .clinerules, .cline/skills -Recurse -File
 powershell -File .cline/skills/javadoc-test-coverage/scripts/coverage-check.ps1 -Threshold 80
 ```
 
-## 5. Le dossier `WcPregnantService/.cline/`
+## 6. Le dossier `WcPregnantService/.cline/`
 
 Le sous-projet conserve un ancien dispositif (`config/cline-config.json`, `prompt/javadoc-tu.md`, `workflows/*.ps1`). Il est remplacé par les skills ci-dessus ; le prompt `javadoc-tu.md` reste utilisable comme référence, mais la source de vérité est désormais `.cline/skills/javadoc-test-coverage/`.

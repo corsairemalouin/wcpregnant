@@ -30,6 +30,14 @@ Toute la documentation vit dans [`documentation/`](documentation/README.md), org
 - **Contraintes** : architecture en couches existante respectée, couverture JaCoCo maintenue, **zéro fuite de données vers le cloud (100 % local)**.
 - Règle exécutable : `.clinerules/09-agent-ai-tool-calling.md` · détail : [`documentation/01-exigences/objectif-agentique.md`](documentation/01-exigences/objectif-agentique.md).
 
+## Graphe de connaissances — Graphify
+
+- Le monorepo est indexé par **Graphify** (`graphify-out/graph.json`, ignoré par Git) : 1 426 nœuds, 3 369 arêtes, 75 communautés, extraction AST **100 % locale** (0 token).
+- **Avant de `grep`** le code, interroger le graphe : `python -m graphify query "…"`, `path "A" "B"`, `affected "Symbole"`, `god-nodes`.
+- Après une modification de code : `python -m graphify update .` (déjà déclenché par le hook `post-commit`).
+- Périmètre défini par `.graphifyignore` (exclut `Waste/`, `developpement/`, `target/`, `node_modules/`) et réglages dans `.graphifyrc`.
+- Règle exécutable : `.clinerules/11-graphify-graphe-de-connaissances.md` · détail : [`documentation/06-outils/graphify.md`](documentation/06-outils/graphify.md).
+
 ## Configuration Cline
 
 - Règles de workspace : `.clinerules/` (règles universelles + règles conditionnelles par `paths`)

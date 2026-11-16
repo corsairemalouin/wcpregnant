@@ -20064,3 +20064,6 @@ target_test_output.txt
 # Artefacts des scripts de demarrage (PID, logs de session)
 .run/
 logs/
+
+# Graphe de connaissances Graphify (regenere par `graphify update .`)
+graphify-out/

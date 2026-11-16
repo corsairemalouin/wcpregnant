@@ -1,0 +1,13 @@
+# .graphifyrc — configuration Graphify du monorepo WcPregnant
+# Format : clé=valeur, une par ligne, commentaires avec #.
+
+# Contexte restitué par `graphify query` (budget en tokens, profondeur BFS 1-6).
+query_budget=2500
+query_depth=3
+
+# Nombre maximal de noeuds rendus dans graph.html (le monorepo est petit).
+viz_node_limit=3000
+
+# Les requêtes Bruno (.bru) sont du JSON : les classer comme JSON
+# pour que les endpoints soient résolus avec les contrôleurs OpenAPI.
+language.bru=json

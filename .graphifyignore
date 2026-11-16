@@ -1,0 +1,35 @@
+# .graphifyignore — périmètre d'analyse du graphe de connaissances Graphify
+# Syntaxe gitignore. Prioritaire sur .gitignore (voir .clinerules/02-guardrails.md).
+
+# --- Code mort / archives : jamais analysé ---
+Waste/
+developpement/
+
+# --- Artefacts de build et dépendances ---
+WcPregnantService/target/
+WcPregnantApp/dist/
+node_modules/
+site/
+
+# --- Outillage IDE ---
+.idea/
+.vscode/
+
+# --- Sortie Graphify elle-même ---
+graphify-out/
+
+# --- Binaires, médias et artefacts bureautiques ---
+*.jks
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.docx
+*.pptx
+*.xlsx
+*.jar
+*.zip
+
+# --- Rapports et logs de validation ---
+*.log
+reports/
