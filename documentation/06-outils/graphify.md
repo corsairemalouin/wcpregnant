@@ -71,9 +71,16 @@ Désactivation ponctuelle : variable `GRAPHIFY_SKIP_HOOK=1`.
 `.cline/skills/graphify/SKILL.md` : déclenché par les questions de dépendances, d'impact de
 refactor ou de régénération du graphe.
 
-### Serveur MCP (optionnel)
+### Serveur MCP (activé)
 
-Le serveur stdio expose 11 outils de requête (`query_graph`, `get_node`, `get_neighbors`,
+Lancement du serveur stdio :
+
+```powershell
+python -m graphify.serve --graph graphify-out/graph.json
+# ou : graphify-mcp serve
+```
+
+Le serveur expose 11 outils de requête (`query_graph`, `get_node`, `get_neighbors`,
 `shortest_path`, `god_nodes`, `graph_stats`, `get_section`, `get_community`, `get_pr_impact`,
 `list_prs`, `triage_prs`).
 
@@ -89,7 +96,12 @@ Dans `~/.cline/data/settings/cline_mcp_settings.json` :
 ```
 
 Alternative HTTP (client MCP externe) : `python -m graphify.serve --transport http --port 8080`
-→ `http://127.0.0.1:8080/mcp`.
+→ `http://127.0.0.1:8080/mcp` (nécessite `uvicorn`).
+
+Le serveur a été **testé** (échange JSON-RPC `initialize` → `tools/list` → `tools/call
+query_graph`) : il répond correctement avec le protocole `2025-06-30` et renvoie les
+1 426 nœuds du graphe. Après ajout de l'entrée, recharger les serveurs MCP dans Cline
+(panneau MCP) pour que les outils `graphify` apparaissent.
 
 ---
 
