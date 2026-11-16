@@ -21,6 +21,7 @@ Toutes les règles du workspace sont combinées en un ensemble unique. Les fichi
 | `08-documentation.md` | style documentaire | `**/*.md`, `documentation/**` |
 | `09-agent-ai-tool-calling.md` | objectif agentique, Tool Calling, inférence locale Strata AI, RBAC | toujours |
 | `11-graphify-graphe-de-connaissances.md` | interrogation du graphe `graphify-out/` avant toute recherche dans le code | toujours |
+| `12-llm-council.md` | garde-fous du Conseil LLM : inférence locale uniquement, décisions à enjeux, transcripts non committés | toujours |
 
 **Activer/désactiver** : icône balance en bas du panneau Cline → onglet *Rules*. Une règle conditionnelle désactivée ne s'active même si les paths correspondent.
 
@@ -38,6 +39,7 @@ Chaque skill est un dossier contenant un `SKILL.md` avec `name` (identique au no
 | `bruno-api-test` | requêtes et scénarios d'API | `templates/request.bru` |
 | `proximity-search` | calcul de distance, stratégies, optimisations | — |
 | `graphify` | interrogation du graphe de connaissances du monorepo (dépendances, impact, hubs) | voir [graphify.md](graphify.md) |
+| `llm-council` | confronte une décision à 5 conseillers indépendants, revue croisée anonymisée, verdict d'un président | `scripts/council.py`, `templates/verdict.md` — voir [llm-council.md](llm-council.md) |
 
 **Déclenchement** : automatique via la description, ou explicite avec un slash command (ex. `/javadoc-test-coverage`).
 

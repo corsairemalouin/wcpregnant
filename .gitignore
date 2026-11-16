@@ -20067,3 +20067,10 @@ logs/
 
 # Graphe de connaissances Graphify (regenere par `graphify update .`)
 graphify-out/
+
+# Transcripts du Conseil LLM (regenere par council.py, jamais commite)
+council-transcripts/
+
+# Caches Python des scripts de skills
+__pycache__/
+*.pyc

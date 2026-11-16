@@ -38,6 +38,20 @@ Toute la documentation vit dans [`documentation/`](documentation/README.md), org
 - Périmètre défini par `.graphifyignore` (exclut `Waste/`, `developpement/`, `target/`, `node_modules/`) et réglages dans `.graphifyrc`.
 - Règle exécutable : `.clinerules/11-graphify-graphe-de-connaissances.md` · détail : [`documentation/06-outils/graphify.md`](documentation/06-outils/graphify.md).
 
+## Conseil LLM — décisions confrontées à 5 angles
+
+- Skill `.cline/skills/llm-council/` : fork adapté de
+  [aiwithremy/claude-skills-llm-council](https://github.com/aiwithremy/claude-skills-llm-council)
+  (méthodologie Karpathy), **réadapté pour Cline** (pas de sous-agents).
+- Pipeline : 5 conseillers indépendants (Contrariant, First Principles, Expansionniste,
+  Outsider, Exécuteur) → revue croisée **anonymisée** → verdict d'un président
+  (accords, divergences, angles morts, recommandation, une seule première action).
+- Exécution : `python .cline/skills/llm-council/scripts/council.py --question "…" --context AGENTS.md`
+  contre l'inférence **locale** (`AGENT_INFERENCE_BASE_URL`) ; fallback interne si le
+  serveur local n'est pas joignable — **jamais de LLM cloud**.
+- Transcripts dans `council-transcripts/` (ignorés par Git).
+- Règle exécutable : `.clinerules/12-llm-council.md` · détail : [`documentation/06-outils/llm-council.md`](documentation/06-outils/llm-council.md).
+
 ## Configuration Cline
 
 - Règles de workspace : `.clinerules/` (règles universelles + règles conditionnelles par `paths`)
