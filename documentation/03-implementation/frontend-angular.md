@@ -81,9 +81,9 @@ prêt à être branché sur de nouveaux écrans sans dépendre du composant `age
 
 > ⚠️ **Coexistence** : `src/app/services/agent.service.ts` reste le client aligné sur
 > `AgentAPI.yaml` (`AgentChatRequest` / `AgentChatResponse`, trace `toolCalls`) utilisé par
-> `AgentChatComponent`. Le contrat du dossier `agent/` est une **forme simplifiée** (position
-> aplatie en `latitude`/`longitude`, étapes en `string[]`) et n'est pas encore câblé sur un
-> composant : il ne remplace pas le service existant.
+> `AgentChatComponent` (panneau inline). Le contrat du dossier `agent/` est une **forme simplifiée**
+> (position aplatie en `latitude`/`longitude`, étapes en `string[]`) et porte sa propre bulle
+> flottante `wc-agent-chat-fab` : il ne remplace pas le service existant.
 
 ### Bulle flottante agentique pilotée par des Signals
 
@@ -102,13 +102,18 @@ de saisie, des suggestions, une timeline des étapes et des mini-cartes cliquabl
 | Saisie sans `FormsModule` | `[value]="question()"` + `(input)="question.set(questionInput.value)"` |
 
 Aucune logique métier n'y figure : le composant délègue à `AgentService.askAgent()` et capture
-les erreurs 403/503 pour les afficher dans la fenêtre. Pour l'afficher, il suffit d'ajouter dans
-un template :
+les erreurs 403/503 pour les afficher dans la fenêtre. Il est **branché dans `HomeComponent`**
+en complément du panneau inline, après l'`<wc-agent-chat>` existant :
 
 ```html
 <wc-agent-chat-fab [position]="searchPosition"
                    (selectToilette)="selectFromAgent($event)"></wc-agent-chat-fab>
 ```
+
+Les deux entrées agentiques coexistent : le panneau inline reste le fil de discussion détaillé
+(trace des outils), la bulle flottante est un accès permanent en bas à droite de l'écran. Les
+mini-cartes de la bulle sélectionnent l'équipement affiché dans la fiche détail et mis en avant
+sur la carte Leaflet (`selectFromAgent`).
 
 
 ### Configuration

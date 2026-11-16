@@ -59,6 +59,9 @@
                    (results)="onAgentResults($event)"
                    (toiletSelected)="selectFromAgent($event)"></wc-agent-chat>
 
+    <wc-agent-chat-fab [position]="searchPosition"
+                       (selectToilette)="selectFromAgent($event)"></wc-agent-chat-fab>
+
     @if (notice) {
       <p class="notice" role="status">{{ notice }}</p>
     }

@@ -231,6 +231,13 @@ describe('HomeComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('wc-agent-chat')).toBeTruthy();
   });
 
+  it('agentFab_shouldBeEmbedded_whenUserIsLoggedIn', () => {
+    component.loggedIn = true;
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('wc-agent-chat-fab')).toBeTruthy();
+  });
+
   it('onAgentResults_shouldReplaceListAndHighlightMap_whenAgentFindsToilets', () => {
     component.toilets = [];
     component.onAgentResults([sampleToilet]);

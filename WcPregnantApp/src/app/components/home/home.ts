@@ -10,6 +10,7 @@ import { WcMapComponent } from '../map/map';
 import { ToiletFormComponent } from '../toilet-form/toilet-form';
 import { ToiletDetailsComponent } from '../toilet-details/toilet-details';
 import { AgentChatComponent } from '../agent-chat/agent-chat';
+import { AgentChatComponent as AgentChatFabComponent } from '../../agent/agent-chat.component';
 
 /** Origine du point de recherche : géolocalisation ou position de référence. */
 export type PositionSource = 'geolocation' | 'default';
@@ -25,7 +26,7 @@ export type PositionSource = 'geolocation' | 'default';
 @Component({
   selector: 'wc-home',
   standalone: true,
-  imports: [FormsModule, WcMapComponent, ToiletFormComponent, ToiletDetailsComponent, AgentChatComponent],
+  imports: [FormsModule, WcMapComponent, ToiletFormComponent, ToiletDetailsComponent, AgentChatComponent, AgentChatFabComponent],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
