@@ -73,15 +73,43 @@ prêt à être branché sur de nouveaux écrans sans dépendre du composant `age
 
 | Fichier | Contenu |
 |---|---|
-| `src/app/agent/agent.models.ts` | `AgentRequest` (`message`, `latitude?`, `longitude?`) et `AgentResponse` (`reply`, `steps: string[]`, `toilettes: unknown[]`) |
+| `src/app/agent/agent.models.ts` | `AgentRequest` (`message`, `latitude?`, `longitude?`) et `AgentResponse` (`reply`, `steps: string[]`, `toilettes: any[]`) |
 | `src/app/agent/agent.service.ts` | `askAgent(request): Observable<AgentResponse>` — `POST` sur l'endpoint de conversation ; la base d'URL vient de `environment.agentApiUrl` (repli `/api/agent`), jamais codée en dur |
 | `src/app/agent/agent.service.spec.ts` | 5 tests : endpoint appelé, payload sans position, émission de la réponse, propagation d'une erreur HTTP, URL relative |
+| `src/app/agent/agent-chat.component.{ts,html,scss}` | Bulle flottante de conversation pilotée par des Signals (voir ci-dessous) |
+| `src/app/agent/agent-chat.component.spec.ts` | 12 tests : ouverture/fermeture, envoi de la question, timeline pendant la réflexion, mini-cartes, émission `selectToilette`, erreurs 403/503 |
 
 > ⚠️ **Coexistence** : `src/app/services/agent.service.ts` reste le client aligné sur
 > `AgentAPI.yaml` (`AgentChatRequest` / `AgentChatResponse`, trace `toolCalls`) utilisé par
 > `AgentChatComponent`. Le contrat du dossier `agent/` est une **forme simplifiée** (position
 > aplatie en `latitude`/`longitude`, étapes en `string[]`) et n'est pas encore câblé sur un
 > composant : il ne remplace pas le service existant.
+
+### Bulle flottante agentique pilotée par des Signals
+
+`src/app/agent/agent-chat.component.ts` (classe `AgentChatComponent`, sélecteur
+`wc-agent-chat-fab`) est une **bulle flottante** fixée en bas à droite de l'écran : un lanceur
+(`.agent-bubble`) qui ouvre ou ferme une fenêtre de conversation (`.agent-window`), avec un champ
+de saisie, des suggestions, une timeline des étapes et des mini-cartes cliquables.
+
+| Élément | Implémentation |
+|---|---|
+| Question, ouverture, mode « réflexion », erreur, synthèse, étapes, résultats | `signal` (`question`, `open`, `busy`, `error`, `reply`, `steps`, `toilettes`) |
+| Timeline affichée | `computed` : étapes génériques (« Analyse de la position… », « Recherche géospatiale des équipements… », « Interrogation du modèle local… ») pendant l'appel, étapes réellement renvoyées par l'agent ensuite |
+| Nombre de résultats, bouton « Envoyer » activable | `computed` (`resultCount`, `canAsk`) |
+| Position de recherche | `input<GeoPosition \| null>(null)` (input signal-based) |
+| Sélection d'un équipement | `@Output() selectToilette = new EventEmitter<any>()` émis par les mini-cartes |
+| Saisie sans `FormsModule` | `[value]="question()"` + `(input)="question.set(questionInput.value)"` |
+
+Aucune logique métier n'y figure : le composant délègue à `AgentService.askAgent()` et capture
+les erreurs 403/503 pour les afficher dans la fenêtre. Pour l'afficher, il suffit d'ajouter dans
+un template :
+
+```html
+<wc-agent-chat-fab [position]="searchPosition"
+                   (selectToilette)="selectFromAgent($event)"></wc-agent-chat-fab>
+```
+
 
 ### Configuration
 
@@ -107,7 +135,9 @@ renvoie **403** avec un message explicite.
 HTTP, la construction des étapes, la remontée des résultats, la gestion des erreurs 403/503 et le
 rendu du marqueur de mise en avant. Le socle autonome est testé par
 `src/app/agent/agent.service.spec.ts` (endpoint appelé, payload sans position, réponse émise,
-erreur HTTP propagée, URL relative).
+erreur HTTP propagée, URL relative) et par `src/app/agent/agent-chat.component.spec.ts`
+(ouverture/fermeture de la bulle, envoi de la question positionnée, timeline pendant la réflexion,
+mini-cartes rendues, émission `selectToilette`, erreurs 403/503, formats de distance).
 
 
 

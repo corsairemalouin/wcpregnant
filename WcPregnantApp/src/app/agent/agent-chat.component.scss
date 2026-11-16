@@ -1,0 +1,217 @@
+/* Bulle flottante : lanceur en bas à droite, fenêtre de chat au-dessus. */
+.agent-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.agent-bubble {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--button-color);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.agent-bubble:hover {
+  background: var(--button-hover);
+}
+
+.agent-bubble__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.agent-window {
+  width: min(360px, calc(100vw - 32px));
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--secondary-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.agent-window__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.agent-window__header h2 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--primary-color);
+}
+
+.agent-window__close {
+  margin: 0;
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+.agent-window__close:hover {
+  background: #f2f6fb;
+}
+
+.agent-window__hint {
+  margin: 8px 0 12px;
+  font-size: 13px;
+  color: #555;
+}
+
+.agent-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.agent-form input {
+  flex: 1 1 200px;
+  margin: 0;
+}
+
+.agent-form button {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.agent-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.agent-chip {
+  margin: 0;
+  padding: 6px 10px;
+  font-size: 12px;
+  background: #eef6ff;
+  color: #22486c;
+}
+
+.agent-chip:hover {
+  background: #dcecff;
+}
+
+.agent-error {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-radius: var(--border-radius);
+  background: #ffe6e6;
+  color: #b00020;
+  font-size: 13px;
+}
+
+/* Timeline discrète des étapes de la boucle Tool Calling. */
+.agent-timeline {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.agent-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-left: 3px solid var(--secondary-color);
+  background: #f7fbff;
+  font-size: 13px;
+}
+
+.agent-step--pending {
+  border-left-color: #f2c14e;
+  background: #fff8ec;
+}
+
+.agent-step__index {
+  min-width: 20px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--secondary-color);
+  color: #12324f;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.agent-step__text {
+  color: #333;
+}
+
+.agent-reply {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: var(--border-radius);
+  background: #e8f5e9;
+  font-size: 14px;
+}
+
+.agent-reply p {
+  margin: 0;
+}
+
+/* Mini-cartes cliquables des équipements trouvés. */
+.agent-cards {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.agent-card__button {
+  margin: 0;
+  padding: 8px 10px;
+  display: grid;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid #dbe6f2;
+  color: var(--text-color);
+  text-align: left;
+}
+
+.agent-card__button:hover {
+  background: #f2f8ff;
+  border-color: var(--secondary-color);
+}
+
+.agent-card__title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.agent-card__distance {
+  color: var(--primary-color);
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.agent-card__address {
+  color: #555;
+  font-size: 12px;
+}
+
+@media (max-width: 480px) {
+  .agent-fab {
+    right: 10px;
+    bottom: 10px;
+  }
+}

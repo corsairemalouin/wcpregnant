@@ -62,6 +62,7 @@
 | `services/auth.service.spec.ts` | Authentification |
 | `services/settings.service.spec.ts` | Configuration |
 | `agent/agent.service.spec.ts` | Socle agentique autonome : `askAgent` (endpoint, payload sans position, réponse émise, erreur HTTP, URL relative) |
+| `agent/agent-chat.component.spec.ts` | Bulle flottante agentique : ouverture/fermeture, envoi de la question, timeline des étapes pendant la réflexion, mini-cartes, émission `selectToilette`, erreurs 403/503, format des distances |
 
 ---
 

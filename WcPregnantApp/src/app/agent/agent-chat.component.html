@@ -1,0 +1,82 @@
+<div class="agent-fab">
+  <button type="button" class="agent-bubble" (click)="toggle()"
+          [attr.aria-expanded]="open()"
+          aria-label="Ouvrir ou fermer l'assistant agentique">
+    <span class="agent-bubble__dot" aria-hidden="true"></span>
+    Assistant
+  </button>
+
+  @if (open()) {
+    <section class="agent-window" role="dialog" aria-label="Assistant agentique">
+      <header class="agent-window__header">
+        <h2>Assistant agentique</h2>
+        <button type="button" class="agent-window__close" (click)="close()"
+                aria-label="Fermer l'assistant">✕</button>
+      </header>
+
+      <p class="agent-window__hint">
+        Inférence 100&nbsp;% locale : la question est traitée par le modèle servi
+        sur votre machine, aucune donnée ne quitte le réseau.
+      </p>
+
+      <form class="agent-form" (submit)="ask()">
+        <input id="agent-question" name="agent-question" type="text" #questionInput
+               [value]="question()" (input)="question.set(questionInput.value)"
+               placeholder="Ex. toilettes accessibles avec table à langer"
+               aria-label="Question posée à l'assistant">
+        <button type="submit" [disabled]="!canAsk()" aria-label="Envoyer la question">
+          {{ busy() ? 'Réflexion…' : 'Envoyer' }}
+        </button>
+      </form>
+
+      <div class="agent-suggestions" aria-label="Suggestions de questions">
+        @for (suggestion of suggestions; track suggestion) {
+          <button type="button" class="agent-chip" (click)="askQuestion(suggestion)"
+                  [disabled]="busy()">
+            {{ suggestion }}
+          </button>
+        }
+      </div>
+
+      @if (error()) {
+        <p class="agent-error" role="alert">{{ error() }}</p>
+      }
+
+      @if (timeline().length > 0) {
+        <ol class="agent-timeline" aria-label="Étapes de raisonnement de l'agent">
+          @for (step of timeline(); track step) {
+            <li class="agent-step" [class.agent-step--pending]="busy()">
+              <span class="agent-step__index">{{ $index + 1 }}</span>
+              <span class="agent-step__text">{{ step }}</span>
+            </li>
+          }
+        </ol>
+      }
+
+      @if (reply()) {
+        <div class="agent-reply" role="status">
+          <p>{{ reply() }}</p>
+        </div>
+      }
+
+      @if (resultCount() > 0) {
+        <ul class="agent-cards" aria-label="Équipements trouvés par l'agent">
+          @for (toilet of toilettes(); track $index) {
+            <li class="agent-card">
+              <button type="button" class="agent-card__button" (click)="select(toilet)"
+                      [attr.aria-label]="'Afficher les détails de ' + toiletLabel(toilet)">
+                <span class="agent-card__title">{{ toiletLabel(toilet) }}</span>
+                <span class="agent-card__distance">{{ formatDistance(toilet) }}</span>
+                @if (toilet.adress?.ville) {
+                  <span class="agent-card__address">
+                    {{ toilet.adress.voie }}, {{ toilet.adress.ville }}
+                  </span>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>
