@@ -66,6 +66,23 @@ rayon de 500 m » — et de laisser l'agent du backend choisir et exécuter les 
 | `src/app/components/agent-chat/` | `agent-chat.ts` / `.html` / `.css` : formulaire, suggestions, fil d'étapes, cartes de résultats |
 | `src/app/components/map/map.ts` | `@Input() highlight` et méthode `renderHighlight()` (marqueur `agent-highlight`) |
 
+### Socle agentique autonome (`src/app/agent/`)
+
+Le dossier `src/app/agent/` isole la brique de conversation agentique dans un module autonome,
+prêt à être branché sur de nouveaux écrans sans dépendre du composant `agent-chat` existant.
+
+| Fichier | Contenu |
+|---|---|
+| `src/app/agent/agent.models.ts` | `AgentRequest` (`message`, `latitude?`, `longitude?`) et `AgentResponse` (`reply`, `steps: string[]`, `toilettes: any[]`) |
+| `src/app/agent/agent.service.ts` | `askAgent(request): Observable<AgentResponse>` — `POST` sur l'endpoint de conversation ; la base d'URL vient de `environment.agentApiUrl` (repli `/api/agent`), jamais codée en dur |
+| `src/app/agent/agent.service.spec.ts` | 5 tests : endpoint appelé, payload sans position, émission de la réponse, propagation d'une erreur HTTP, URL relative |
+
+> ⚠️ **Coexistence** : `src/app/services/agent.service.ts` reste le client aligné sur
+> `AgentAPI.yaml` (`AgentChatRequest` / `AgentChatResponse`, trace `toolCalls`) utilisé par
+> `AgentChatComponent`. Le contrat du dossier `agent/` est une **forme simplifiée** (position
+> aplatie en `latitude`/`longitude`, étapes en `string[]`) et n'est pas encore câblé sur un
+> composant : il ne remplace pas le service existant.
+
 ### Configuration
 
 Aucune URL d'inférence n'apparaît dans le frontend : le proxy Angular route `/agent` vers le
@@ -88,7 +105,9 @@ renvoie **403** avec un message explicite.
 
 `agent.service.spec.ts`, `agent-chat.spec.ts`, `home.spec.ts` et `map.spec.ts` couvrent les appels
 HTTP, la construction des étapes, la remontée des résultats, la gestion des erreurs 403/503 et le
-rendu du marqueur de mise en avant.
+rendu du marqueur de mise en avant. Le socle autonome est testé par
+`src/app/agent/agent.service.spec.ts` (endpoint appelé, payload sans position, réponse émise,
+erreur HTTP propagée, URL relative).
 
 
 

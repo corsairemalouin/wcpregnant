@@ -84,7 +84,7 @@ Certains fichiers restent à leur emplacement d'origine parce qu'ils sont consom
 |---|---|
 | 1 — Exigences | ✅ Rédigée (convertie depuis le `.docx` et le brief Copilot) + objectif agentique Tool Calling et son **état d'implémentation** |
 | 2 — Conception | ✅ Rédigée (architecture, modèle de données, diagrammes Mermaid, contrat API) — §7.3 décrit la couche agentique (registre d'outils, boucle Reason → Act → Observe, configuration d'inférence) |
-| 3 — Implémentation | ✅ Rédigée (conventions de code, frontend Angular) — frontend enrichi de l'**assistant agentique** (composant de conversation, service `/agent`, synchronisation carte Leaflet) |
+| 3 — Implémentation | ✅ Rédigée (conventions de code, frontend Angular) — frontend enrichi de l'**assistant agentique** (composant de conversation, service `/agent`, synchronisation carte Leaflet) + **socle agentique autonome** `src/app/agent/` (`AgentRequest`/`AgentResponse`, `AgentService.askAgent`) testé par `agent.service.spec.ts` |
 | 4 — Tests | ✅ Rédigée (stratégie de tests, couverture JaCoCo) — tests de la couche agent (registre, executor, orchestrateur, client d'inférence, API) et **test bout en bout** `AgentChatEndToEndTest` avec faux serveur d'inférence local |
 | 5 — Déploiement | ✅ Rédigée (environnement, Docker, Kubernetes) + **scripts de démarrage et d'arrêt complet** de la solution (`start.ps1`/`stop.ps1`, `start.sh`/`stop.sh`) |
 | 6 — Outils | ✅ Rédigée (configuration Cline + **workflow Git : un commit/push et une maj de doc par évolution fonctionnelle** + **Graphify : graphe de connaissances local du monorepo** + **Conseil LLM : skill `llm-council` forké et adapté à Cline**) |

@@ -61,6 +61,7 @@
 | `services/map.service.spec.ts` | Service carte |
 | `services/auth.service.spec.ts` | Authentification |
 | `services/settings.service.spec.ts` | Configuration |
+| `agent/agent.service.spec.ts` | Socle agentique autonome : `askAgent` (endpoint, payload sans position, réponse émise, erreur HTTP, URL relative) |
 
 ---
 
