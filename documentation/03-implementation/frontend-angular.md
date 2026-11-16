@@ -73,7 +73,7 @@ prêt à être branché sur de nouveaux écrans sans dépendre du composant `age
 
 | Fichier | Contenu |
 |---|---|
-| `src/app/agent/agent.models.ts` | `AgentRequest` (`message`, `latitude?`, `longitude?`) et `AgentResponse` (`reply`, `steps: string[]`, `toilettes: any[]`) |
+| `src/app/agent/agent.models.ts` | `AgentRequest` (`message`, `latitude?`, `longitude?`) et `AgentResponse` (`reply`, `steps: string[]`, `toilettes: unknown[]`) |
 | `src/app/agent/agent.service.ts` | `askAgent(request): Observable<AgentResponse>` — `POST` sur l'endpoint de conversation ; la base d'URL vient de `environment.agentApiUrl` (repli `/api/agent`), jamais codée en dur |
 | `src/app/agent/agent.service.spec.ts` | 5 tests : endpoint appelé, payload sans position, émission de la réponse, propagation d'une erreur HTTP, URL relative |
 
