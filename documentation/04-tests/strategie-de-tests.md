@@ -52,8 +52,8 @@
 
 | Fichier | Cible |
 |---|---|
-| `components/home/home.spec.ts` | Composant accueil |
-| `components/map/map.spec.ts` | Carte Leaflet (création / destruction de l'instance) |
+| `components/home/home.spec.ts` | Composant accueil : connexion, recherche, résultats, bulle flottante agentique intégrée, centrage de la carte via `@ViewChild('agentMap')` |
+| `components/map/map.spec.ts` | Carte Leaflet (création / destruction de l'instance, index des marqueurs par id, `focusToilet` / `focusToiletById` : carte non initialisée, toilette `null`, coordonnées absentes, centrage + mise en avant) |
 | `components/toilet-details/toilet-details.spec.ts` | Fiche détail |
 | `components/toilet-form/toilet-form.spec.ts` | Formulaire d'ajout |
 | `models/toilet.model.spec.ts` | Modèle de données |
@@ -63,6 +63,8 @@
 | `services/settings.service.spec.ts` | Configuration |
 | `agent/agent.service.spec.ts` | Socle agentique autonome : `askAgent` (endpoint, payload sans position, réponse émise, erreur HTTP, URL relative) |
 | `agent/agent-chat.component.spec.ts` | Bulle flottante agentique : ouverture/fermeture, envoi de la question, timeline des étapes pendant la réflexion, mini-cartes, émission `selectToilette`, erreurs 403/503, format des distances |
+
+> Suite frontend exécutée par `npm run test` : **105 tests**, tous verts.
 
 ---
 

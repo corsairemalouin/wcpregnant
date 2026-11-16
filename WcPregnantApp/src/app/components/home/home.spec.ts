@@ -238,6 +238,27 @@ describe('HomeComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('wc-agent-chat-fab')).toBeTruthy();
   });
 
+  it('selectFromAgent_shouldCenterMapOnSelectedToilet_whenMapIsReady', () => {
+    component.loggedIn = true;
+    component.toilets = [sampleToilet];
+    fixture.detectChanges();
+
+    component.selectFromAgent(sampleToilet);
+
+    expect(component.map).toBeTruthy();
+    expect(component.map!.highlight).toEqual(sampleToilet);
+    expect(component.notice).toBeNull();
+  });
+
+  it('selectFromAgent_shouldWarn_whenSelectedToiletHasNoPosition', () => {
+    component.loggedIn = true;
+    fixture.detectChanges();
+
+    component.selectFromAgent({ libelle: 'Sans position', adress: {} } as Toilet);
+
+    expect(component.notice).toContain('coordonnées');
+  });
+
   it('onAgentResults_shouldReplaceListAndHighlightMap_whenAgentFindsToilets', () => {
     component.toilets = [];
     component.onAgentResults([sampleToilet]);

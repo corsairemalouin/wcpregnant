@@ -30,6 +30,8 @@ export class WcMapComponent {
 
   private map: L.Map | null = null;
   private markers: L.Marker[] = [];
+  /** Marqueurs indexés par identifiant de toilette, pour un accès direct (focus, tooltip). */
+  private markersById = new Map<number, L.Marker>();
   private originMarker: L.CircleMarker | null = null;
   private highlightMarker: L.CircleMarker | null = null;
 
@@ -57,8 +59,58 @@ export class WcMapComponent {
     }
   }
 
+  /**
+   * Centre la carte Leaflet sur une toilette et ouvre le tooltip de son marqueur.
+   *
+   * <p>Méthode défensive : elle ne fait rien si la carte n'est pas encore
+   * initialisée ou si les coordonnées sont absentes (payload brut renvoyé par
+   * les outils de l'agent), et retourne dans ce cas `false`. Quand la toilette
+   * n'a pas de marqueur dans la liste affichée, elle est dessinée comme
+   * équipement mis en avant par l'agent.</p>
+   *
+   * @param toilet toilette à atteindre, `null` accepté
+   * @returns `true` si la carte a été recentrée et le marqueur ouvert
+   */
+  focusToilet(toilet: Toilet | null): boolean {
+    if (!this.map || !toilet?.position) {
+      return false;
+    }
+
+    const latitude = toilet.position.latitude;
+    const longitude = toilet.position.longitude;
+
+    if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+      return false;
+    }
+
+    this.highlight = toilet;
+    this.renderHighlight();
+    this.map.panTo([latitude, longitude]);
+
+    const marker = toilet.id === undefined ? null : this.markersById.get(toilet.id) ?? null;
+
+    if (marker) {
+      marker.openTooltip();
+    } else {
+      this.highlightMarker?.openTooltip();
+    }
+
+    return true;
+  }
+
+  /**
+   * Centre la carte sur la toilette identifiée par son identifiant.
+   *
+   * @param id identifiant de la toilette, tel qu'exposé par l'API
+   * @returns `true` si la toilette existe dans la liste affichée et la carte a été recentrée
+   */
+  focusToiletById(id: number): boolean {
+    return this.focusToilet(this.toilets.find(toilet => toilet.id === id) ?? null);
+  }
+
   ngOnDestroy(): void {
     this.markers.forEach(marker => marker.remove());
+    this.markersById.clear();
     this.originMarker?.remove();
     this.highlightMarker?.remove();
     this.markers = [];
@@ -79,11 +131,16 @@ export class WcMapComponent {
 
     this.markers.forEach(marker => marker.remove());
     this.markers = [];
+    this.markersById.clear();
 
     this.toilets.forEach(toilet => {
       const marker = L.marker([toilet.position.latitude, toilet.position.longitude]).addTo(this.map!);
       marker.bindTooltip(this.tooltip(toilet));
       this.markers.push(marker);
+
+      if (toilet.id !== undefined) {
+        this.markersById.set(toilet.id, marker);
+      }
     });
 
     this.renderOrigin();

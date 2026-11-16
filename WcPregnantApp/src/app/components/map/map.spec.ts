@@ -88,4 +88,53 @@ describe('WcMapComponent', () => {
 
     expect(component.highlight).toEqual(selected);
   });
+
+  const focusedToilet: Toilet = {
+    id: 1,
+    libelle: 'WC de la Gare',
+    distance: 150,
+    adress: { codePostal: '35000' },
+    position: { latitude: 48.12, longitude: -1.68 }
+  };
+
+  it('focusToilet_shouldReturnFalse_whenMapIsNotInitializedYet', () => {
+    expect(component.focusToilet(focusedToilet)).toBeFalse();
+  });
+
+  it('focusToilet_shouldReturnFalse_whenToiletIsNull', () => {
+    fixture.detectChanges();
+
+    expect(component.focusToilet(null)).toBeFalse();
+  });
+
+  it('focusToilet_shouldReturnFalse_whenCoordinatesAreMissing', () => {
+    fixture.detectChanges();
+
+    const withoutPosition = { libelle: 'Sans position', adress: {} } as Toilet;
+
+    expect(component.focusToilet(withoutPosition)).toBeFalse();
+    expect(component.highlight).toBeNull();
+  });
+
+  it('focusToilet_shouldCenterAndHighlightToilet_whenMapIsReady', () => {
+    fixture.detectChanges();
+
+    expect(component.focusToilet(focusedToilet)).toBeTrue();
+    expect(component.highlight).toEqual(focusedToilet);
+  });
+
+  it('focusToiletById_shouldReturnFalse_whenIdIsUnknown', () => {
+    component.toilets = [focusedToilet];
+    fixture.detectChanges();
+
+    expect(component.focusToiletById(99)).toBeFalse();
+  });
+
+  it('focusToiletById_shouldFocusExistingMarker_whenIdIsKnown', () => {
+    component.toilets = [focusedToilet];
+    fixture.detectChanges();
+
+    expect(component.focusToiletById(1)).toBeTrue();
+    expect(component.highlight).toEqual(focusedToilet);
+  });
 });

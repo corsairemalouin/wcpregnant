@@ -64,7 +64,7 @@ rayon de 500 m » — et de laisser l'agent du backend choisir et exécuter les 
 | `src/app/models/agent.model.ts` | contrats `AgentChatRequest`, `AgentChatResponse`, `AgentToolCallTrace`, `AgentToolResult` alignés sur `AgentAPI.yaml` |
 | `src/app/services/agent.service.ts` | `chat(request)` et `getTools()`, en-tête `Authorization` repris de `AuthService` |
 | `src/app/components/agent-chat/` | `agent-chat.ts` / `.html` / `.css` : formulaire, suggestions, fil d'étapes, cartes de résultats |
-| `src/app/components/map/map.ts` | `@Input() highlight` et méthode `renderHighlight()` (marqueur `agent-highlight`) |
+| `src/app/components/map/map.ts` | `@Input() highlight` et méthode `renderHighlight()` (marqueur `agent-highlight`) ; API de navigation `focusToilet(toilet)` / `focusToiletById(id)` (centrage + ouverture du tooltip) |
 
 ### Socle agentique autonome (`src/app/agent/`)
 
@@ -115,6 +115,49 @@ Les deux entrées agentiques coexistent : le panneau inline reste le fil de disc
 mini-cartes de la bulle sélectionnent l'équipement affiché dans la fiche détail et mis en avant
 sur la carte Leaflet (`selectFromAgent`).
 
+### Centrage de la carte Leaflet depuis l'agent
+
+La bulle flottante n'est pas isolée du parent : elle est **branchée dans `HomeComponent`**, le
+composant qui héberge la carte Leaflet, et l'événement `(selectToilette)` déclenche maintenant un
+**centrage de la carte** sur les coordonnées de l'équipement choisi, avec ouverture du tooltip de
+son marqueur.
+
+`WcMapComponent` expose pour cela une API de navigation publique :
+
+| Méthode | Effet | Retour |
+|---|---|---|
+| `focusToilet(toilet: Toilet \| null)` | `panTo` sur `position.latitude`/`longitude`, dessin du halo de mise en avant, ouverture du tooltip du marqueur existant (ou du halo si l'équipement n'est pas dans la liste affichée) | `true` si la carte a été recentrée |
+| `focusToiletById(id: number)` | résout l'identifiant dans `toilets` puis délègue à `focusToilet` | `true` si l'identifiant existe |
+
+Pour rendre cela possible, les marqueurs sont désormais **indexés par identifiant** dans un
+`Map<number, L.Marker>` interne (`markersById`), alimenté par `renderMarkers()` et vidé dans
+`ngOnDestroy()` : les marqueurs restent atteignables directement sans parcourir le tableau.
+
+Le parent récupère l'instance de la carte via un `@ViewChild` et réagit à l'événement :
+
+```html
+<wc-map #agentMap [toilets]="toilets" [origin]="searchPosition" [highlight]="agentHighlight"></wc-map>
+<wc-agent-chat-fab [position]="searchPosition"
+                   (selectToilette)="selectFromAgent($event)"></wc-agent-chat-fab>
+```
+
+```ts
+@ViewChild('agentMap') map: WcMapComponent | undefined;
+
+selectFromAgent(toilet: Toilet): void {
+  this.selectedToilet = toilet;
+  this.agentHighlight = toilet;
+
+  if (this.map && !this.map.focusToilet(toilet)) {
+    this.notice = 'Impossible de centrer la carte : les coordonnées de cette toilette sont absentes.';
+  }
+}
+```
+
+La méthode est **défensive** : le payload renvoyé par les outils de l'agent peut être partiel
+(coordonnées absentes) et la carte n'est pas encore créée avant la première connexion ; dans ces
+cas `focusToilet` ne fait rien et retourne `false`, sans jamais casser le rendu existant.
+
 
 ### Configuration
 
@@ -138,7 +181,8 @@ renvoie **403** avec un message explicite.
 
 `agent.service.spec.ts`, `agent-chat.spec.ts`, `home.spec.ts` et `map.spec.ts` couvrent les appels
 HTTP, la construction des étapes, la remontée des résultats, la gestion des erreurs 403/503 et le
-rendu du marqueur de mise en avant. Le socle autonome est testé par
+rendu du marqueur de mise en avant **et le centrage de la carte** (`focusToilet`, `focusToiletById`,
+indexation des marqueurs par identifiant). Le socle autonome est testé par
 `src/app/agent/agent.service.spec.ts` (endpoint appelé, payload sans position, réponse émise,
 erreur HTTP propagée, URL relative) et par `src/app/agent/agent-chat.component.spec.ts`
 (ouverture/fermeture de la bulle, envoi de la question positionnée, timeline pendant la réflexion,

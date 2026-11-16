@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ToiletService } from '../../services/toilet.service';
 import { AuthService } from '../../services/auth.service';
@@ -45,6 +45,9 @@ export class HomeComponent {
   searchPosition: GeoPosition = { ...environment.defaultPosition };
   /** Équipement mis en avant sur la carte après une réponse de l'agent. */
   agentHighlight: Toilet | null = null;
+
+  /** Instance de la carte Leaflet du template, accessible après l'initialisation de la vue. */
+  @ViewChild('agentMap') map: WcMapComponent | undefined;
 
   constructor(
     private toiletService: ToiletService,
@@ -175,13 +178,18 @@ export class HomeComponent {
   }
 
   /**
-   * Sélectionne un équipement proposé par l'agent et le met en avant sur la carte.
+   * Sélectionne un équipement proposé par l'agent, le met en avant sur la carte
+   * et centre la vue Leaflet sur ses coordonnées en ouvrant son marqueur.
    *
    * @param toilet équipement choisi dans la liste de l'assistant
    */
   selectFromAgent(toilet: Toilet): void {
     this.selectedToilet = toilet;
     this.agentHighlight = toilet;
+
+    if (this.map && !this.map.focusToilet(toilet)) {
+      this.notice = 'Impossible de centrer la carte : les coordonnées de cette toilette sont absentes.';
+    }
   }
 
   /**
