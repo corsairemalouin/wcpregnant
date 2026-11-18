@@ -20,6 +20,10 @@ services:
       SPRING_DATASOURCE_USERNAME: wcpregnant
       SPRING_DATASOURCE_PASSWORD: changeme
       JAVA_OPTS: "-Xms256m -Xmx512m"
+      # Profil Spring : prod par défaut (comptes stockés dans PostgreSQL), comportement
+      # inchangé. Surchargeable via SPRING_PROFILES_ACTIVE=dev pour bénéficier des
+      # comptes de démonstration (admin/admin, manu/manu) lors d'un déploiement local.
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       # Couche agentique (Tool Calling) : inférence locale Strata AI.
       # Surchargeable via un fichier .env ou le shell (jamais de clé en dur).
       AGENT_INFERENCE_BASE_URL: ${AGENT_INFERENCE_BASE_URL:-http://host.docker.internal:8000/v1}

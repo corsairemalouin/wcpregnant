@@ -65,7 +65,7 @@ spec:
               mountPath: /etc/app
           livenessProbe:
             httpGet:
-              path: /api/actuator/health
+              path: /actuator/health
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 10
@@ -73,7 +73,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /api/actuator/health/readiness
+              path: /actuator/health/readiness
               port: 8080
             initialDelaySeconds: 20
             periodSeconds: 5

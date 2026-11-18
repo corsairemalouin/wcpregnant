@@ -192,7 +192,14 @@ Le workflow `WcPregnantService/.github/workflows/docker-image.yml` se déclenche
 
 - Port exposé : **8080** ;
 - `JAVA_OPTS` configurable (`-Xms256m -Xmx512m`) ;
-- `HEALTHCHECK` toutes les 30 s sur `http://localhost:8080/api/actuator/health`.
+- `HEALTHCHECK` toutes les 30 s sur `http://localhost:8080/actuator/health`
+  (la sonde est explicitement **publique** : voir la chaîne de filtres
+  `healthFilterChain` dans `AppSecurityConfiguration`, sans authentification).
+
+> ⚠️ Chemin exact : l'Actuator est servi sous `/actuator`, **pas** `/api/actuator`.
+> Un `HEALTHCHECK` pointant sur `/api/actuator/health` renvoie un `302` vers `/login`,
+> busybox `wget` échoue (« too many redirections ») et Docker marque le conteneur
+> `unhealthy`.
 
 ### 6.2 Kubernetes
 
@@ -201,8 +208,8 @@ Le workflow `WcPregnantService/.github/workflows/docker-image.yml` se déclenche
 **Déploiement applicatif** (`k8s/deployment.yaml`) :
 
 - 2 réplicas (minimum), 5 maximum via HPA ;
-- Sonde de disponibilité : `GET /api/actuator/health/readiness` (20 s initiales, 5 s d'intervalle) ;
-- Sonde de survie : `GET /api/actuator/health` (30 s initiales, 10 s d'intervalle) ;
+- Sonde de disponibilité : `GET /actuator/health/readiness` (20 s initiales, 5 s d'intervalle) ;
+- Sonde de survie : `GET /actuator/health` (30 s initiales, 10 s d'intervalle) ;
 - Ressources demandées : 256 Mi mémoire, 250 m CPU ;
 - Limites : 512 Mi mémoire, 500 m CPU.
 
@@ -418,7 +425,7 @@ WcPregnant/
 | Axe | État |
 |---|---|
 | **Logs** | Niveaux configurés dans `application.properties` ; logging structuré (JSON) recommandé |
-| **Métriques** | Endpoints Actuator : `/api/actuator`, `/api/actuator/health`, `/api/actuator/metrics` ; export Prometheus + Grafana possible |
+| **Métriques** | Endpoints Actuator : `/actuator/health`, `/actuator/health/readiness` (publics, sondes Docker/K8s) ; le reste de l'Actuator reste protégé ; export Prometheus + Grafana possible |
 | **Traçabilité** | Non implémenté (Spring Cloud Sleuth envisagé) |
 
 ---

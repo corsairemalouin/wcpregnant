@@ -96,4 +96,25 @@ class SecurityIntegrationTest {
                         .content(jsonWithGrade))
                 .andExpect(status().isCreated());
     }
+
+    @Test
+    @DisplayName("GET /actuator/health - Anonyme : 200 (sonde de santé des conteneurs)")
+    void healthAnonyme_Autorise() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("GET /actuator/health/readiness - Anonyme : 200 (probe Kubernetes)")
+    void healthReadinessAnonyme_Autorise() throws Exception {
+        mockMvc.perform(get("/actuator/health/readiness"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("La chaîne de santé n'ouvre pas /agent/tools : anonyme = 401")
+    void healthChainDoesNotOpenAgentTools() throws Exception {
+        mockMvc.perform(get("/agent/tools"))
+                .andExpect(status().isUnauthorized());
+    }
 }

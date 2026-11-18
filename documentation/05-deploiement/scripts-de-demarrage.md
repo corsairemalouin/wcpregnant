@@ -100,7 +100,7 @@ conteneurs du projet compose `wcpregnant`.
 | Frontend Angular | 4200 | <http://localhost:4200> |
 | API Spring Boot (mode local) | 8081 | <http://localhost:8081> |
 | API Spring Boot (mode docker) | 8081 (via `API_PORT`) | <http://localhost:8081> |
-| Santé API | — | `/actuator/health` — **hors** de la chaîne Basic : renvoie un `302` vers `/login` (formulaire Spring Security). Les scripts testent la disponibilité par le **port**, pas par cet endpoint |
+| Santé API | — | `/actuator/health` — **publique** par conception (chaîne `healthFilterChain`, `@Order(0)`) : `200 {"status":"UP"}` sans authentification, utilisée par le `HEALTHCHECK` Docker et les probes Kubernetes. Les scripts testent toujours la disponibilité par le **port** |
 | Endpoints protégés (Basic) | — | `/toilets/**`, `/api/**`, `/agent/**` — `admin` / `admin` (rôle `ADMIN`) ou `manu` / `manu` (rôle `USER`) en profil `dev` |
 | Outils agentiques | — | `GET /agent/tools` (Basic `admin` / `admin`) |
 | PostgreSQL | 5432 | `jdbc:postgresql://localhost:5432/wcpregnant` |

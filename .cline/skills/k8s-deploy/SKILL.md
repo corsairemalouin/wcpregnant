@@ -23,7 +23,7 @@ kubectl apply -f hpa.yaml -f networkpolicy.yaml -f ingress.yaml -n wcpregnant
 ## Invariants à préserver
 
 - Namespace `wcpregnant`, 2–5 réplicas, HPA sur CPU 70 %.
-- Probes `liveness`/`readiness` sur `/api/actuator/health`.
+- Probes `liveness`/`readiness` sur `/actuator/health` et `/actuator/health/readiness`.
 - `requests`/`limits` CPU et mémoire toujours définis.
 - `PodDisruptionBudget` minAvailable = 1.
 - PostgreSQL 15 avec PVC 10Gi ; accès via Service ClusterIP.

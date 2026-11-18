@@ -45,13 +45,43 @@ docker build -t ghcr.io/<OWNER>/wcpregnant:latest .
 
 Remplacez `<OWNER>` par votre utilisateur ou organisation si vous publiez sur GitHub Container Registry.
 
-## 4. Lancer en local avec docker-compose
+## 4. Lancer en local avec docker-compose (Docker Desktop)
+
+Depuis `WcPregnantService/` :
 
 ```powershell
-docker-compose up --build
+docker compose -f docker-compose.yml -p wcpregnant up -d
 ```
 
-L'application est accessible sur <http://localhost:8080>
+| Service | Image | Port public |
+|---|---|---|
+| `db` | `postgres:15-alpine` | `5432` (volume `db_data`) |
+| `app` | `wcpregnant:local` (construite depuis le `Dockerfile`) | `${API_PORT:-8080}` → `8080` |
+
+Vérification de la santé du conteneur :
+
+```powershell
+docker ps --filter "name=wcpregnant" --format "{{.Names}} | {{.Status}}"
+curl.exe -s http://localhost:8080/actuator/health
+```
+
+> 💡 Le profil Spring est `prod` par défaut : les comptes sont alors lus dans les
+> tables `users` / `authorities` de PostgreSQL (vides au premier lancement). Pour
+> les comptes de démonstration `admin`/`admin` et `manu`/`manu`, lancer avec
+> `SPRING_PROFILES_ACTIVE=dev`. Le port est surchargeable avec `API_PORT` (les
+> scripts `start.ps1` l'alignent sur `8081`, cible du proxy Angular).
+
+> ⚠️ L'inférence agentique locale est attendue sur `AGENT_INFERENCE_BASE_URL`
+> (default `http://host.docker.internal:8000/v1`) : si votre serveur Strata AI
+> écoute sur un autre port, surchargez la variable, par exemple
+> `AGENT_INFERENCE_BASE_URL=http://host.docker.internal:8080/v1`.
+
+Arrêt :
+
+```powershell
+docker compose -f docker-compose.yml -p wcpregnant down      # volume conservé
+docker compose -f docker-compose.yml -p wcpregnant down -v   # volume supprimé
+```
 
 > 💡 Les scripts racine [`start.ps1`](../../start.ps1) / [`stop.ps1`](../../stop.ps1)
 > (et `start.sh` / `stop.sh`) orchestrent la même chose — base, API et frontend — avec un

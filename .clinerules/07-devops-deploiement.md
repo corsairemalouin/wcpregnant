@@ -9,7 +9,7 @@ paths:
 
 # DevOps & déploiement
 
-- Dockerfile **multi-stage** : build Maven (`mvn -DskipTests package`) puis runtime `eclipse-temurin:*-jre-alpine`, utilisateur non root, `HEALTHCHECK` sur `/api/actuator/health`.
+- Dockerfile **multi-stage** : build Maven (`mvn -DskipTests package`) puis runtime `eclipse-temurin:*-jre-alpine`, utilisateur non root, `HEALTHCHECK` sur `/actuator/health` (chemin réel de l'Actuator — **pas** `/api/actuator/health`).
 - Toute modification du Dockerfile doit rester compatible avec `docker-compose.yml` (ports, variables `SPRING_DATASOURCE_*`, `JAVA_OPTS`).
 - Manifestes K8s : conserver les `resources` (requests/limits), les probes `liveness`/`readiness`, le `PodDisruptionBudget` et la `NetworkPolicy`. Ne jamais retirer un probe.
 - Configuration applicative injectée via ConfigMap/Secret, jamais via des valeurs en dur dans le Deployment.

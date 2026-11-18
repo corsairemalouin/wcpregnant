@@ -101,6 +101,32 @@ public class AppSecurityConfiguration {
         return new JdbcUserDetailsManager(dataSource);
     }
 
+    // --- SONDE DE SANTÉ (ACTUATOR) ---
+    /**
+     * Chaîne de filtres dédiée aux sondes de santé Actuator.
+     *
+     * <p>Le {@code HEALTHCHECK} du Dockerfile et les probes {@code liveness} /
+     * {@code readiness} du manifeste Kubernetes interrogent l'application sans
+     * en-tête d'authentification : la sonde est donc laissée accessible
+     * publiquement. Elle n'expose que l'état de disponibilité du service,
+     * aucune donnée métier ni information sensible.</p>
+     *
+     * <p>Le reste de l'Actuator et tous les endpoints métier ({@code /toilets/**},
+     * {@code /agent/**}) restent protégés par les chaînes suivantes.</p>
+     *
+     * @param http constructeur de chaîne fourni par Spring Security
+     * @return la chaîne de filtres autorisant uniquement les sondes de santé
+     */
+    @Bean
+    @Order(0)
+    public SecurityFilterChain healthFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/actuator/health", "/actuator/health/**")
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        return http.build();
+    }
+
     // --- CONFIGURATION API (STATELESS) ---
     @Bean
     @Order(1)
@@ -132,6 +158,16 @@ public class AppSecurityConfiguration {
         return http.build();
     }
 
+    /**
+     * Filtre de journalisation des requêtes HTTP entrantes.
+     *
+     * <p>Enregistre la chaîne de requête et le corps des appels (limité à
+     * 10 000 caractères) dans les logs, ce qui facilite le diagnostic des
+     * appels agentiques et des erreurs de validation. Les en-têtes ne sont
+     * pas journalisés afin de ne pas exposer les informations d'authentification.</p>
+     *
+     * @return le filtre configuré, à injecter dans la chaîne de sécurité
+     */
     @Bean
     public CommonsRequestLoggingFilter logFilter() {
         CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
