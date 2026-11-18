@@ -54,6 +54,19 @@ public class ToilettesApiImpl implements ToiletApi {
         return ResponseEntity.ok(crudService.getAllToilets(page, size));
     }
 
+    /**
+     * POST /toilets — crée un équipement sanitaire.
+     *
+     * <p>Le payload est d'abord validé (adresse, code postal, position
+     * géographique) avant d'être persisté. Seuls les administrateurs peuvent
+     * créer un équipement.</p>
+     *
+     * @param toilet l'équipement à créer, non {@code null}
+     * @return {@code 201 Created} avec l'équipement tel qu'il a été enregistré,
+     *         identifiant inclus
+     * @throws IllegalArgumentException si l'adresse, le code postal ou la position
+     *         géographique sont absents
+     */
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Toilet> createToilet(Toilet toilet) {
@@ -62,6 +75,13 @@ public class ToilettesApiImpl implements ToiletApi {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    /**
+     * GET /toilets/{id} — retourne un équipement par identifiant.
+     *
+     * @param id identifiant de la toilette recherchée
+     * @return {@code 200 OK} avec l'équipement, ou {@code 404 Not Found} s'il
+     *         n'existe pas
+     */
     @Override
     public ResponseEntity<Toilet> getToiletById(Long id) {
         return crudService.getToiletById(id)
@@ -69,6 +89,18 @@ public class ToilettesApiImpl implements ToiletApi {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * PUT /toilets/{id} — remplace entièrement un équipement.
+     *
+     * <p>La mise à jour est appliquée en place sur l'entité chargée, ce qui
+     * conserve l'identifiant et l'historique des notes.</p>
+     *
+     * @param id     identifiant de l'équipement à modifier
+     * @param toilet nouvelles données de l'équipement, non {@code null}
+     * @return {@code 200 OK} sans corps
+     * @throws IllegalArgumentException si l'adresse, le code postal ou la position
+     *         géographique sont absents
+     */
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updateToilet(Long id, Toilet toilet) {
@@ -77,6 +109,13 @@ public class ToilettesApiImpl implements ToiletApi {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * DELETE /toilets/{id} — supprime un équipement et son historique de notes.
+     *
+     * @param id identifiant de l'équipement à supprimer
+     * @return {@code 204 No Content} ; {@code 404 Not Found} est propagé par le
+     *         service lorsque l'identifiant est inconnu
+     */
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteToilet(Long id) {

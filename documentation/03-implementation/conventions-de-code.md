@@ -55,6 +55,12 @@ web  →  service (interface)  →  service/impl  →  bdd/repository  →  bdd/
 - Références via `{@link Xxx}` et `{@code ...}`.
 - Sur une implémentation : `{@inheritDoc}` + complément si le comportement diffère.
 - **Langue** : Javadoc, commentaires et messages de log en **français** ; identifiants en anglais ; messages d'erreur destinés à l'API et noms de tests en **anglais**.
+- **Contrôleurs** : chaque méthode d'un `XxxApiImpl` (par exemple
+  [`ToilettesApiImpl`](../../WcPregnantService/src/main/java/org/manu/wcpregnant/web/ToilettesApiImpl.java))
+  est documentée avec la route HTTP concernée (`POST /toilets`), le code de retour
+  attendu (`201`, `204`, `404`) et l'exception métier susceptible d'être levée.
+  Les classes générées par OpenAPI (`web/api/**`, `web/dto/**`) ne sont jamais touchées :
+  la Javadoc est écrite sur l'implémentation.
 
 ---
 
