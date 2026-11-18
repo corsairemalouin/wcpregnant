@@ -20074,3 +20074,6 @@ council-transcripts/
 # Caches Python des scripts de skills
 __pycache__/
 *.pyc
+
+# Artefacts de build Maven (rapports surefire, JaCoCo, classes compilees)
+WcPregnantService/target/

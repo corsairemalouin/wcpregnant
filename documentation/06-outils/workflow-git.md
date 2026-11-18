@@ -66,21 +66,17 @@ docs(agent): description de la boucle Reason → Act → Observe
 - secrets : `keystore.jks`, `.env`, credentials, tokens ;
 - fichiers temporaires de validation (`*-out.txt`, `*-err.txt`) ou scripts de contournement.
 
-Le dépôt contient historiquement des rapports de build **trackés** sous
-`WcPregnantService/target/` (surefire, JaCoCo). Pour des commits propres, stagez explicitement les
-fichiers sources et la documentation :
+Le dépôt contenait historiquement des rapports de build **trackés** sous
+`WcPregnantService/target/` (surefire, JaCoCo, classes compilées). Cette situation a été
+corrigée : les 93 artefacts ont été désindexés et `WcPregnantService/target/` est désormais
+ignoré par `.gitignore`. Les fichiers restent présents sur le disque (rapports JaCoCo
+consultables dans `WcPregnantService/target/site/jacoco/`), mais ne sont plus suivis par Git.
 
-```bash
-git add WcPregnantApp/src documentation .clinerules
-git commit -m "feat(agent-chat): assistant conversationnel branché sur POST /agent/chat"
-git push origin main
-```
-
-Pour cesser de suivre ces artefacts :
+Pour reproduire cette opération sur un autre dépôt :
 
 ```bash
 git rm --cached -r WcPregnantService/target
-echo "/WcPregnantService/target/" >> .gitignore
+echo "WcPregnantService/target/" >> .gitignore
 ```
 
 ## 5. En cas d'échec du push
