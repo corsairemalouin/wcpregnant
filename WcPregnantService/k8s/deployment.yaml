@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: wcpregnant-deployment
+  namespace: wcpregnant
   labels:
     app: wcpregnant
 spec:
@@ -16,7 +17,9 @@ spec:
     spec:
       containers:
         - name: wcpregnant
-          image: ghcr.io/<OWNER>/wcpregnant:latest # replace <OWNER>
+          # Image locale pour la vérification sur kind/Docker Desktop.
+          # En production : ghcr.io/<OWNER>/wcpregnant:latest (voir CI docker-image.yml).
+          image: wcpregnant:local
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

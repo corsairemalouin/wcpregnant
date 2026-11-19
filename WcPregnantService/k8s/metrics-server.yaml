@@ -1,0 +1,157 @@
+# Metrics-server : source de métriques ressources (CPU/mémoire) utilisée par
+# `kubectl top` et par le Horizontal Pod Autoscaler (hpa.yaml).
+# Sans lui, l'HPA reste inactif : "missing metric: cpu".
+# RBAC nécessaire : sans ServiceAccount dédié, metrics-server ne peut pas
+# lire le configmap "extension-apiserver-authentication" et échoue au démarrage.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: metrics-server
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: metrics-server-auth-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+  - kind: ServiceAccount
+    name: metrics-server
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: metrics-server
+rules:
+  - apiGroups: [""]
+    resources: [nodes, pods, namespaces]
+    verbs: [get, list, watch]
+  # Le kubelet expose ses métriques via le sous-ressource "nodes/metrics" :
+  # RBAC ne considère pas "nodes" comme couvrant le sous-ressource, il faut
+  # l'ajouter explicitement pour que le scraper ne reçoive pas un 403.
+  - apiGroups: [""]
+    resources: [nodes/metrics, nodes/status]
+    verbs: [get]
+  # metrics-server sert ses API derrière un authorizer "webhook" : il doit pouvoir
+  # créer des SubjectAccessReview auprès de l'apiserver, sinon il s'arrête au
+  # démarrage (CrashLoopBackOff).
+  - apiGroups: [authorization.k8s.io]
+    resources: [subjectaccessreviews]
+    verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: metrics-server-view-cluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: metrics-server
+subjects:
+  - kind: ServiceAccount
+    name: metrics-server
+    namespace: kube-system
+---
+# A partir de Kubernetes 1.34, l'apiserver ne "découvre" plus automatiquement
+# les extension apiservers à partir des services nommés *-server de kube-system :
+# le groupe metrics.k8s.io doit être enregistré explicitement via un objet
+# APIService (apiregistration.k8s.io/v1). Sans lui, `kubectl top` renvoie
+# "Metrics API not available" même quand metrics-server est Running.
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1beta1.metrics.k8s.io
+spec:
+  group: metrics.k8s.io
+  version: v1beta1
+  service:
+    name: metrics-server
+    namespace: kube-system
+  groupPriorityMinimum: 100
+  versionPriority: 100
+  # metrics-server génère lui-même un certificat auto-signé dont le CN/SAN est
+  # "localhost". L'agrégateur de l'apiserver se connecte au nom de service
+  # "metrics-server.kube-system.svc" : sans cette option la vérification TLS
+  # échoue ("certificate is valid for localhost ... not metrics-server.kube-system.svc")
+  # et l'APIService reste "FailedDiscoveryCheck" -> `kubectl top` indisponible.
+  insecureSkipTLSVerify: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-server
+  namespace: kube-system
+  labels:
+    k8s-app: metrics-server
+spec:
+  # Sans selector le Service n'a aucun endpoint : l'agrégation de l'API
+  # "metrics.k8s.io" échoue et `kubectl top` renvoie "Metrics API not available".
+  selector:
+    k8s-app: metrics-server
+  ports:
+    - name: https
+      port: 443
+      targetPort: 443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-server
+  namespace: kube-system
+  labels:
+    k8s-app: metrics-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: metrics-server
+  template:
+    metadata:
+      labels:
+        k8s-app: metrics-server
+    spec:
+      serviceAccountName: metrics-server
+      containers:
+        - name: metrics-server
+          image: registry.k8s.io/metrics-server/metrics-server:v0.7.1
+          args:
+            # metrics-server v0.7 n'accepte pas --addr : il écoute par défaut
+            # sur :443 (HTTPS, certificat auto-signé en interne).
+            - --kubelet-insecure-tls
+            - --kubelet-preferred-address-types=InternalIP
+          ports:
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          # metrics-server ne expose aucun chemin non authentifié : une sonde
+          # HTTP sur "/" répond 403 et fait crasher le pod. On sonde donc le
+          # port TCP, ce qui vérifie la disponibilité du service sans auth.
+          livenessProbe:
+            tcpSocket:
+              port: 443
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: 443
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              memory: 200Mi
+          # metrics-server génère son certificat auto-signé dans /tmp : le
+          # conteneur tourne en non root, il faut un volume writable.
+          volumeMounts:
+            - name: metrics-data
+              mountPath: /tmp
+      volumes:
+        - name: metrics-data
+          emptyDir: {}

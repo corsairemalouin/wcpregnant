@@ -198,11 +198,29 @@ helm install nginx-ingress ingress-nginx/ingress-nginx `
   --create-namespace
 ```
 
-### 2.5 Metrics Server (nécessaire à l'HPA)
+### 2.5 Metrics Server (nécessaire à l'HPA et à `kubectl top`)
 
 ```powershell
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+kubectl apply -f WcPregnantService/k8s/metrics-server.yaml
 ```
+
+Le manifeste local est **nécessaire** : le `components.yaml` upstream échoue sur le
+cluster Docker Desktop, parce que
+
+1. Kubernetes 1.34+ exige un objet **`APIService`** explicite pour enregistrer le
+   groupe `metrics.k8s.io` ;
+2. le RBAC doit couvrir le sous-ressource **`nodes/metrics`** (sinon `403` du kubelet) ;
+3. les sondes doivent être **TCP** (une sonde HTTP sur `/` renvoie `403` et crash le pod) ;
+4. le Service doit avoir un **sélecteur** pour que l'agrégateur ait des endpoints ;
+5. `insecureSkipTLSVerify: true` est requis en local (certificat auto-signé `CN=localhost`).
+
+Vérification :
+
+```powershell
+kubectl top nodes
+kubectl top pods -n wcpregnant
+```
+
 
 ---
 

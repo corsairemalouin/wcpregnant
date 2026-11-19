@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: wcpregnant-network-policy
+  namespace: wcpregnant
 spec:
   podSelector:
     matchLabels:
@@ -10,10 +11,19 @@ spec:
     - Ingress
     - Egress
   ingress:
+    # 1. Trafic interne du namespace (frontend, tests, port-forward interne).
     - from:
         - podSelector:
             matchLabels:
               role: frontend
+      ports:
+        - protocol: TCP
+          port: 8080
+    # 2. Trafic entrant depuis l'extérieur du cluster (ingress nginx, port-forward
+    #    kubectl, sondes de santé). Sans cette règle, AUCUNE requête n'atteint les
+    #    pods applicatifs : un NetworkPolicy qui déclare une règle Ingress devient
+    #    « deny by default » pour toutes les sources non listées.
+    - from: []
       ports:
         - protocol: TCP
           port: 8080
@@ -32,4 +42,13 @@ spec:
           port: 53
         - protocol: UDP
           port: 53
+    # Inférence agentique 100 % locale : serveur Strata AI du réseau privé.
+    # La règle est restreinte au port 8000, aucun appel cloud n'est autorisé.
+    - to:
+        - podSelector:
+            matchLabels:
+              app: strata-ai
+      ports:
+        - protocol: TCP
+          port: 8000
 

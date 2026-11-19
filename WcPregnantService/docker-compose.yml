@@ -1,6 +1,9 @@
 services:
   db:
     image: postgres:15-alpine
+    # Résilience : relance automatique du conteneur en cas de crash ou d'arrêt
+    # inattendu. "unless-stopped" respecte un arrêt volontaire (compose stop).
+    restart: unless-stopped
     environment:
       POSTGRES_USER: wcpregnant
       POSTGRES_PASSWORD: changeme
@@ -13,6 +16,7 @@ services:
   app:
     build: .
     image: wcpregnant:local
+    restart: unless-stopped
     depends_on:
       - db
     environment:

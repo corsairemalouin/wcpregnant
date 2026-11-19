@@ -21,7 +21,7 @@ Ce guide documente les manifestes situés dans `WcPregnantService/k8s/`.
 - `kubectl` installé et configuré ;
 - (Optionnel) cert-manager pour le TLS — le manifeste Ingress suppose Let's Encrypt ;
 - (Optionnel) nginx-ingress-controller ;
-- (Optionnel) metrics-server pour l'HPA.
+- **metrics-server** pour `kubectl top` et l'HPA : le manifeste local [`metrics-server.yaml`](../../WcPregnantService/k8s/metrics-server.yaml) est **obligatoire** dans le cluster Docker Desktop, le `components.yaml` upstream ne fonctionne pas ici (voir §7.2).
 
 ## 3. Démarrage rapide
 
@@ -122,6 +122,43 @@ kubectl describe hpa wcpregnant-hpa -n wcpregnant
 kubectl top pods -n wcpregnant
 kubectl top nodes
 ```
+
+### 7.1 Vérifier l'enregistrement du groupe d'API `metrics.k8s.io`
+
+```bash
+kubectl get apiservice v1beta1.metrics.k8s.io
+kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes"
+```
+
+Depuis **Kubernetes 1.34**, le groupe d'API extension `metrics.k8s.io` n'est plus
+découvert automatiquement à partir du nom du Service : il faut déclarer **explicitement**
+un objet `APIService` (section 1 de `metrics-server.yaml`). Sans lui, `kubectl top`
+renvoie `error: the metrics API is not available`.
+
+### 7.2 Pourquoi le manifeste local diffère du `components.yaml` upstream
+
+| Point | Manifeste upstream | `metrics-server.yaml` (cluster local) | Motif |
+|---|---|---|---|
+| `APIService` | absent | présent (`v1beta1.metrics.k8s.io`) | obligatoire depuis Kubernetes 1.34 pour enregistrer le groupe d'API |
+| RBAC | `nodes`, `pods` | ajoute `nodes/metrics` et `nodes/status` | le kubelet expose les métriques sous un **sous-ressource** : sans lui le scraper reçoit un `403` |
+| Sondes | HTTP GET `/` | `tcpSocket` sur `443` | metrics-server n'expose **aucun chemin non authentifié** : une sonde HTTP renvoie `403` et fait crasher le pod |
+| Service | sans sélecteur | `selector: k8s-app: metrics-server` | sans sélecteur le Service n'a **aucun endpoint**, l'agrégateur ne peut pas joindre le serveur |
+| TLS | — | `insecureSkipTLSVerify: true` | le serveur utilise un certificat auto-signé (`CN=localhost`) : l'agrégateur de l'API server refuse la vérification en environnement local |
+| Scraping kubelet | — | `--kubelet-insecure-tls` | certificats auto-signés du kubelet de Docker Desktop |
+
+> `insecureSkipTLSVerify` est réservé aux environnements de développement. En
+> production, fournir un certificat valide à metrics-server (`--cert-dir` +
+> `--kubelet-certificate-authority`) et retirer cette ligne.
+
+### 7.3 Diagnostic rapide si `kubectl top` échoue
+
+```bash
+kubectl get pods -n kube-system -l k8s-app=metrics-server     # pod Running ?
+kubectl logs -n kube-system -l k8s-app=metrics-server         # "unable to connect to kubelet" / 403 ?
+kubectl get endpoints -n kube-system metrics-server           # endpoints vides ?
+kubectl get apiservice v1beta1.metrics.k8s.io                 # Available: True ?
+```
+
 
 ### Vérifier les sondes de santé
 
