@@ -26,7 +26,7 @@ kubectl apply -f hpa.yaml -f networkpolicy.yaml -f ingress.yaml -n wcpregnant
 - Probes `liveness`/`readiness` sur `/actuator/health` et `/actuator/health/readiness`.
 - `requests`/`limits` CPU et mémoire toujours définis.
 - `PodDisruptionBudget` minAvailable = 1.
-- PostgreSQL 15 avec PVC 10Gi ; accès via Service ClusterIP.
+- PostgreSQL 18 (`postgres:18-alpine`) avec PVC 10Gi ; accès via Service ClusterIP.
 - Secrets (DSN, mots de passe) uniquement via Secret, jamais en dur.
 
 ## Diagnostic

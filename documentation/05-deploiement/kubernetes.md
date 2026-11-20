@@ -10,7 +10,7 @@ Ce guide documente les manifestes situés dans `WcPregnantService/k8s/`.
 |---|---|
 | **Espace de noms** | `wcpregnant` (environnement isolé) |
 | **Application** | 2 à 5 réplicas (autoscaling selon le seuil CPU de 70 %) |
-| **Base de données** | PostgreSQL 15 avec stockage persistant (10 Gi) |
+| **Base de données** | PostgreSQL 18 (`postgres:18-alpine`) avec stockage persistant (10 Gi) |
 | **Réseau** | Service (`ClusterIP:80`), Ingress (nginx), `NetworkPolicy` |
 | **Contrôles de santé** | Sondes de survie (*liveness*) et de disponibilité (*readiness*) |
 | **Haute disponibilité** | `PodDisruptionBudget` (au moins 1 pod disponible) |

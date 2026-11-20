@@ -1,6 +1,11 @@
 services:
   db:
-    image: postgres:15-alpine
+    # PostgreSQL 18 (Alpine) : version majeure actuelle, image plus légère et
+    # plus rapide à tirer que la série 15. Attention : un volume `db_data` déjà
+    # créé par PostgreSQL 15 n'est PAS compatible avec 18 (format de catalogue
+    # différent) -> soit recreer le volume (`docker compose down -v`), soit
+    # migrer avec pg_dump/pg_restore (voir documentation/05-deploiement).
+    image: postgres:18-alpine
     # Résilience : relance automatique du conteneur en cas de crash ou d'arrêt
     # inattendu. "unless-stopped" respecte un arrêt volontaire (compose stop).
     restart: unless-stopped
@@ -9,7 +14,11 @@ services:
       POSTGRES_PASSWORD: changeme
       POSTGRES_DB: wcpregnant
     volumes:
-      - db_data:/var/lib/postgresql/data
+      # Montage unique sur /var/lib/postgresql : depuis PostgreSQL 18, l'image
+      # officielle stocke les données dans un sous-dossier versionné
+      # (/var/lib/postgresql/18/docker) pour rendre "pg_upgrade --link" possible.
+      # Monter directement /var/lib/postgresql/data provoque un arrêt du conteneur.
+      - db_data:/var/lib/postgresql
     ports:
       - "5432:5432"
 

@@ -10,7 +10,7 @@
 |---|---|
 | Front Angular avec carte | ✅ Angular 20 + Leaflet |
 | Back Java + Spring Boot | ✅ Java 25 + Spring Boot 4.1.0 |
-| Base de données PostgreSQL | ✅ PostgreSQL 15 (H2 pour les tests) |
+| Base de données PostgreSQL | ✅ PostgreSQL 18 (image `postgres:18-alpine`) — H2 en mémoire pour les tests |
 | API REST décrites en **OpenAPI**, code Java **auto-généré** à partir des YAML | ✅ plugin OpenAPI generator ; interfaces dans `web/api`, DTO dans `web/dto` |
 | Build **Maven** | ✅ `WcPregnantService/pom.xml` |
 | Delivery en **conteneurs Docker** + **configuration Kubernetes** | ✅ `Dockerfile` multi-stage + `WcPregnantService/k8s/` |

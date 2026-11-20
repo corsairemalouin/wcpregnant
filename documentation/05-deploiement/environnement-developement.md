@@ -95,7 +95,7 @@ Pour le développement local (non requis si l'on utilise docker-compose) :
 - ou via Docker :
 
 ```powershell
-docker run -e POSTGRES_PASSWORD=changeme -e POSTGRES_DB=wcpregnant -p 5432:5432 postgres:15-alpine
+docker run -e POSTGRES_PASSWORD=changeme -e POSTGRES_DB=wcpregnant -p 5432:5432 postgres:18-alpine
 ```
 
 > En local sans PostgreSQL, `application.properties` utilise H2 en mémoire (`spring.h2.console.enabled=true`).

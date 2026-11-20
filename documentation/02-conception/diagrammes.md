@@ -101,7 +101,7 @@ classDiagram
 graph TD
     Ingress["Ingress nginx<br/>wcpregnant.example.com"] --> SVC["Service ClusterIP :80"]
     SVC --> P1["Pod app ×2 (HPA max 5)"]
-    P1 --> PG["Pod PostgreSQL 15<br/>PVC 10 Gi"]
+    P1 --> PG["Pod PostgreSQL 18<br/>PVC 10 Gi"]
     P1 --> CM["ConfigMap"]
     P1 --> SEC["Secret"]
 ```

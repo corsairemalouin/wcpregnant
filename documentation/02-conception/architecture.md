@@ -239,7 +239,7 @@ Le workflow `WcPregnantService/.github/workflows/docker-image.yml` se déclenche
 - Ressources demandées : 256 Mi mémoire, 250 m CPU ;
 - Limites : 512 Mi mémoire, 500 m CPU.
 
-**Déploiement base de données** : PostgreSQL 15 Alpine, 1 réplica (point unique de failure dans la configuration de base), volume persistant de 10 Gi, contrôle de santé `pg_isready -U wcpregnant`.
+**Déploiement base de données** : PostgreSQL 18 Alpine (`postgres:18-alpine`), 1 réplica (point unique de failure dans la configuration de base), volume persistant de 10 Gi, contrôle de santé `pg_isready -U wcpregnant`.
 
 **Service** : `ClusterIP` (port 80 → 14007).
 

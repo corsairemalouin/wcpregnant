@@ -17,7 +17,10 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:15-alpine
+          # PostgreSQL 18 (Alpine). Le PVC `postgres-pvc` formaté par une version
+          # antérieure (15) doit être recreé ou migré via pg_dump/pg_restore :
+          # le répertoire de données n'est pas compatible entre versions majeures.
+          image: postgres:18-alpine
           env:
             - name: POSTGRES_USER
               valueFrom:
@@ -35,7 +38,9 @@ spec:
             - containerPort: 5432
           volumeMounts:
             - name: pgdata
-              mountPath: /var/lib/postgresql/data
+              # PostgreSQL 18+ : montage racine /var/lib/postgresql (les données
+              # sont écrites dans /var/lib/postgresql/18/docker).
+              mountPath: /var/lib/postgresql
           livenessProbe:
             exec:
               command:

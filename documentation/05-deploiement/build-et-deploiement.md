@@ -55,8 +55,50 @@ docker compose -f docker-compose.yml -p wcpregnant up -d
 
 | Service | Image | Port public |
 |---|---|---|
-| `db` | `postgres:15-alpine` | `5432` (volume `db_data`) |
+| `db` | `postgres:18-alpine` | `5432` (volume `db_data`) |
 | `app` | `wcpregnant:local` (construite depuis le `Dockerfile`) | `${API_PORT:-14007}` → `14007` |
+
+### Migration PostgreSQL 15 → 18
+
+Le répertoire de données PostgreSQL n'est **pas compatible entre versions majeures** :
+un volume `db_data` créé par PostgreSQL 15 ne peut pas être relu par PostgreSQL 18.
+
+Deux options :
+
+1. **Repartir de zéro** (données de démonstration, reseeding automatique par
+   `DataSeeder` / `SecurityAccountSeeder`) :
+
+   ```powershell
+   docker compose -f docker-compose.yml -p wcpregnant down -v
+   docker compose -f docker-compose.yml -p wcpregnant up -d
+   ```
+
+2. **Conserver les données** avec `pg_dump` / `pg_restore` :
+
+   ```powershell
+   # 1. Sauvegarde depuis l'ancienne base (PostgreSQL 15 encore en place)
+   docker exec wcpregnant-db pg_dump -U wcpregnant -d wcpregnant -F c -f /tmp/wcpregnant.dump
+   docker cp wcpregnant-db:/tmp/wcpregnant.dump .run/wcpregnant.dump
+
+   # 2. Arrêt de la stack et suppression du volume incompatible
+   docker compose -f docker-compose.yml -p wcpregnant down
+   docker volume rm wcpregnant_db_data
+
+   # 3. Démarrage de PostgreSQL 18 puis restauration
+   docker compose -f docker-compose.yml -p wcpregnant up -d db
+   docker cp .run/wcpregnant.dump wcpregnant-db:/tmp/wcpregnant.dump
+   docker exec wcpregnant-db pg_restore -U wcpregnant -d wcpregnant /tmp/wcpregnant.dump
+   ```
+
+Vérification de la version et des données :
+
+```powershell
+docker exec wcpregnant-db psql -U wcpregnant -d wcpregnant -c "select version();"
+docker exec wcpregnant-db psql -U wcpregnant -d wcpregnant -c "select count(*) from toilet;"
+```
+
+Le pilote JDBC `org.postgresql:postgresql:42.7.5` déclaré dans `pom.xml` est
+compatible avec PostgreSQL 18 : aucune modification de code n'est nécessaire.
 
 Vérification de la santé du conteneur :
 
