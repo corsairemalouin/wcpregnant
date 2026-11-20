@@ -104,6 +104,12 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 
 **`DataSeeder`** (profil `dev`) : alimente la base avec un jeu de démonstration autour de Rennes, uniquement si elle est vide.
 
+**`UserAccountSeeder`** (profil `dev`) : crée `manu` et `admin` dans `user_account` avec mot de passe **haché**, de façon idempotente.
+
+**`SecurityAccountSeeder`** (profil `prod`) : garantit la présence des comptes de démonstration dans le référentiel Spring Security (tables `users` / `authorities`) à l'événement `ApplicationReadyEvent`, sans jamais écraser un compte déjà existant. Les identifiants sont surchargeables par `DEMO_USER_USERNAME`, `DEMO_USER_PASSWORD`, `DEMO_ADMIN_USERNAME` et `DEMO_ADMIN_PASSWORD`.
+
+> Pour que l'amorceur puisse injecter le manager, le bean `userDetailsService` du profil `prod` est typé `JdbcUserDetailsManager` (et non `UserDetailsService`) : `JdbcUserDetailsManager` implémente `UserDetailsService`, le comportement d'authentification est donc strictement inchangé.
+
 ### 3.5 Mappers (MapStruct)
 
 | Mapper | Transformation |
@@ -162,7 +168,7 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 | Envoi | SMTP (`spring-boot-starter-mail`) lorsque `auth.mail.enabled=true` ; sinon **mode démonstration** : le code est renvoyé dans `demoCode` |
 | Confirmation | contrôle de la date d'expiration, `passwordEncoder.matches(code, resetCode)`, nouveau mot de passe ≥ 8 caractères, code consommé |
 | Codes HTTP | `200`, `400` (identifiant, code ou mot de passe invalide), `404` (compte inconnu, code absent ou expiré) |
-| Amorce des comptes | `bdd/seed/UserAccountSeeder` (profil `dev`) crée `manu` et `admin` avec mot de passe **haché**, de façon idempotente |
+| Amorce des comptes | `bdd/seed/UserAccountSeeder` (profil `dev`) crée `manu` et `admin` avec mot de passe **haché**, de façon idempotente ; `bdd/seed/SecurityAccountSeeder` (profil `prod`) amorce les mêmes comptes dans `users` / `authorities` au démarrage |
 | Sécurité | `/auth/**` et `/error` explicitement `permitAll()` dans la chaîne API (`@Order(1)`) ; `/toilets/**`, `/api/**` et `/agent/**` restent protégés |
 
 > **Limite connue** : en profil `dev`, l'authentification s'appuie sur `InMemoryUserDetailsManager` (`manu` / `admin` en `{noop}`) et en profil `prod` sur `JdbcUserDetailsManager` (table `users`). Le mot de passe réinitialisé est écrit dans `user_account` : la réinitialisation n'affecte la connexion que lorsque le `UserDetailsService` est branché sur `user_account`.

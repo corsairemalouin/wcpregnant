@@ -66,9 +66,13 @@ curl.exe -s http://localhost:8080/actuator/health
 ```
 
 > 💡 Le profil Spring est `prod` par défaut : les comptes sont alors lus dans les
-> tables `users` / `authorities` de PostgreSQL (vides au premier lancement). Pour
-> les comptes de démonstration `admin`/`admin` et `manu`/`manu`, lancer avec
-> `SPRING_PROFILES_ACTIVE=dev`. Le port est surchargeable avec `API_PORT` (les
+> tables `users` / `authorities` de PostgreSQL. `SecurityAccountSeeder` y crée les
+> comptes de démonstration `admin`/`admin` et `manu`/`manu` au premier lancement
+> (opération idempotente : un compte existant n'est jamais écrasé), ce qui permet
+> de vérifier le RBAC dès le départ. Les identifiants sont surchargeables via
+> `DEMO_USER_USERNAME`, `DEMO_USER_PASSWORD`, `DEMO_ADMIN_USERNAME` et
+> `DEMO_ADMIN_PASSWORD`. Pour utiliser les comptes en mémoire (`{noop}`), lancer
+> avec `SPRING_PROFILES_ACTIVE=dev`. Le port est surchargeable avec `API_PORT` (les
 > scripts `start.ps1` l'alignent sur `8081`, cible du proxy Angular).
 
 > ⚠️ L'inférence agentique locale est attendue sur `AGENT_INFERENCE_BASE_URL`

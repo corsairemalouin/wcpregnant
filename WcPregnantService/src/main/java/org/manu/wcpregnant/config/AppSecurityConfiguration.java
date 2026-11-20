@@ -106,12 +106,19 @@ public class AppSecurityConfiguration {
      * {@code authorities} dans le schéma pointé par {@code dataSource}, ce qui
      * permet une gestion durable des comptes et des rôles.</p>
      *
+     * <p>Le bean est typé {@link JdbcUserDetailsManager} (et non
+     * {@code UserDetailsService}) afin que {@link org.manu.wcpregnant.bdd.seed.SecurityAccountSeeder}
+     * puisse injecter le même bean pour appeler {@code userExists} et
+     * {@code createUser} : {@link JdbcUserDetailsManager} implémente
+     * {@link UserDetailsService}, le comportement de l'authentification est donc
+     * strictement identique.</p>
+     *
      * @param dataSource source de données PostgreSQL contenant les comptes utilisateurs
      * @return un {@link JdbcUserDetailsManager} branché sur la base de production
      */
     @Bean
     @Profile("prod")
-    public UserDetailsService userDetailsService(DataSource dataSource) {
+    public JdbcUserDetailsManager userDetailsService(DataSource dataSource) {
         return new JdbcUserDetailsManager(dataSource);
     }
 
