@@ -1,8 +1,8 @@
 name: Test getNearsetToilettes
 steps:
-  - name: Appel de la méthode getNearsetToilettes
+  - name: Appel de la mï¿½thode getNearsetToilettes
     request:
-      url: http://localhost:8080/api/toilet
+      url: http://localhost:14007/api/toilet
       method: GET
       query:
         latitude: 48.8566

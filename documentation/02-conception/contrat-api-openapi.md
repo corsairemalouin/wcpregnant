@@ -121,6 +121,10 @@ Si `latitude` **et** `longitude` sont fournis, les résultats sont **triés par 
 
 Collection : `Bruno/WcPregnant/WC Pregnant API/`
 
+Toutes les requêtes ciblent le **port dédié 14007** (`http://localhost:14007/...` ou
+`{{base_url}}` défini dans `Bruno/environments/local.bru`) : le port générique `8080`
+n'est plus utilisé, il est occupé par d'autres applications locales.
+
 | Fichier `.bru` | Scénario |
 |---|---|
 | `local.bru` | Variables d'environnement locales |

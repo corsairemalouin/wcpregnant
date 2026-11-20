@@ -110,6 +110,11 @@ conteneurs du projet compose `wcpregnant`.
 > dédié au projet — il n'est ni un port générique (8080, 8081) ni un port de la plage
 > éphémère Windows (49152-65535), ce qui supprime les interférences avec d'autres services
 > locaux. `application.properties` définit le même défaut via `server.port=${API_PORT:14007}`.
+>
+> **Mesure sur ce poste** (`netstat -an | Select-String LISTENING`) : `8080` est occupé
+> (IPv4 et IPv6) par une autre application locale, `5432` par PostgreSQL. `14007` est
+> libre, dans la bande 11000-49151. Les scripts refusent de démarrer si le port choisi
+> n'est pas libre (`PortFree` / `port_free`).
 
 ---
 

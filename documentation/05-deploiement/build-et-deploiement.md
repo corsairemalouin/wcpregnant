@@ -79,7 +79,8 @@ curl.exe -s http://localhost:14007/actuator/health
 > ⚠️ L'inférence agentique locale est attendue sur `AGENT_INFERENCE_BASE_URL`
 > (default `http://host.docker.internal:8000/v1`) : si votre serveur Strata AI
 > écoute sur un autre port, surchargez la variable, par exemple
-> `AGENT_INFERENCE_BASE_URL=http://host.docker.internal:8080/v1`.
+> `AGENT_INFERENCE_BASE_URL=http://host.docker.internal:11000/v1` — jamais `8080`,
+> port générique déjà occupé par d'autres applications locales.
 
 Arrêt :
 

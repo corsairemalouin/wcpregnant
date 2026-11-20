@@ -95,8 +95,12 @@ Dans `~/.cline/data/settings/cline_mcp_settings.json` :
 }
 ```
 
-Alternative HTTP (client MCP externe) : `python -m graphify.serve --transport http --port 8080`
-→ `http://127.0.0.1:8080/mcp` (nécessite `uvicorn`).
+Alternative HTTP (client MCP externe) : `python -m graphify.serve --transport http --port 14008`
+→ `http://127.0.0.1:14008/mcp` (nécessite `uvicorn`).
+
+> ⚠️ Ne pas utiliser `8080` pour ce serveur : ce port est **déjà occupé** sur ce poste
+> par une autre application locale. Le port `14008` est libre et reste dans la bande
+> réservée au projet (11000-49151), juste après le port dédié de l'API `14007`.
 
 Le serveur a été **testé** (échange JSON-RPC `initialize` → `tools/list` → `tools/call
 query_graph`) : il répond correctement avec le protocole `2025-06-30` et renvoie les
