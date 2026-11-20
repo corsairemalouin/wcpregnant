@@ -80,16 +80,6 @@ class AgentChatEndToEndTest {
     }
 
     /**
-     * Démarre le faux serveur d'inférence sur un port éphémère de {@code 127.0.0.1}
-     * et injecte son URL réelle comme propriété système, lue par
-     * {@code AgentToolConfig} via {@code agent.inference.base-url}.
-     *
-     * <p>Le port n'est pas fixé : un port réservé par l'OS (plages Hyper-V sous
-     * Windows) rendrait le bind impossible et rendrait la suite instable.</p>
-     *
-     * @return le serveur démarré
-     */
-    /**
      * Démarre le faux serveur d'inférence sur le port fixé par
      * {@code FAKE_INFERENCE_PORT}, URL injectée dans le contexte Spring par
      * {@code @SpringBootTest(properties = ...)} et lue par {@code AgentToolConfig}.
