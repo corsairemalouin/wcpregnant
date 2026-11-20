@@ -18,7 +18,7 @@
 
 | Environnement | URL |
 |---|---|
-| Développement local | `http://localhost:8080/api/wcpregnant` |
+| Développement local | `http://localhost:14007/api/wcpregnant` |
 | Cluster Kubernetes | `http://wcpregnant-service/api/wcpregnant` |
 
 ---

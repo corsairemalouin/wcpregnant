@@ -60,7 +60,7 @@ chmod +x start.sh stop.sh   # une seule fois
 |---|---|---|---|---|
 | Mode | `-Mode local\|docker` | `--mode local\|docker` | `local` | `local` = Maven + `ng serve` ; `docker` = API et base via docker-compose |
 | Profil Spring | `-Profile` | `--profile` | `dev` | `dev` active les utilisateurs de démonstration (`admin`/`admin`, `manu`/`manu`) ; `prod` s'appuie sur la table `users` |
-| Port API | `-ApiPort` | `--api-port` | `8081` | Aligné sur `WcPregnantApp/src/proxy.conf.json` |
+| Port API | `-ApiPort` | `--api-port` | `14007` | Port **dédié au projet**, aligné sur `WcPregnantApp/src/proxy.conf.json` |
 | Port frontend | `-FrontPort` | `--front-port` | `4200` | Port d'`ng serve` |
 | Inférence | `-InferenceUrl` / `-InferenceModel` | `--inference-url` / `--inference-model` | `http://localhost:8000/v1` / `Qwen-3.8-Flash-Next` | Serveur d'inférence **local** de la couche agentique |
 | Sans base | `-NoDb` | `--no-db` | — | Skip PostgreSQL : Spring utilise H2 en mémoire |
@@ -98,17 +98,18 @@ conteneurs du projet compose `wcpregnant`.
 | Composant | Port | URL |
 |---|---|---|
 | Frontend Angular | 4200 | <http://localhost:4200> |
-| API Spring Boot (mode local) | 8081 | <http://localhost:8081> |
-| API Spring Boot (mode docker) | 8081 (via `API_PORT`) | <http://localhost:8081> |
+| API Spring Boot (mode local) | 14007 | <http://localhost:14007> |
+| API Spring Boot (mode docker) | 14007 (via `API_PORT`) | <http://localhost:14007> |
 | Santé API | — | `/actuator/health` — **publique** par conception (chaîne `healthFilterChain`, `@Order(0)`) : `200 {"status":"UP"}` sans authentification, utilisée par le `HEALTHCHECK` Docker et les probes Kubernetes. Les scripts testent toujours la disponibilité par le **port** |
 | Endpoints protégés (Basic) | — | `/toilets/**`, `/api/**`, `/agent/**` — `admin` / `admin` (rôle `ADMIN`) ou `manu` / `manu` (rôle `USER`) en profil `dev` |
 | Outils agentiques | — | `GET /agent/tools` (Basic `admin` / `admin`) |
 | PostgreSQL | 5432 | `jdbc:postgresql://localhost:5432/wcpregnant` |
 | Inférence locale (Strata AI) | 8000 | <http://localhost:8000/v1> |
 
-> `docker-compose.yml` publie l'API sur `${API_PORT:-8080}` : sans surcharge le comportement
-> historique (8080) est conservé, avec les scripts le port est aligné sur 8081 pour que le
-> proxy Angular fonctionne sans modification.
+> `docker-compose.yml` publie l'API sur `${API_PORT:-14007}` : le port **14007** est
+> dédié au projet — il n'est ni un port générique (8080, 8081) ni un port de la plage
+> éphémère Windows (49152-65535), ce qui supprime les interférences avec d'autres services
+> locaux. `application.properties` définit le même défaut via `server.port=${API_PORT:14007}`.
 
 ---
 
@@ -138,10 +139,10 @@ conteneurs du projet compose `wcpregnant`.
 | Commande | Résultat |
 |---|---|
 | `bash -n start.sh && bash -n stop.sh` | syntaxe OK |
-| `bash start.sh --no-front` | API démarrée sur 8081 (H2 en mémoire), exit `0` |
+| `bash start.sh --no-front` | API démarrée sur 14007 (H2 en mémoire), exit `0` |
 | `bash stop.sh` | processus arrêtés, exit `0` |
 | `bash stop.sh --status` | état affiché, exit `0` |
-| `.\start.ps1 -NoFront` | API démarrée sur 8081 (H2 en mémoire), exit `0` |
+| `.\start.ps1 -NoFront` | API démarrée sur 14007 (H2 en mémoire), exit `0` |
 | `.\stop.ps1` | processus arrêtés, exit `0` |
 | `.\stop.ps1 -Status` | état affiché, exit `0` |
 | `.\start.ps1 -DryRun` | plan affiché sans exécution, exit `0` |

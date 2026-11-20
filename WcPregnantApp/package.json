@@ -4,7 +4,7 @@
   "scripts": {
     "start": "ng serve --port 4200 --proxy-config src/proxy.conf.json",
     "serve": "ng serve --port 4200 --proxy-config src/proxy.conf.json",
-    "start:backend": "mvn -f ../WcPregnantService/pom.xml spring-boot:run -Dspring-boot.run.profiles=dev -Dspring-boot.run.arguments=--server.port=8081",
+    "start:backend": "mvn -f ../WcPregnantService/pom.xml spring-boot:run -Dspring-boot.run.profiles=dev -Dspring-boot.run.arguments=--server.port=14007",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"

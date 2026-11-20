@@ -13,7 +13,7 @@ ng serve --proxy-config src/proxy.conf.json
 ```
 
 Le proxy transfère les requêtes `/toilets*`, `/actuator*` et `/agent*` vers l'API Spring Boot sur
-`http://localhost:8081` : le backend doit donc être démarré. `src/environments/environment.ts`
+`http://localhost:14007` (port dédié au projet) : le backend doit donc être démarré. `src/environments/environment.ts`
 contient le chemin de base de l'API (`/toilets`), celui des endpoints agentiques (`/agent`) et la
 position de recherche par défaut.
 

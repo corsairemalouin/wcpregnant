@@ -215,9 +215,10 @@ Le workflow `WcPregnantService/.github/workflows/docker-image.yml` se déclenche
 | `builder` | `eclipse-temurin:26-jdk-alpine` | `mvn -DskipTests package -q` |
 | `runtime` | `eclipse-temurin:26-jre-alpine` | Copie du jar, utilisateur non root `appuser` |
 
-- Port exposé : **8080** ;
+- Port exposé : **14007** (port dédié au projet, défini par `server.port=${API_PORT:14007}`
+  dans `application.properties` — ni 8080/8081, ni la plage éphémère Windows 49152-65535) ;
 - `JAVA_OPTS` configurable (`-Xms256m -Xmx512m`) ;
-- `HEALTHCHECK` toutes les 30 s sur `http://localhost:8080/actuator/health`
+- `HEALTHCHECK` toutes les 30 s sur `http://localhost:14007/actuator/health`
   (la sonde est explicitement **publique** : voir la chaîne de filtres
   `healthFilterChain` dans `AppSecurityConfiguration`, sans authentification).
 
@@ -240,7 +241,7 @@ Le workflow `WcPregnantService/.github/workflows/docker-image.yml` se déclenche
 
 **Déploiement base de données** : PostgreSQL 15 Alpine, 1 réplica (point unique de failure dans la configuration de base), volume persistant de 10 Gi, contrôle de santé `pg_isready -U wcpregnant`.
 
-**Service** : `ClusterIP` (port 80 → 8080).
+**Service** : `ClusterIP` (port 80 → 14007).
 
 **Ingress** (nginx, optionnel) : hôte `wcpregnant.example.com` configurable, TLS via cert-manager (Let's Encrypt).
 
@@ -335,7 +336,7 @@ Le frontend ne réimplémente aucune logique agentique : il consomme les endpoin
 | `src/app/services/agent.service.ts` | client HTTP `POST /agent/chat` et `GET /agent/tools`, en-tête `Authorization` repris de `AuthService`, URL issue de `environment.agentApiUrl` |
 | `src/app/components/agent-chat/` | panneau de conversation : saisie de la question, suggestions, fil des étapes (position transmise, interrogation du modèle, un pas par outil exécuté, synthèse), cartes de résultats cliquables |
 | `src/environments/environment.ts` | clé `agentApiUrl: '/agent'` (chemin relatif, jamais d'host codé en dur) |
-| `src/proxy.conf.json` | règle `/agent` → `http://localhost:8081`, alignée sur celle de `/toilets` |
+| `src/proxy.conf.json` | règle `/agent` → `http://localhost:14007`, alignée sur celle de `/toilets` |
 | `src/app/components/map/map.ts` | nouvel `@Input() highlight` : marqueur distinctif (classe `agent-highlight`) centré sur l'équipement choisi par l'agent |
 | `src/app/components/home/home.ts` | `onAgentResults(toilets)` remplace la liste et synchronise la carte, `selectFromAgent(toilet)` ouvre la fiche de détails |
 

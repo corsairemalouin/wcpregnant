@@ -72,6 +72,6 @@ Write-Host "  kubectl get pods -n $NAMESPACE" -ForegroundColor Yellow
 Write-Host "  kubectl get services -n $NAMESPACE" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Access application (port-forward):" -ForegroundColor Cyan
-Write-Host "  kubectl port-forward -n $NAMESPACE svc/wcpregnant-service 8080:80" -ForegroundColor Yellow
+Write-Host "  kubectl port-forward -n $NAMESPACE svc/wcpregnant-service 14007:80" -ForegroundColor Yellow
 Write-Host ""
 

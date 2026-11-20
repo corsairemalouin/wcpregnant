@@ -71,6 +71,6 @@ echo "  kubectl get pods -n $NAMESPACE"
 echo "  kubectl get services -n $NAMESPACE"
 echo ""
 echo "Access application (port-forward):"
-echo "  kubectl port-forward -n $NAMESPACE svc/wcpregnant-service 8080:80"
+echo "  kubectl port-forward -n $NAMESPACE svc/wcpregnant-service 14007:80"
 echo ""
 

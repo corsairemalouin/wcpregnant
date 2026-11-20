@@ -6,7 +6,7 @@
 #   ./stop.sh --status           # afficher l etat sans rien arreter
 set -euo pipefail
 
-API_PORT=8081
+API_PORT=14007
 FRONT_PORT=4200
 PURGE=0
 STATUS=0
@@ -14,7 +14,7 @@ STATUS=0
 usage() {
   cat <<'EOF'
 Usage : ./stop.sh [options]
-  --api-port PORT     port de l API (defaut 8081)
+  --api-port PORT     port de l API (defaut 14007, port dedie au projet)
   --front-port PORT   port du frontend (defaut 4200)
   --purge-volumes     supprime le volume de donnees PostgreSQL
   --status            afficher l etat de la stack sans arreter

@@ -22,4 +22,11 @@ data:
   AGENT_MODEL: Qwen-3.8-Flash-Next
   AGENT_TIMEOUT_SECONDS: "30"
   AGENT_MAX_ITERATIONS: "4"
+  # Comptes de démonstration (matrice RBAC) : dans un cluster, les profils de test
+  # supplémentaires (ADMIN seul, authentifié sans rôle, compte désactivé) sont
+  # désactivés. Les identifiants ne sont pas sensibles ; les mots de passe proviennent
+  # du Secret wcpregnant-db-secret.
+  DEMO_TEST_ACCOUNTS_ENABLED: "false"
+  DEMO_USER_USERNAME: demo-user
+  DEMO_ADMIN_USERNAME: demo-admin
 

@@ -1,17 +1,17 @@
 {
   "/toilets": {
-    "target": "http://localhost:8081",
+    "target": "http://localhost:14007",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "info"
   },
   "/actuator": {
-    "target": "http://localhost:8081",
+    "target": "http://localhost:14007",
     "secure": false,
     "changeOrigin": true
   },
   "/agent": {
-    "target": "http://localhost:8081",
+    "target": "http://localhost:14007",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "info"

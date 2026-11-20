@@ -9,8 +9,8 @@ info:
   contact:
     name: Manu
 servers:
-  - url: http://localhost:8081
-  - url: http://wcpregnant-cluster:8080
+  - url: http://localhost:14007
+  - url: http://wcpregnant-cluster
 tags:
   - name: auth
     description: Reinitialisation du mot de passe

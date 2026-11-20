@@ -25,6 +25,6 @@ Utiliser `templates/request.bru` comme base. Structure : `meta`, verbe + `url`, 
 ## Alternative sans Bruno (curl)
 
 ```powershell
-curl -X GET "http://localhost:8080/api/wcpregnant/toilets?page=0&size=20&latitude=48.85&longitude=2.35" `
+curl -X GET "http://localhost:14007/api/wcpregnant/toilets?page=0&size=20&latitude=48.85&longitude=2.35" `
   -H "Authorization: Basic <base64(user:pass)"
 ```

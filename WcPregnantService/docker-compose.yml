@@ -34,10 +34,18 @@ services:
       AGENT_MODEL: ${AGENT_MODEL:-Qwen-3.8-Flash-Next}
       AGENT_TIMEOUT_SECONDS: ${AGENT_TIMEOUT_SECONDS:-30}
       AGENT_MAX_ITERATIONS: ${AGENT_MAX_ITERATIONS:-4}
-    # Port public surchargeable (API_PORT) : les scripts start.ps1/start.sh l'alignent
-    # sur le proxy Angular (8081). Sans surcharge, comportement inchangé : 8080.
+      # Comptes de démonstration (matrice RBAC) : seuls les deux comptes principaux
+      # sont configurables, les profils de test sont déclarés dans TestUserProfiles.
+      # Valeurs de démonstration à remplacer en environnement réel.
+      DEMO_USER_USERNAME: ${DEMO_USER_USERNAME:-manu}
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-manu}
+      DEMO_ADMIN_USERNAME: ${DEMO_ADMIN_USERNAME:-admin}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:-admin}
+      DEMO_TEST_ACCOUNTS_ENABLED: ${DEMO_TEST_ACCOUNTS_ENABLED:-true}
+    # Port dédié au projet : 14007 (hors ports usuels et hors plage éphémère Windows).
+    # Surchargeable par API_PORT ; le port interne doit rester celui du serveur Spring.
     ports:
-      - "${API_PORT:-8080}:8080"
+      - "${API_PORT:-14007}:14007"
 
 
 volumes:

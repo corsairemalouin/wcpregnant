@@ -56,13 +56,13 @@ docker compose -f docker-compose.yml -p wcpregnant up -d
 | Service | Image | Port public |
 |---|---|---|
 | `db` | `postgres:15-alpine` | `5432` (volume `db_data`) |
-| `app` | `wcpregnant:local` (construite depuis le `Dockerfile`) | `${API_PORT:-8080}` → `8080` |
+| `app` | `wcpregnant:local` (construite depuis le `Dockerfile`) | `${API_PORT:-14007}` → `14007` |
 
 Vérification de la santé du conteneur :
 
 ```powershell
 docker ps --filter "name=wcpregnant" --format "{{.Names}} | {{.Status}}"
-curl.exe -s http://localhost:8080/actuator/health
+curl.exe -s http://localhost:14007/actuator/health
 ```
 
 > 💡 Le profil Spring est `prod` par défaut : les comptes sont alors lus dans les
@@ -72,8 +72,9 @@ curl.exe -s http://localhost:8080/actuator/health
 > de vérifier le RBAC dès le départ. Les identifiants sont surchargeables via
 > `DEMO_USER_USERNAME`, `DEMO_USER_PASSWORD`, `DEMO_ADMIN_USERNAME` et
 > `DEMO_ADMIN_PASSWORD`. Pour utiliser les comptes en mémoire (`{noop}`), lancer
-> avec `SPRING_PROFILES_ACTIVE=dev`. Le port est surchargeable avec `API_PORT` (les
-> scripts `start.ps1` l'alignent sur `8081`, cible du proxy Angular).
+> avec `SPRING_PROFILES_ACTIVE=dev`. Le port est **dédié au projet : 14007** (ni 8080
+> ni 8081, et hors de la plage éphémère Windows 49152-65535) ; il reste surchargeable
+> avec `API_PORT`, valeur également utilisée par le proxy Angular.
 
 > ⚠️ L'inférence agentique locale est attendue sur `AGENT_INFERENCE_BASE_URL`
 > (default `http://host.docker.internal:8000/v1`) : si votre serveur Strata AI

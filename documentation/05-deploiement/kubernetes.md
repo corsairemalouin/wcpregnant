@@ -95,8 +95,8 @@ kubectl logs -f deployment/wcpregnant-deployment -n wcpregnant
 ### Transfert de port (pour les tests)
 
 ```bash
-kubectl port-forward -n wcpregnant svc/wcpregnant-service 8080:80
-curl http://localhost:8080/api/
+kubectl port-forward -n wcpregnant svc/wcpregnant-service 14007:80
+curl http://localhost:14007/api/
 ```
 
 ### Via l'Ingress (production)

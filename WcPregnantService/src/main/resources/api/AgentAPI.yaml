@@ -10,8 +10,8 @@ info:
     name: WcPregnant Team
 
 servers:
-  - url: http://localhost:8080
-    description: Développement local
+  - url: http://localhost:14007
+    description: Développement local (port dédié au projet)
   - url: http://wcpregnant-service
     description: Cluster Kubernetes
 

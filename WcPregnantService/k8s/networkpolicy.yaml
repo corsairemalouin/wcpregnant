@@ -18,7 +18,7 @@ spec:
               role: frontend
       ports:
         - protocol: TCP
-          port: 8080
+          port: 14007
     # 2. Trafic entrant depuis l'extérieur du cluster (ingress nginx, port-forward
     #    kubectl, sondes de santé). Sans cette règle, AUCUNE requête n'atteint les
     #    pods applicatifs : un NetworkPolicy qui déclare une règle Ingress devient
@@ -26,7 +26,7 @@ spec:
     - from: []
       ports:
         - protocol: TCP
-          port: 8080
+          port: 14007
   egress:
     - to:
         - podSelector:

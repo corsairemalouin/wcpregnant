@@ -20,10 +20,13 @@ ENV SPRING_PROFILES_ACTIVE=prod
 WORKDIR /app
 COPY --from=builder ${JAR_FILE} app.jar
 
-EXPOSE 8080
+# Port dédié au projet (voir server.port dans application.properties) : il n'est
+# pas le port générique 8080, ce qui évite toute collision avec un autre service.
+ENV API_PORT=14007
+EXPOSE 14007
 USER appuser
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD wget -qO- http://localhost:8080/actuator/health || exit 1
+    CMD wget -qO- http://localhost:14007/actuator/health || exit 1
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]

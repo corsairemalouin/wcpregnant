@@ -16,7 +16,7 @@
 #>
 [CmdletBinding()]
 param(
-    [int] $ApiPort = 8081,
+    [int] $ApiPort = 14007,
     [int] $FrontPort = 4200,
     [switch] $PurgeVolumes,
     [switch] $Status

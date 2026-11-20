@@ -12,14 +12,14 @@
 .EXAMPLE
     .\start.ps1
     .\start.ps1 -Mode docker -NoFront
-    .\start.ps1 -ApiPort 8080 -FrontPort 4200
+    .\start.ps1 -ApiPort 14007 -FrontPort 4200
     .\start.ps1 -DryRun
 #>
 [CmdletBinding()]
 param(
     [ValidateSet('local', 'docker')] [string] $Mode = 'local',
     [string] $Profile = 'dev',
-    [int] $ApiPort = 8081,
+    [int] $ApiPort = 14007,
     [int] $FrontPort = 4200,
     [string] $InferenceUrl = 'http://localhost:8000/v1',
     [string] $InferenceModel = 'Qwen-3.8-Flash-Next',

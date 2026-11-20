@@ -3,7 +3,7 @@ info:
   title: Customer API
   version: 1.0.0
 servers:
-  - url: http://localhost:8080/api/wcpregnant # Harmonisé avec votre projet précédent
+  - url: http://localhost:14007/api/wcpregnant # Port dédié au projet (14007)
 
 paths:
   /customers:

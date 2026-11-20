@@ -9,6 +9,8 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8080
+      # Le Service expose l'application sur 80 ; le conteneur écoute sur le port
+      # dédié 14007 (voir server.port dans application.properties).
+      targetPort: 14007
   type: ClusterIP
 

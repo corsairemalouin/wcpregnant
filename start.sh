@@ -12,7 +12,7 @@ set -euo pipefail
 
 MODE="local"
 PROFILE="dev"
-API_PORT=8081
+API_PORT=14007
 FRONT_PORT=4200
 INFERENCE_URL="${AGENT_INFERENCE_BASE_URL:-http://localhost:8000/v1}"
 INFERENCE_MODEL="${AGENT_MODEL:-Qwen-3.8-Flash-Next}"
@@ -25,7 +25,7 @@ usage() {
 Usage : ./start.sh [options]
   --mode local|docker     local = Maven + ng serve (defaut), docker = docker-compose
   --profile NAME          profil Spring (defaut dev : utilisateurs admin/admin et manu/manu)
-  --api-port PORT         port de l API (defaut 8081, aligne sur src/proxy.conf.json)
+  --api-port PORT         port de l API (defaut 14007, port dedie au projet, aligne sur src/proxy.conf.json)
   --front-port PORT       port du frontend (defaut 4200)
   --inference-url URL     serveur d inférence local (defaut http://localhost:8000/v1)
   --inference-model NAME  modele expose par Strata AI
