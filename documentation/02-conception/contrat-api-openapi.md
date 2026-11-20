@@ -158,13 +158,16 @@ Le conseil `web/GlobalExceptionHandler` (`@ControllerAdvice(name = "productionGl
 
 > `GET /toilets/{id}` sur un identifiant inconnu reste traité **par le contrôleur**, qui renvoie `404` avec un corps vide : ce comportement historique est conservé et couvert par `ValidationStatusCodesIntegrationTest`.
 
-Vérification manuelle (port dédié `14007`, profil `dev` pour les comptes de démonstration `manu/manu` et `admin/admin`) :
+Vérification **live** effectuée en local (profil `dev` indispensable pour les comptes de démonstration `manu/manu` et `admin/admin`) :
 
 ```bash
-curl -i -u manu:manu http://localhost:14007/toilets/0
+mvn -q spring-boot:run -Dspring-boot.run.profiles=dev -Dspring-boot.run.arguments=--server.port=14107
+curl -i -u manu:manu http://localhost:14107/toilets/0
 # HTTP/1.1 400 Bad Request
 # {"status":400,"message":"getToiletById.id: doit être supérieur ou égal à 1","timestamp":"…"}
 ```
 
-> Si le conteneur Docker déjà lancé sur `14007` renvoie encore `500`, c'est l'image **pré-GLOBAL_EXCEPTION_HANDLER** : relancer `docker build -t wcpregnant:local .` (ou `mvn spring-boot:run`) pour bénéficier de la traduction centralisée.
+Résultats observés : `GET /toilets/0` → `400`, `GET /toilets?size=1000` → `400`, `GET /toilets?latitude=200` → `400`, `POST /toilets` incomplet → `400`, `PUT /toilets/999999/grade` → `404` avec corps `ApiError`, `GET /toilets/999999` → `404` corps vide, `GET /toilets/0` sans credentials → `401`.
+
+> Le conteneur Docker lancé sur le port habituel `14007` renvoie encore `500` : son image a été construite **avant** le conseil global. Relancer `docker build -t wcpregnant:local .` (ou `mvn spring-boot:run`) pour bénéficier de la traduction centralisée.
 

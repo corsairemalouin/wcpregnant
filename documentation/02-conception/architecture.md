@@ -105,7 +105,7 @@ Les interfaces d'API générées (`web/api/*`) sont annotées `@Validated` : les
 - libellé de secours (`Invalid request`, `Resource not found`) quand l'exception ne porte aucun détail ;
 - les libellés des violations sont **localisés par Hibernate Validator** (locale de la JVM) et portent le préfixe de la méthode générée : `getToiletById.id: doit être supérieur ou égal à 1` ;
 - le comportement métier existant est inchangé : `GET /toilets/{id}` inconnu continue de retourner `404` construit par le contrôleur (corps vide), tandis que `PUT /toilets/{id}/grade` sur une ressource absente retourne un `404` `ApiError` via le conseil global ;
-- vérification live (profil `dev`, port `14007`) : `curl -i -u manu:manu http://localhost:14007/toilets/0` → `400` + corps `ApiError` (l'image Docker en cours sur `14007` doit être reconstruite pour intégrer le conseil) ;
+- vérification live (profil `dev`, `mvn spring-boot:run` sur le port `14107`) : `curl -i -u manu:manu http://localhost:14107/toilets/0` → `400` + corps `ApiError` ; l'image Docker encore lancée sur `14007` date d'avant le conseil et doit être reconstruite ;
 - tests : `web/GlobalExceptionHandlerTest.java` (12 tests unitaires) et `web/ValidationStatusCodesIntegrationTest.java` (6 tests d'intégration MockMvc).
 
 ### 3.5 Accès aux données
