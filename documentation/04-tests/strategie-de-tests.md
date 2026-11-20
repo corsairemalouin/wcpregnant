@@ -34,7 +34,10 @@
 | `bdd/repository/ToiletteRepositoryTest.java` | Repository JPA |
 | `bdd/NonRegressionApiTest.java` + `bdd/ApiTestContext.java` | Non-régression API |
 | `web/ToilettesApiImplTest.java` | Endpoints HTTP via MockMvc |
-| `web/SecurityIntegrationTest.java` | RBAC / authentification |
+| `web/SecurityIntegrationTest.java` | RBAC / authentification : `/auth/**` et `/error` publics, `401` sur `/api/toilets` et `/toilets` sans credentials, `403` pour un `USER` qui crée ou supprime une toilette |
+| `service/impl/PasswordResetServiceImplTest.java` | Réinitialisation du mot de passe : génération du code, expiration, code invalide ou consommé, mot de passe trop court |
+| `bdd/seed/UserAccountSeederTest.java` | Amorce idempotente des comptes de démonstration (mots de passe hachés) |
+| `bdd/dao/UserAccountTest.java` | Modèle `UserAccount` : hachage BCrypt du code, validité du code, champs obligatoires |
 | `agent/AgentServiceImplTest.java` | Boucle Reason → Act → Observe, plafond d'iterations |
 | `agent/inference/LocalInferenceClientTest.java` | Appel de l'API OpenAI-compatible locale, gestion des erreurs |
 | `agent/tool/ToiletToolRegistryTest.java` | Définitions d'outils exposées au modèle |

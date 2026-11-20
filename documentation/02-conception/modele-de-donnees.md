@@ -63,8 +63,22 @@ erDiagram
 | `CustomerDAO` | `customer` | `id`, `nom`, `prenom`, `adress_id` | Lié à une adresse |
 | `Users` | `users` | login, mot de passe haché | Authentification Spring Security |
 | `Authorities` | `authorities` | rôle (`USER`, `ADMIN`) | RBAC |
+| `UserAccount` | `user_account` | `id`, `login` (unique), `email`, `password` (**100**, haché), `resetCode` (**100**, haché), `resetCodeExpiresAt`, `createdAt`, `updatedAt` | Comptes du flux de **réinitialisation du mot de passe** ; table distincte de `users` pour éviter tout conflit de schéma |
 
 **Conséquence des cascades** : supprimer une `toilet` supprime aussi son adresse, sa graduation et sa position (orphan removal).
+
+### Réinitialisation du mot de passe
+
+| Colonne | Contrainte | Raison |
+|---|---|---|
+| `password` | `length = 100` | un mot de passe BCrypt occupe 60 caractères ; le `PasswordEncoderFactories` ajoute le préfixe `{bcrypt}` → 67 caractères, marge de sécurité |
+| `resetCode` | `length = 100` | le code à 6 chiffres est **haché en BCrypt** avant stockage : il n'est jamais persisté en clair |
+| `resetCodeExpiresAt` | `Instant` | comparé à `Instant.now()` lors de la confirmation ; TTL `auth.reset.code-ttl-seconds` |
+| `login` | `unique = true` | identifiant ou e-mail accepté à la demande de code |
+
+Le code est **consommé** à la confirmation (`resetCode = null`, `resetCodeExpiresAt = null`) : un code ne peut être utilisé qu'une seule fois.
+
+---
 
 ### Notation et historique des visites
 

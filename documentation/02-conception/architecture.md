@@ -149,6 +149,25 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 
 **Code généré** (plugin Maven) : interfaces dans `target/generated-sources/openapi/`, DTO dans `org.manu.wcpregnant.web.dto`. Les contrôleurs implémentent ces interfaces et **ne doivent jamais être édités à la main**. Détail du contrat : [contrat-api-openapi.md](contrat-api-openapi.md).
 
+### 3.9 Réinitialisation du mot de passe
+
+**Chaîne** : `web/AuthApiImpl` (implémentation de l'interface générée `AuthApi`) → `service/PasswordResetService` → `service/impl/PasswordResetServiceImpl` → `bdd/repository/UserAccountRepository`. Contrat : [`AuthAPI.yaml`](../../WcPregnantService/src/main/resources/api/AuthAPI.yaml).
+
+| Élément | Détail |
+|---|---|
+| Compte concerné | `UserAccount` (table `user_account`), entité dédiée qui n'entre pas en conflit avec la table `users` de Spring Security |
+| Génération du code | `SecureRandom`, code numérique à **6 chiffres** |
+| Stockage du code | **haché en BCrypt** (`resetCode`), jamais en clair ; expiration horodatée `resetCodeExpiresAt` |
+| Validité du code | `auth.reset.code-ttl-seconds` (900 s par défaut, surchargeable via `AUTH_RESET_CODE_TTL_SECONDS`) |
+| Envoi | SMTP (`spring-boot-starter-mail`) lorsque `auth.mail.enabled=true` ; sinon **mode démonstration** : le code est renvoyé dans `demoCode` |
+| Confirmation | contrôle de la date d'expiration, `passwordEncoder.matches(code, resetCode)`, nouveau mot de passe ≥ 8 caractères, code consommé |
+| Codes HTTP | `200`, `400` (identifiant, code ou mot de passe invalide), `404` (compte inconnu, code absent ou expiré) |
+| Amorce des comptes | `bdd/seed/UserAccountSeeder` (profil `dev`) crée `manu` et `admin` avec mot de passe **haché**, de façon idempotente |
+| Sécurité | `/auth/**` et `/error` explicitement `permitAll()` dans la chaîne API (`@Order(1)`) ; `/toilets/**`, `/api/**` et `/agent/**` restent protégés |
+
+> **Limite connue** : en profil `dev`, l'authentification s'appuie sur `InMemoryUserDetailsManager` (`manu` / `admin` en `{noop}`) et en profil `prod` sur `JdbcUserDetailsManager` (table `users`). Le mot de passe réinitialisé est écrit dans `user_account` : la réinitialisation n'affecte la connexion que lorsque le `UserDetailsService` est branché sur `user_account`.
+
+
 ---
 
 ## 4. Stratégie de tests
@@ -405,8 +424,10 @@ WcPregnant/
 - Spring Security avec Basic auth et `@EnableMethodSecurity` ;
 - Autorisation par rôle via `@PreAuthorize` ;
 - CSRF désactivé sur la chaîne API (stateless) ;
-- Mots de passe hachés via `PasswordEncoderFactories.createDelegatingPasswordEncoder()` ;
-- Filtre de logs de requêtes (`CommonsRequestLoggingFilter`).
+- Mots de passe hachés via `PasswordEncoderFactories.createDelegatingPasswordEncoder()` (préfixe `{bcrypt}`) ;
+- **Code de réinitialisation lui-même haché** (BCrypt) et limité dans le temps (TTL configurable) ;
+- Filtre de logs de requêtes (`CommonsRequestLoggingFilter`) sans journalisation des en-têtes d'authentification ;
+- Chaîne de filtres séparée : `@Order(0)` santé (publique), `@Order(1)` API stateless (`/auth/**` public, RBAC sur les mutations), formulaire de connexion pour le reste.
 
 ### 10.2 Recommandations
 

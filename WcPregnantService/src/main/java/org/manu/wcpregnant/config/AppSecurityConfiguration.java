@@ -58,6 +58,20 @@ public class AppSecurityConfiguration {
         this.passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
+    /**
+     * Expose l'encodeur de mots de passe comme bean applicatif.
+     *
+     * <p>Le service de réinitialisation ({@code PasswordResetServiceImpl}) et le
+     * seed des comptes partagent ce bean : un seul encodeur est donc utilisé pour
+     * hacher les mots de passe et vérifier les codes de réinitialisation.</p>
+     *
+     * @return l'encodeur délégant (BCrypt par défaut) de Spring Security
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return this.passwordEncoder;
+    }
+
     // --- GESTION DES UTILISATEURS (PROFIL DEV) ---
     /**
      * Fournit le gestionnaire d'utilisateurs de démonstration pour le profil {@code dev}.
@@ -112,7 +126,9 @@ public class AppSecurityConfiguration {
      * aucune donnée métier ni information sensible.</p>
      *
      * <p>Le reste de l'Actuator et tous les endpoints métier ({@code /toilets/**},
-     * {@code /agent/**}) restent protégés par les chaînes suivantes.</p>
+     * {@code /agent/**}) restent protégés par les chaînes suivantes. La réinitialisation
+     * du mot de passe ({@code /auth/**}) et la page d'erreur interne ({@code /error}),
+     * utilisée par le dispatch des réponses 400/401, sont explicitement publiques.</p>
      *
      * @param http constructeur de chaîne fourni par Spring Security
      * @return la chaîne de filtres autorisant uniquement les sondes de santé
@@ -128,13 +144,30 @@ public class AppSecurityConfiguration {
     }
 
     // --- CONFIGURATION API (STATELESS) ---
+    /**
+     * Chaîne de filtres stateless de l'API métier.
+     *
+     * <p>Les endpoints {@code /toilets/**}, {@code /api/**} et {@code /agent/**}
+     * exigent une authentification Basic avec le RBAC associé, tandis que
+     * {@code /auth/**} (réinitialisation du mot de passe) est laissé public :
+     * un utilisateur qui a oublié son mot de passe ne peut pas s'authentifier.</p>
+     *
+     * @param http constructeur de chaîne fourni par Spring Security
+     * @return la chaîne de filtres appliquée à l'API
+     */
     @Bean
     @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/toilets/**", "/toilets", "/api/**", "/agent/**") // Ajoute /toilets et les endpoints agentiques
+                .securityMatcher("/toilets/**", "/toilets", "/api/**", "/agent/**", "/auth/**", "/error") // Ajoute /toilets, /auth, /error et les endpoints agentiques
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // La réinitialisation du mot de passe est accessible sans session
+                        .requestMatchers("/auth/**").permitAll()
+                        // Le dispatch interne vers /error (400, 401, 500) doit rester public :
+                        // sans cette règle, la chaîne « formLogin » intercepte la page d'erreur
+                        // et renvoie une redirection 302 vers /login au lieu du code HTTP réel.
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/toilets/**", "/toilets").hasRole("ADMIN")
                         // Les visiteurs (rôle USER) peuvent uniquement déposer une note
                         .requestMatchers(HttpMethod.PUT, "/toilets/*/grade").hasRole("USER")

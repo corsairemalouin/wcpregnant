@@ -1,0 +1,152 @@
+openapi: 3.0.0
+info:
+  title: Auth API
+  description: |
+    Procédure de réinitialisation du mot de passe des comptes WcPregnant.
+    Un code a 6 chiffres est envoye par e-mail (SMTP configurable) puis confirme
+    par l'utilisateur depuis le frontend.
+  version: 1.0.0
+  contact:
+    name: Manu
+servers:
+  - url: http://localhost:8081
+  - url: http://wcpregnant-cluster:8080
+tags:
+  - name: auth
+    description: Reinitialisation du mot de passe
+
+paths:
+  /auth/password-reset/request:
+    post:
+      operationId: requestPasswordReset
+      tags:
+        - auth
+      summary: Demander un code de reinitialisation
+      description: |
+        Genere un code a 6 chiffres, l'enregistre de facon hachee sur le compte et
+        l'envoie a l'adresse e-mail du compte. La reponse ne contient le code que
+        lorsque l'envoi de mail est desactive (mode demonstration).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '200':
+          description: Code envoye (ou affiche en mode demonstration)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetAcknowledgement'
+        '400':
+          description: Identifiant manquant ou invalide (le champ message porte l'explication)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetAcknowledgement'
+        '404':
+          description: Compte inconnu (le champ message porte l'explication)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetAcknowledgement'
+
+  /auth/password-reset/confirm:
+    post:
+      operationId: confirmPasswordReset
+      tags:
+        - auth
+      summary: Confirmer le code et definir un nouveau mot de passe
+      description: |
+        Verifie le code transmis (duree de validite et correspondance hachee) puis
+        remplace le mot de passe du compte par le nouveau mot de passe.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+      responses:
+        '200':
+          description: Mot de passe reinitialise
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetResult'
+        '400':
+          description: Code ou nouveau mot de passe invalide (le champ message porte l'explication)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetResult'
+        '404':
+          description: Compte inconnu ou code expire (le champ message porte l'explication)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetResult'
+
+components:
+  schemas:
+    PasswordResetRequest:
+      type: object
+      required:
+        - login
+      properties:
+        login:
+          type: string
+          description: Identifiant ou adresse e-mail du compte
+          minLength: 3
+          maxLength: 60
+          example: eargney
+
+    PasswordResetAcknowledgement:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Message d'information destine a l'utilisateur
+        email:
+          type: string
+          description: Adresse e-mail sur laquelle le code a ete envoye
+        expiresInSeconds:
+          type: integer
+          description: Duree de validite du code en secondes
+        demoCode:
+          type: string
+          description: Code renvoye uniquement quand l'envoi de mail est desactive (mode demonstration)
+
+    PasswordResetConfirmRequest:
+      type: object
+      required:
+        - login
+        - code
+        - newPassword
+      properties:
+        login:
+          type: string
+          description: Identifiant ou adresse e-mail du compte
+          minLength: 3
+          maxLength: 60
+        code:
+          type: string
+          description: Code a 6 chiffres recu par e-mail
+          minLength: 6
+          maxLength: 6
+          example: '482913'
+        newPassword:
+          type: string
+          description: Nouveau mot de passe (8 caracteres minimum)
+          minLength: 8
+          maxLength: 72
+
+    PasswordResetResult:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Message de confirmation
+        login:
+          type: string
+          description: Identifiant du compte dont le mot de passe a ete change

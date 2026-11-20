@@ -94,6 +94,11 @@
             <artifactId>swagger-annotations</artifactId>
             <version>${swagger-annotations.version}</version>
         </dependency>
+        <!-- Envoi du code de réinitialisation du mot de passe par e-mail (SMTP configurable) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
 
         <!-- Test -->
         <dependency>
@@ -259,6 +264,26 @@
                         </goals>
                         <configuration>
                             <inputSpec>${project.basedir}/src/main/resources/api/AgentAPI.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>org.manu.wcpregnant.web.api</apiPackage>
+                            <modelPackage>org.manu.wcpregnant.web.dto</modelPackage>
+                            <configOptions>
+                                <interfaceOnly>true</interfaceOnly>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <useTags>true</useTags>
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                                <generateConstructorWithAllArgs>true</generateConstructorWithAllArgs>
+                                <additionalModelTypeAnnotations>@lombok.Builder @lombok.Data</additionalModelTypeAnnotations>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-auth-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/api/AuthAPI.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <apiPackage>org.manu.wcpregnant.web.api</apiPackage>
                             <modelPackage>org.manu.wcpregnant.web.dto</modelPackage>

@@ -1,10 +1,16 @@
 package org.manu.wcpregnant.web;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.manu.wcpregnant.bdd.dao.users.UserAccount;
+import org.manu.wcpregnant.bdd.repository.UserAccountRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
@@ -12,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -23,7 +30,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("Tests d'Intégration Sécurité")
 class SecurityIntegrationTest {
 
-    private final WebApplicationContext webApplicationContext;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+    @Autowired
+    private UserAccountRepository userAccountRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * Spring Boot 4.x n'expose plus @AutoConfigureMockMvc dans spring-boot-test-autoconfigure :
@@ -31,15 +43,20 @@ class SecurityIntegrationTest {
      */
     private MockMvc mockMvc;
 
-    SecurityIntegrationTest(WebApplicationContext webApplicationContext) {
-        this.webApplicationContext = webApplicationContext;
-    }
+    /** Lecture des réponses JSON des endpoints de réinitialisation. */
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUpMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
+
+        // Compte de démonstration garanti présent pour les tests de réinitialisation.
+        UserAccount account = userAccountRepository.findByUsernameIgnoreCase("manu")
+                .orElse(new UserAccount("manu", passwordEncoder.encode("manu"), "manu@example.com", true));
+        account.clearResetCode();
+        userAccountRepository.save(account);
     }
 
     // L'URL doit correspondre à ce qui est généré par OpenAPI (vu dans tes logs)
@@ -116,5 +133,76 @@ class SecurityIntegrationTest {
     void healthChainDoesNotOpenAgentTools() throws Exception {
         mockMvc.perform(get("/agent/tools"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // --- RÉINITIALISATION DU MOT DE PASSE : /auth/** doit rester public ---
+
+    @Test
+    @DisplayName("POST /auth/password-reset/request - Anonyme : 200 (la demande est publique)")
+    void passwordResetRequestAnonyme_Autorise() throws Exception {
+        String body = mockMvc.perform(post("/auth/password-reset/request")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"login\": \"manu\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        JsonNode json = objectMapper.readTree(body);
+        // En mode démonstration (SMTP désactivé) le code est renvoyé pour permettre le test.
+        assertThat(json.has("demoCode")).isTrue();
+        assertThat(json.get("demoCode").asText()).matches("\\d{6}");
+    }
+
+    @Test
+    @DisplayName("POST /auth/password-reset/request - Compte inconnu : 404 et non 401")
+    void passwordResetRequestCompteInconnu_Renvoie404() throws Exception {
+        mockMvc.perform(post("/auth/password-reset/request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"login\": \"inconnu\"}"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("POST /auth/password-reset/request - Login vide : 400")
+    void passwordResetRequestLoginVide_Renvoie400() throws Exception {
+        mockMvc.perform(post("/auth/password-reset/request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"login\": \"\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Cycle complet demande -> confirmation : le mot de passe est réellement remplacé")
+    void passwordResetCycleComplet_RemplaceLeMotDePasse() throws Exception {
+        String requestBody = mockMvc.perform(post("/auth/password-reset/request")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"login\": \"MANU\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        String demoCode = objectMapper.readTree(requestBody).get("demoCode").asText();
+
+        mockMvc.perform(post("/auth/password-reset/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"login\": \"manu\", \"code\": \"" + demoCode + "\", \"newPassword\": \"MotDePasse123\"}"))
+                .andExpect(status().isOk());
+
+        UserAccount updated = userAccountRepository.findByUsernameIgnoreCase("manu").orElseThrow();
+        assertThat(updated.getResetCode()).isNull();
+        assertThat(passwordEncoder.matches("MotDePasse123", updated.getPassword())).isTrue();
+    }
+
+    @Test
+    @DisplayName("POST /auth/password-reset/confirm - Code erroné : 404, mot de passe inchangé")
+    void passwordResetConfirmCodeErrone_Renvoie404() throws Exception {
+        UserAccount before = userAccountRepository.findByUsernameIgnoreCase("manu").orElseThrow();
+        String passwordBefore = before.getPassword();
+
+        mockMvc.perform(post("/auth/password-reset/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"login\": \"manu\", \"code\": \"000000\", \"newPassword\": \"MotDePasse123\"}"))
+                .andExpect(status().isNotFound());
+
+        UserAccount after = userAccountRepository.findByUsernameIgnoreCase("manu").orElseThrow();
+        assertThat(after.getPassword()).isEqualTo(passwordBefore);
     }
 }
