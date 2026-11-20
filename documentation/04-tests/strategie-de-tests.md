@@ -11,7 +11,7 @@
 | **Tests unitaires** | JUnit 5, Mockito, AssertJ | `WcPregnantService/src/test/java/...` |
 | **Tests d'intégration API** | `@SpringBootTest` + MockMvc | `web/ToilettesApiImplTest`, `bdd/NonRegressionApiTest`, `web/AgentApiIntegrationTest` |
 | **Tests de sécurité** | `spring-security-test` | `web/SecurityIntegrationTest` |
-| **Tests agentiques (Tool Calling)** | Faux serveur d'inférence JDK `HttpServer` sur `127.0.0.1` | `agent/AgentServiceImplTest`, `agent/inference/LocalInferenceClientTest`, `agent/tool/*Test`, `web/AgentChatEndToEndTest` |
+| **Tests agentiques (Tool Calling)** | Faux serveur d'inférence JDK `HttpServer` sur `127.0.0.1:45678` | `agent/AgentServiceImplTest`, `agent/inference/LocalInferenceClientTest`, `agent/tool/*Test`, `web/AgentChatEndToEndTest` |
 | **Tests BDD** | Cucumber 8.0.4 | `src/test/resources/features/api/*.feature` + `bdd/steps/ToiletApiSteps.java` |
 | **Tests d'API end-to-end** | Bruno | `Bruno/WcPregnant/WC Pregnant API/` |
 | **Tests frontend** | Karma / Jasmine | `WcPregnantApp/src/**/*.spec.ts` |
@@ -37,6 +37,8 @@
 | `web/SecurityIntegrationTest.java` | RBAC / authentification : `/auth/**` et `/error` publics, `401` sur `/api/toilets` et `/toilets` sans credentials, `403` pour un `USER` qui crée ou supprime une toilette |
 | `service/impl/PasswordResetServiceImplTest.java` | Réinitialisation du mot de passe : génération du code, expiration, code invalide ou consommé, mot de passe trop court |
 | `bdd/seed/UserAccountSeederTest.java` | Amorce idempotente des comptes de démonstration (mots de passe hachés) |
+| `bdd/seed/SecurityAccountSeederTest.java` | Amorce des comptes Spring Security du profil `prod` : création, idempotence, rôles `USER`/`ADMIN`, hachage BCrypt, refus des dépendances `null` |
+| `bdd/seed/SecurityAccountSeederIntegrationTest.java` | Même amorce sur un vrai `JdbcUserDetailsManager` (H2 en mémoire, tables `users` / `authorities` créées par Hibernate) : comptes réellement écrits, rôles en base, mot de passe haché |
 | `bdd/dao/UserAccountTest.java` | Modèle `UserAccount` : hachage BCrypt du code, validité du code, champs obligatoires |
 | `agent/AgentServiceImplTest.java` | Boucle Reason → Act → Observe, plafond d'iterations |
 | `agent/inference/LocalInferenceClientTest.java` | Appel de l'API OpenAI-compatible locale, gestion des erreurs |
@@ -73,12 +75,14 @@
 
 ## 4. Tester la boucle agentique sans inférence réelle
 
-La boucle Tool Calling dépend d'un serveur d'inférence (Strata AI `Qwen-3.8-Flash-Next` en local). Pour rendre les tests déterministes et **sans aucune sortie réseau**, `AgentChatEndToEndTest` démarre un **faux serveur OpenAI-compatible** basé sur le JDK (`com.sun.net.httpserver.HttpServer`) sur `127.0.0.1:58301`.
+La boucle Tool Calling dépend d'un serveur d'inférence (Strata AI `Qwen-3.8-Flash-Next` en local). Pour rendre les tests déterministes et **sans aucune sortie réseau**, `AgentChatEndToEndTest` démarre un **faux serveur OpenAI-compatible** basé sur le JDK (`com.sun.net.httpserver.HttpServer`) sur `127.0.0.1:45678`.
 
 | Élément | Détail |
 |---|---|
 | Point d'entrée | `/v1/chat/completions` — même forme de réponse que l'API OpenAI (`choices[].message.tool_calls`) |
-| Injection de l'URL | `@SpringBootTest(properties = { "agent.inference.base-url=http://127.0.0.1:58301/v1" })` |
+| Injection de l'URL | `@SpringBootTest(properties = { "agent.inference.base-url=http://127.0.0.1:45678/v1" })` |
+| Choix du port | Le port est **fixé** : il doit être connu à la compilation de l'annotation, ce qu'un port éphémère attribué à l'exécution ne permet pas. `45678` est retenu car les plages autour de `58301` sont **réservées par Hyper-V** sur les postes Windows (Virtual Machine) et rendent le `bind` impossible |
+| Robustesse | `BIND_RETRY_COUNT = 5` : en cas de conflit transitoire de port, le serveur est relancé avec une attente croissante (1 s, 2 s, …) avant d'échouer explicitement |
 | Comportement | 1ʳᵉ requête → réponse avec `tool_calls` ; dès qu'un message `role: "tool"` est présent → réponse textuelle |
 | Scénarios couverts | appel d'outil de proximité, réinjection de l'observation, refus RBAC d'un outil CRUD, arrêt à `maxIterations` |
 

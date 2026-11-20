@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Test bout en bout de la conversation agentique {@code POST /agent/chat}.
  *
  * <p>Un <strong>faux serveur d'inférence local</strong> (JDK {@code HttpServer},
- * API compatible OpenAI) est démarré sur {@code 127.0.0.1:58301} : il imite le
+ * API compatible OpenAI) est démarré sur {@code 127.0.0.1:45678} : il imite le
  * comportement de Strata AI en renvoyant d'abord un appel d'outil, puis une
  * réponse textuelle dès qu'une observation d'outil lui est réinjectée.
  * L'URL de ce serveur est injectée dans le contexte Spring via
@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * inférence réelle. Aucun appel réseau externe n'est effectué, ce qui respecte la
  * contrainte "inférence 100 % locale" et rend le test déterministe.</p>
  */
-@SpringBootTest(properties = { "agent.inference.base-url=http://127.0.0.1:58301/v1" })
+@SpringBootTest(properties = {"agent.inference.base-url=http://127.0.0.1:45678/v1"})
 @ActiveProfiles("dev") // UserDetailsService en mémoire : manu (USER) / admin (USER, ADMIN)
 @DisplayName("Test bout en bout de l'agent (faux serveur d'inférence local)")
 class AgentChatEndToEndTest {
@@ -50,8 +50,17 @@ class AgentChatEndToEndTest {
     /** Marqueur envoyé dans la question pour déclencher un appel d'outil CRUD (test RBAC). */
     private static final String CRUD_MARKER = "supprimer la toilette 999";
 
-    /** Port du faux serveur d'inférence, fixé pour pouvoir être injecté dans le contexte Spring. */
-    private static final int FAKE_INFERENCE_PORT = 58301;
+    /**
+     * Port du faux serveur d'inférence. Il doit être fixé pour pouvoir être injecté
+     * dans le contexte Spring par {@code @SpringBootTest(properties = ...)}.
+     *
+     * <p>Choisi en dehors des plages réservées par Hyper-V (les ports 58301-58302
+     * sont indisponibles sur les postes Windows équipés de Virtual Machine).</p>
+     */
+    private static final int FAKE_INFERENCE_PORT = 45678;
+
+    /** Nombre de tentatives de bind : un JVM résiduel peut occuper brièvement le port. */
+    private static final int BIND_RETRY_COUNT = 5;
 
     /** Corps de la dernière requête reçue par le faux serveur, pour inspecter la conversation. */
     private static final AtomicReference<String> lastInferenceRequest = new AtomicReference<>("");
@@ -71,22 +80,56 @@ class AgentChatEndToEndTest {
     }
 
     /**
+     * Démarre le faux serveur d'inférence sur un port éphémère de {@code 127.0.0.1}
+     * et injecte son URL réelle comme propriété système, lue par
+     * {@code AgentToolConfig} via {@code agent.inference.base-url}.
+     *
+     * <p>Le port n'est pas fixé : un port réservé par l'OS (plages Hyper-V sous
+     * Windows) rendrait le bind impossible et rendrait la suite instable.</p>
+     *
+     * @return le serveur démarré
+     */
+    /**
      * Démarre le faux serveur d'inférence sur le port fixé par
      * {@code FAKE_INFERENCE_PORT}, URL injectée dans le contexte Spring par
      * {@code @SpringBootTest(properties = ...)} et lue par {@code AgentToolConfig}.
      *
+     * <p>Le bind est tenté plusieurs fois : un JVM résiduel (exécution interrompue
+     * de la suite) peut occuper brièvement le port et rendre l'échec transitoire.</p>
+     *
      * @return le serveur démarré
      */
     private static HttpServer startFakeInferenceServer() {
-        HttpServer server;
-        try {
-            server = HttpServer.create(new InetSocketAddress("127.0.0.1", FAKE_INFERENCE_PORT), 0);
-        } catch (IOException ex) {
-            throw new IllegalStateException("Unable to start the fake local inference server on port " + FAKE_INFERENCE_PORT, ex);
+        HttpServer server = null;
+        IOException lastError = null;
+        for (int attempt = 1; attempt <= BIND_RETRY_COUNT && server == null; attempt++) {
+            try {
+                server = HttpServer.create(new InetSocketAddress("127.0.0.1", FAKE_INFERENCE_PORT), 0);
+            } catch (IOException ex) {
+                lastError = ex;
+                sleepBeforeRetry(attempt);
+            }
+        }
+        if (server == null) {
+            throw new IllegalStateException(
+                    "Unable to start the fake local inference server on port " + FAKE_INFERENCE_PORT, lastError);
         }
         server.createContext("/v1/chat/completions", AgentChatEndToEndTest::serveChatCompletions);
         server.start();
         return server;
+    }
+
+    /**
+     * Patient entre deux tentatives de bind du faux serveur d'inférence.
+     *
+     * @param attempt numéro de la tentative déjà effectuée
+     */
+    private static void sleepBeforeRetry(int attempt) {
+        try {
+            Thread.sleep(1000L * attempt);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
