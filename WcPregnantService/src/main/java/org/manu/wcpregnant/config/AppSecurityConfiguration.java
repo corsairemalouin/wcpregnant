@@ -2,6 +2,7 @@ package org.manu.wcpregnant.config;
 
 import org.manu.wcpregnant.bdd.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -13,15 +14,21 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.manu.wcpregnant.bdd.seed.TestAccountProfile;
+import org.manu.wcpregnant.bdd.seed.TestUserProfiles;
+
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 import javax.sql.DataSource;
+import java.util.List;
+
 
 /**
  * Configuration de la sécurité de l'API WcPregnant.
@@ -76,27 +83,70 @@ public class AppSecurityConfiguration {
     /**
      * Fournit le gestionnaire d'utilisateurs de démonstration pour le profil {@code dev}.
      *
-     * <p>Deux comptes sont créés en mémoire : {@code manu} (rôle {@code USER})
-     * et {@code admin} (rôles {@code USER} et {@code ADMIN}), avec des mots de
-     * passe non hachés pour faciliter les tests locaux.</p>
+     * <p>Les comptes sont créés en mémoire à partir de
+     * {@link org.manu.wcpregnant.bdd.seed.TestUserProfiles}, la source de vérité partagée
+     * avec l'amorce du profil {@code prod} et la table {@code user_account} : le visiteur
+     * {@code manu} (rôle {@code USER}), l'administrateur {@code admin} (rôles {@code USER}
+     * et {@code ADMIN}) et, lorsque {@code demo.test-accounts.enabled} est vrai, les profils
+     * {@code adminonly} (ADMIN seul), {@code norole} (aucun rôle) et {@code disabled}
+     * (compte désactivé). Les mots de passe restent non hachés ({@code {noop}}) pour
+     * faciliter les tests locaux.</p>
      *
+     * @param userUsername        identifiant du compte visiteur, surchargeable par
+     *                            {@code DEMO_USER_USERNAME}
+     * @param userPassword        mot de passe du compte visiteur, surchargeable par
+     *                            {@code DEMO_USER_PASSWORD}
+     * @param adminUsername       identifiant du compte administrateur, surchargeable par
+     *                            {@code DEMO_ADMIN_USERNAME}
+     * @param adminPassword       mot de passe du compte administrateur, surchargeable par
+     *                            {@code DEMO_ADMIN_PASSWORD}
+     * @param testAccountsEnabled {@code true} pour amorcer la matrice RBAC complète
      * @return un {@link InMemoryUserDetailsManager} contenant les comptes de démonstration
      */
     @Bean
     @Profile("dev")
-    public UserDetailsService userDetailsServiceDev() {
-        return new InMemoryUserDetailsManager(
-                User.builder()
-                        .username("manu")
-                        .password("{noop}manu")
-                        .roles("USER")
-                        .build(),
-                User.builder()
-                        .username("admin")
-                        .password("{noop}admin")
-                        .roles("USER", "ADMIN")
-                        .build()
-        );
+    public UserDetailsService userDetailsServiceDev(
+            @Value("${demo.user.username:manu}") String userUsername,
+            @Value("${demo.user.password:manu}") String userPassword,
+            @Value("${demo.admin.username:admin}") String adminUsername,
+            @Value("${demo.admin.password:admin}") String adminPassword,
+            @Value("${demo.test-accounts.enabled:true}") boolean testAccountsEnabled) {
+        List<UserDetails> users = TestUserProfiles.accounts(testAccountsEnabled).stream()
+                .map(profile -> toInMemoryUser(profile, userUsername, userPassword, adminUsername, adminPassword))
+                .toList();
+        return new InMemoryUserDetailsManager(users);
+    }
+
+    /**
+     * Matérialise un profil de démonstration en utilisateur Spring Security en mémoire.
+     *
+     * <p>Les deux comptes principaux ({@link org.manu.wcpregnant.bdd.seed.TestUserProfiles#VISITOR}
+     * et {@link org.manu.wcpregnant.bdd.seed.TestUserProfiles#ADMIN}) reçoivent les credentials
+     * injectés par la configuration ; les profils de test conservent les leurs. Le mot de passe
+     * est préfixé {@code {noop}} (pas de hachage) et l'état d'activation du profil est respecté.</p>
+     *
+     * @param profile       profil déclaré dans {@link org.manu.wcpregnant.bdd.seed.TestUserProfiles}
+     * @param userUsername  identifiant effectif du compte visiteur
+     * @param userPassword  mot de passe effectif du compte visiteur
+     * @param adminUsername identifiant effectif du compte administrateur
+     * @param adminPassword mot de passe effectif du compte administrateur
+     * @return un {@link User} Spring Security prêt à être enregistré en mémoire
+     */
+    private UserDetails toInMemoryUser(TestAccountProfile profile,
+                                String userUsername, String userPassword,
+                                String adminUsername, String adminPassword) {
+        TestAccountProfile effective = (profile == TestUserProfiles.VISITOR)
+                ? profile.withCredentials(userUsername, userPassword)
+                : (profile == TestUserProfiles.ADMIN)
+                        ? profile.withCredentials(adminUsername, adminPassword)
+                        : profile;
+
+        return User.builder()
+                .username(effective.username())
+                .password("{noop}" + effective.password())
+                .roles(effective.roles().toArray(new String[0]))
+                .disabled(!effective.enabled())
+                .build();
     }
 
     /**

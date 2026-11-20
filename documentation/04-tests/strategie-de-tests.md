@@ -47,6 +47,10 @@
 | `web/AgentApiImplTest.java` | Validation des requêtes agentiques |
 | `web/AgentApiIntegrationTest.java` | Endpoints `/agent/tools` et `/agent/chat` |
 | `web/AgentChatEndToEndTest.java` | Conversation complète contre un faux serveur d'inférence local |
+| `config/ServerPortConfigurationTest.java` | Port HTTP **dédié 14007** : défaut résolu par Spring, appartenance à la bande réservée (11000-65535, hors plage éphémère) |
+| `config/ServerPortOverrideConfigurationTest.java` | Surcharge du port dédié par `API_PORT` : la configuration dédiée conserve la valeur de l'environnement et reste hors de la plage éphémère |
+| `bdd/seed/UserAccountSeederIntegrationTest.java` | Amorce des profils de test sur une vraie base H2 : écriture effective des comptes et des rôles, idempotence au second lancement |
+| `web/RbacMatrixIntegrationTest.java` | Matrice RBAC bout en bout sur MockMvc : `401` sans credentials, `403` pour un `USER` qui écrit, `201`/`204` pour un `ADMIN`, lecture autorisée pour tous les comptes authentifiés |
 | `utils/TestsUtils.java` | Constructeurs de données de test |
 
 **Fonctionnalités BDD** : `01-demo-data.feature`, `02-authentication.feature`.

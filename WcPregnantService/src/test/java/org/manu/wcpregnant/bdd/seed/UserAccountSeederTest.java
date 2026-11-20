@@ -1,5 +1,6 @@
 package org.manu.wcpregnant.bdd.seed;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,7 +36,8 @@ class UserAccountSeederTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        seeder = new UserAccountSeeder(userAccountRepository, passwordEncoder);
+        seeder = new UserAccountSeeder(userAccountRepository, passwordEncoder,
+                "manu", "manu", "admin", "admin", false);
     }
 
     /**
@@ -90,5 +93,78 @@ class UserAccountSeederTest {
                 .allMatch(account -> account.getPassword().startsWith("{bcrypt}"))
                 .allMatch(account -> passwordEncoder.matches(
                         account.getUsername(), account.getPassword()));
+    }
+
+    /**
+     * Nominal : drapeau activé, la matrice RBAC complète (5 comptes) est insérée.
+     */
+    @Test
+    void seedDemoAccounts_whenTestAccountsEnabled_createsFiveAccounts() {
+        // Arrange
+        UserAccountSeeder fullSeeder = new UserAccountSeeder(userAccountRepository, passwordEncoder,
+                "manu", "manu", "admin", "admin", true);
+
+        // Act
+        int created = fullSeeder.seedDemoAccounts();
+
+        // Assert
+        assertThat(created).isEqualTo(5);
+        verify(userAccountRepository, times(5)).save(ArgumentMatchers.any(UserAccount.class));
+    }
+
+    /**
+     * RBAC : l'état d'activation du compte reflète fidèlement le profil amorcé.
+     */
+    @Test
+    void seedDemoAccounts_copiesEnabledFlag_perProfile() {
+        // Arrange
+        UserAccountSeeder fullSeeder = new UserAccountSeeder(userAccountRepository, passwordEncoder,
+                "manu", "manu", "admin", "admin", true);
+        ArgumentCaptor<UserAccount> captor = ArgumentCaptor.forClass(UserAccount.class);
+
+        // Act
+        fullSeeder.seedDemoAccounts();
+
+        // Assert
+        verify(userAccountRepository, times(5)).save(captor.capture());
+        List<UserAccount> accounts = captor.getAllValues();
+        assertThat(accounts).hasSize(5);
+        assertThat(accounts.stream().filter(account -> "disabled".equals(account.getUsername())).findFirst()
+                .orElseThrow().isEnabled()).isFalse();
+        assertThat(accounts.stream().filter(account -> "norole".equals(account.getUsername())).findFirst()
+                .orElseThrow().isEnabled()).isTrue();
+    }
+
+    /**
+     * Configuration : les identifiants injectés remplacent les valeurs de démonstration.
+     */
+    @Test
+    void seedDemoAccounts_configuredCredentials_overrideDemoUsernames() {
+        // Arrange
+        UserAccountSeeder customSeeder = new UserAccountSeeder(userAccountRepository, passwordEncoder,
+                "visiteur", "p@ssw0rd", "superadmin", "s3cret", false);
+        ArgumentCaptor<UserAccount> captor = ArgumentCaptor.forClass(UserAccount.class);
+
+        // Act
+        int created = customSeeder.seedDemoAccounts();
+
+        // Assert
+        assertThat(created).isEqualTo(2);
+        verify(userAccountRepository, times(2)).save(captor.capture());
+        assertThat(captor.getAllValues().stream().map(UserAccount::getUsername).toList())
+                .containsExactly("visiteur", "superadmin");
+        assertThat(captor.getAllValues().get(0).getPassword()).isNotEqualTo("manu");
+    }
+
+    /**
+     * Cas limite : un repository {@code null} est refusé à la construction.
+     */
+    @Test
+    void constructor_nullRepository_throwsNullPointerException() {
+        // Arrange & Act & Assert
+        assertThatThrownBy(() -> new UserAccountSeeder(null, passwordEncoder,
+                "manu", "manu", "admin", "admin", true))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("userAccountRepository must not be null");
     }
 }
