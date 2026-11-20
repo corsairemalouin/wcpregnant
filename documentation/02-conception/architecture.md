@@ -89,7 +89,27 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 - Basic auth sans session (`SessionCreationPolicy.STATELESS`) ; CSRF désactivé sur la chaîne API ;
 - Profil `dev` : utilisateurs en mémoire `manu/manu` (rôle `USER`) et `admin/admin` (rôles `USER` + `ADMIN`) ; profil `prod` : `JdbcUserDetailsManager`.
 
-### 3.4 Accès aux données
+### 3.4 Gestion centralisée des erreurs HTTP (`web/GlobalExceptionHandler`)
+
+Les interfaces d'API générées (`web/api/*`) sont annotées `@Validated` : les contraintes `@Min`, `@Max` et `@DecimalMax` portées par les paramètres de chemin et de requête lèvent une `ConstraintViolationException` **avant** d'atteindre l'implémentation. Sans conseil global, Spring renvoie `500 Internal Server Error`, ce qui contredit le contrat OpenAPI qui annonce `400` avec un corps `ApiError`.
+
+| Exception traitée | Code HTTP | Corps de réponse |
+|---|---|---|
+| `ConstraintViolationException` (`id`, `page`, `size`, `latitude`, `longitude`) | `400` | `ApiError` : `status`, `message` = « `propertyPath: message` » trié par `propertyPath`, `timestamp` |
+| `BindException` / `MethodArgumentNotValidException` (corps JSON `@Valid`) | `400` | `ApiError` : « `champ: message` » |
+| `IllegalArgumentException` (argument métier `null`) | `400` | `ApiError` |
+| `ResourceNotFoundException` | `404` | `ApiError` : message porté par l'exception |
+
+- `@ControllerAdvice(name = "productionGlobalExceptionHandler")` + `@Order(Ordered.HIGHEST_PRECEDENCE)` : la traduction s'applique avant tout autre handler ;
+- chaque rejet est journalisé en `WARN` avec des placeholders (`log.warn("Constraint violation rejected request: {}", details)`), sans concatination ;
+- libellé de secours (`Invalid request`, `Resource not found`) quand l'exception ne porte aucun détail ;
+- les libellés des violations sont **localisés par Hibernate Validator** (locale de la JVM) et portent le préfixe de la méthode générée : `getToiletById.id: doit être supérieur ou égal à 1` ;
+- le comportement métier existant est inchangé : `GET /toilets/{id}` inconnu continue de retourner `404` construit par le contrôleur (corps vide), tandis que `PUT /toilets/{id}/grade` sur une ressource absente retourne un `404` `ApiError` via le conseil global ;
+- vérification live (profil `dev`, port `14007`) : `curl -i -u manu:manu http://localhost:14007/toilets/0` → `400` + corps `ApiError` (l'image Docker en cours sur `14007` doit être reconstruite pour intégrer le conseil) ;
+- tests : `web/GlobalExceptionHandlerTest.java` (12 tests unitaires) et `web/ValidationStatusCodesIntegrationTest.java` (6 tests d'intégration MockMvc).
+
+### 3.5 Accès aux données
+
 
 **Repositories** (Spring Data JPA) :
 
@@ -110,7 +130,7 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 
 > Pour que l'amorceur puisse injecter le manager, le bean `userDetailsService` du profil `prod` est typé `JdbcUserDetailsManager` (et non `UserDetailsService`) : `JdbcUserDetailsManager` implémente `UserDetailsService`, le comportement d'authentification est donc strictement inchangé.
 
-### 3.5 Mappers (MapStruct)
+### 3.6 Mappers (MapStruct)
 
 | Mapper | Transformation |
 |---|---|
@@ -119,7 +139,7 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 | `GraduationDAOMapper` | Mapping simple des champs `accueil`, `espace`, `proprete` |
 | `ToiletConverter` / `ToiletConverterImpl` | Conversion objet métier ↔ DTO |
 
-### 3.6 Stratégie de distance
+### 3.7 Stratégie de distance
 
 **`DistanceCalculator`** (interface) et **`HaversineDistanceCalculator`** (implémentation `@Component`) :
 
@@ -136,7 +156,7 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 
 **Correctifs déjà appliqués** : ordre des paramètres de la méthode primitive corrigé ; contrôles de nullité ajoutés (retour de `Double.MAX_VALUE` en cas de donnée manquante).
 
-### 3.7 Configuration
+### 3.8 Configuration
 
 **`ToiletteServiceConfig`** lit les propriétés d'`application.properties` :
 
@@ -145,7 +165,7 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 | `app.distance.max` | `100.0` km | `50` | Distance maximale de recherche |
 | `app.result.max` | `5` | `10` | Nombre maximal de résultats renvoyés |
 
-### 3.8 Documentation API (OpenAPI / Swagger)
+### 3.9 Documentation API (OpenAPI / Swagger)
 
 **Fichiers** : `src/main/resources/api/*.yaml`
 
@@ -155,7 +175,7 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 
 **Code généré** (plugin Maven) : interfaces dans `target/generated-sources/openapi/`, DTO dans `org.manu.wcpregnant.web.dto`. Les contrôleurs implémentent ces interfaces et **ne doivent jamais être édités à la main**. Détail du contrat : [contrat-api-openapi.md](contrat-api-openapi.md).
 
-### 3.9 Réinitialisation du mot de passe
+### 3.10 Réinitialisation du mot de passe
 
 **Chaîne** : `web/AuthApiImpl` (implémentation de l'interface générée `AuthApi`) → `service/PasswordResetService` → `service/impl/PasswordResetServiceImpl` → `bdd/repository/UserAccountRepository`. Contrat : [`AuthAPI.yaml`](../../WcPregnantService/src/main/resources/api/AuthAPI.yaml).
 
@@ -379,7 +399,7 @@ WcPregnant/
 │   │   │   ├── agent/                          ← AgentService, AgentServiceImpl
 │   │   │   │   ├── tool/                       ← ToolCall, ToolResult, ToiletToolRegistry, ToiletToolExecutor
 │   │   │   │   └── inference/                  ← InferenceClient, LocalInferenceClient, ChatMessage, InferenceRequest/Response
-│   │   │   ├── web/                            ← ToilettesApiImpl, CustomerApiImpl, AgentApiImpl, dto/ (généré)
+│   │   │   ├── web/                            ← ToilettesApiImpl, CustomerApiImpl, AgentApiImpl, GlobalExceptionHandler, dto/ (généré)
 │   │   │   └── bdd/
 │   │   │       ├── dao/                        ← ToiletDAO, AdressDAO, GeoPositionDAO, …
 │   │   │       ├── mapper/                     ← MapStruct

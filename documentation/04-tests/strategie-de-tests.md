@@ -52,6 +52,9 @@
 | `bdd/seed/UserAccountSeederIntegrationTest.java` | Amorce des profils de test sur une vraie base H2 : écriture effective des comptes et des rôles, idempotence au second lancement |
 | `web/RbacMatrixIntegrationTest.java` | Matrice RBAC bout en bout sur MockMvc : `401` sans credentials, `403` pour un `USER` qui écrit, `201`/`204` pour un `ADMIN`, lecture autorisée pour tous les comptes authentifiés |
 | `utils/TestsUtils.java` | Constructeurs de données de test |
+| `web/GlobalExceptionHandlerTest.java` | 12 tests du conseil global : `ConstraintViolationException`, `BindException`, `IllegalArgumentException`, `ResourceNotFoundException` → `400`/`404` avec corps `ApiError`, message de secours quand la violation n'a pas de libellé |
+| `web/ValidationStatusCodesIntegrationTest.java` | 6 tests d'intégration MockMvc sur les endpoints réels : `GET /toilets/0` → `400`, `GET /toilets?size=1000` → `400`, `GET /toilets?latitude=200` → `400`, `PUT /toilets/999999/grade` → `404` (`ApiError`), `POST /toilets` au corps invalide → `400`, `GET /toilets/999999` → `404` |
+
 
 **Fonctionnalités BDD** : `01-demo-data.feature`, `02-authentication.feature`.
 
@@ -121,6 +124,16 @@ Script de contrôle par classe (seuil 80 %) :
 ```
 
 Il lit `WcPregnantService/target/site/jacoco/jacoco.csv` et liste les classes sous le seuil.
+
+Dernière campagne (`mvn test` : **283 tests**, 0 échec, 0 erreur) — extrait pour la classe ajoutée :
+
+| Classe | Instructions | Branches | Lignes | Méthodes |
+|---|---|---|---|---|
+| `web/GlobalExceptionHandler` | 153/160 (95,6 %) | 13/17 (76,5 %) | 34/35 (97,1 %) | 12/12 (100 %) |
+
+Les quelques instructions non couvertes correspondent aux libellés de secours (`Invalid request`,
+`Resource not found`) et aux branches de défense (`violations == null`, `errors == null`) : elles
+sont exercées par les tests unitaires `GlobalExceptionHandlerTest`, pas par le chemin d'intégration.
 
 ---
 

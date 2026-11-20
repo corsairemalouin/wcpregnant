@@ -137,3 +137,34 @@ n'est plus utilisé, il est occupé par d'autres applications locales.
 | `authRequestPasswordReset.bru` | Demande d'un code de réinitialisation (`POST /auth/password-reset/request`) |
 | `authConfirmPasswordReset.bru` | Confirmation du code et changement de mot de passe (`POST /auth/password-reset/confirm`) |
 | `folder.bru` | Configuration du dossier |
+
+---
+
+## 8. Codes HTTP d'erreur : traduction centralisée
+
+Le contrat annonce `400` pour une entrée invalide et `404` pour une ressource absente, avec un corps `ApiError` (`status`, `message`, `timestamp`). Les interfaces générées étant `@Validated`, les contraintes des paramètres (`@Min(1)` sur `id`, `@Max(100)` sur `size`, `@DecimalMax(90)` sur `latitude`, …) lèvent une `ConstraintViolationException` **avant** l'implémentation : sans conseil global, Spring répondait `500`.
+
+Le conseil `web/GlobalExceptionHandler` (`@ControllerAdvice(name = "productionGlobalExceptionHandler")`, `@Order(Ordered.HIGHEST_PRECEDENCE)`) aligne la réponse sur le contrat :
+
+| Cas | Exemple | Code | `message` |
+|---|---|---|---|
+| Paramètre hors bornes | `GET /toilets/0` | `400` | `getToiletById.id: doit être supérieur ou égal à 1` |
+| Taille de page trop grande | `GET /toilets?size=1000` | `400` | `getToilets.size: doit être inférieur ou égal à 100` |
+| Latitude invalide | `GET /toilets?latitude=200` | `400` | `getToilets.latitude: doit être inférieur ou égal à 90` |
+| Corps JSON invalide | `POST /toilets` sans `adress`, sans `libelle` et avec `latitude: 200` | `400` | `adress: ne doit pas être nul, libelle: ne doit pas être nul, position.latitude: doit être inférieur ou égal à 90` |
+| Ressource absente (flux service) | `PUT /toilets/999999/grade` | `404` | `Toilette not found with id: 999999` |
+
+> Le `propertyPath` affiché est celui de la **méthode générée** (`getToiletById.id`, `getToilets.size`) : les contraintes `@Min` / `@Max` portent sur les paramètres de l'interface OpenAPI. Les libellés des violations sont **localisés par Hibernate Validator** selon la locale de la JVM (français ici) ; le libellé de secours reste en anglais (`Invalid request`, `Resource not found`).
+
+> `GET /toilets/{id}` sur un identifiant inconnu reste traité **par le contrôleur**, qui renvoie `404` avec un corps vide : ce comportement historique est conservé et couvert par `ValidationStatusCodesIntegrationTest`.
+
+Vérification manuelle (port dédié `14007`, profil `dev` pour les comptes de démonstration `manu/manu` et `admin/admin`) :
+
+```bash
+curl -i -u manu:manu http://localhost:14007/toilets/0
+# HTTP/1.1 400 Bad Request
+# {"status":400,"message":"getToiletById.id: doit être supérieur ou égal à 1","timestamp":"…"}
+```
+
+> Si le conteneur Docker déjà lancé sur `14007` renvoie encore `500`, c'est l'image **pré-GLOBAL_EXCEPTION_HANDLER** : relancer `docker build -t wcpregnant:local .` (ou `mvn spring-boot:run`) pour bénéficier de la traduction centralisée.
+
