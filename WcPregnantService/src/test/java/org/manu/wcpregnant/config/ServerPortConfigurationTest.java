@@ -32,8 +32,8 @@ class ServerPortConfigurationTest {
     /** Début de la plage éphémère Windows : le port du projet doit rester en dessous. */
     private static final int EPHEMERAL_START = 49152;
 
-    /** Port résolu par Spring au démarrage du contexte de test. */
-    @Value("${server.port:8080}")
+    /** Port résolu par Spring au démarrage du contexte de test (défaut : port dédié). */
+    @Value("${server.port:14007}")
     private String configuredPort;
 
     /**

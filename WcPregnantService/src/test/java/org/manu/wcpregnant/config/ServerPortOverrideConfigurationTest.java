@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Configuration : surcharge du port dédié par API_PORT")
 class ServerPortOverrideConfigurationTest {
 
-    /** Port résolu lorsque {@code API_PORT} est fourni. */
-    @Value("${server.port:8080}")
+    /** Port résolu lorsque {@code API_PORT} est fourni (défaut : port dédié). */
+    @Value("${server.port:14007}")
     private String overriddenPort;
 
     /**
