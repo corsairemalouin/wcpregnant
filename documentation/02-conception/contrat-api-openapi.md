@@ -127,7 +127,7 @@ n'est plus utilisé, il est occupé par d'autres applications locales.
 
 | Fichier `.bru` | Scénario |
 |---|---|
-| `local.bru` | Variables d'environnement locales |
+| `environments/local.bru` | Variables d'environnement locales (`base_url = http://localhost:14007`) |
 | `getNearsetToilettes.bru` / `get Nearset.bru` | Recherche de proximité |
 | `lireToilet.bru` | Lecture par ID |
 | `addToilette.bru` | Création |
