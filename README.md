@@ -28,7 +28,7 @@ Application de localisation de toilettes publiques accessibles aux personnes enc
 
 ```powershell
 # Windows / PowerShell
-.\start.ps1     # PostgreSQL (Docker) + API sur 8081 + frontend Angular sur 4200
+.\start.ps1     # PostgreSQL (Docker) + API sur 14007 + frontend Angular sur 4200
 .\stop.ps1      # arrêt complet de la stack
 ```
 
@@ -49,7 +49,7 @@ mvn clean package          # build
 mvn test                   # tests unitaires + intégration
 mvn test jacoco:report     # rapport de couverture (target/site/jacoco/)
 docker build -t wcpregnant:local .
-docker-compose up --build  # API sur http://localhost:8080
+docker-compose up --build  # API sur http://localhost:14007
 ```
 
 ### Frontend
@@ -78,10 +78,10 @@ $env:AGENT_MODEL              = "Qwen-3.8-Flash-Next"
 $env:AGENT_MAX_ITERATIONS    = "4"
 
 # 2. Lister les outils exposés au modèle
-curl.exe -u manu:manu http://localhost:8080/agent/tools
+curl.exe -u manu:manu http://localhost:14007/agent/tools
 
 # 3. Converser avec l'agent (le serveur exécute les tool_calls interceptés)
-curl.exe -X POST http://localhost:8080/agent/chat `
+curl.exe -X POST http://localhost:14007/agent/chat `
   -H "Content-Type: application/json" -u manu:manu `
   -d '{"message":"Toilettes accessibles à moins de 200 m de la mairie de Paris ?","position":{"latitude":48.8566,"longitude":2.3522}}'
 ```
