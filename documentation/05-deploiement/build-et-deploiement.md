@@ -56,6 +56,11 @@ Aucune étape `mvn package` préalable n'est nécessaire : la stage `builder` ex
 `mvn -DskipTests package` à l'intérieur de l'image, et la stage `frontend-builder` exécute
 `npm ci --legacy-peer-deps` puis `npm run build`.
 
+Le contexte de build étant la racine du monorepo, le fichier `.dockerignore` (racine) exclut
+ce qui ne doit jamais atteindre l'image : `WcPregnantService/target/`, `WcPregnantApp/node_modules/`,
+`WcPregnantApp/dist/`, `WcPregnantApp/.angular/`, `Waste/`, `developpement/`, `graphify-out/`,
+`council-transcripts/`, `.idea/`, `.vscode/`, `.env`, `*.jks`, `*.log` et la documentation.
+
 | Stage | Base | Artefact produit |
 |---|---|---|
 | `builder` | `eclipse-temurin:26-jdk-alpine` | `target/*.jar` |

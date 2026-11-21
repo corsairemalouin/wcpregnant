@@ -226,6 +226,3 @@ public class FrontendController {
         return dir != null && Files.isRegularFile(dir.resolve(INDEX_FILE));
     }
 }
-
-
-

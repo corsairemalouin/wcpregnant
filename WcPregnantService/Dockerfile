@@ -1,34 +1,34 @@
-# Multi-stage Dockerfile for WcPregnant
-# Build context: monorepo root (WcPregnantService + WcPregnantApp)
-# Build: docker build -t wcpregnant:local -f WcPregnantService/Dockerfile .
+# Dockerfile multi-stage de WcPregnant
+# Contexte de build : racine du monorepo (WcPregnantService + WcPregnantApp)
+# Build : docker build -t wcpregnant:local -f WcPregnantService/Dockerfile .
 #
-# Stage 1: Spring Boot build (Maven)
-# Stage 2: Angular build (Node 22 LTS) -> SPA served by the service on /
-# Stage 3: Runtime (JRE Alpine) with the API + the web UI
+# Stage 1 : compilation du backend (Maven)
+# Stage 2 : compilation du frontend (Node 22 LTS) -> SPA servie par le service sur /
+# Stage 3 : exécution (JRE Alpine) avec l'API + l'interface web
 
-# Stage 1: Build backend
+# Stage 1 : build du backend
 FROM eclipse-temurin:26-jdk-alpine AS builder
 WORKDIR /build
 COPY WcPregnantService/pom.xml .
 COPY WcPregnantService/src ./src
 RUN apk add --no-cache maven && mvn -DskipTests package -q
 
-# Stage 2: Build frontend
+# Stage 2 : build du frontend
 FROM node:22-alpine AS frontend-builder
 WORKDIR /app
 
-# Manifests first: the npm cache is only invalidated when they change.
-# `--legacy-peer-deps` is required: the lockfile pins @angular/common 20.0.4 while
-# @angular/platform-browser-dynamic 20.0.7 declares a strict peer @angular/common
-# 20.0.7. npm 10 aborts (ERESOLVE) on that conflict, exactly like the local install
-# which was resolved with the legacy peer strategy.
+# Les manifests d'abord : le cache npm n'est invalidé que s'ils changent.
+# `--legacy-peer-deps` est indispensable : le lockfile fixe @angular/common 20.0.4
+# alors que @angular/platform-browser-dynamic 20.0.7 déclare un peer strict
+# @angular/common 20.0.7. npm 10 s'arrête sur ce conflit (ERESOLVE), comme l'install
+# local qui a été résolu avec la stratégie "legacy peer".
 COPY WcPregnantApp/package.json WcPregnantApp/package-lock.json ./
 RUN npm ci --no-audit --no-fund --legacy-peer-deps
 
 COPY WcPregnantApp/ ./
 RUN npm run build
 
-# Stage 3: Runtime
+# Stage 3 : exécution
 FROM eclipse-temurin:26-jre-alpine AS runtime
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
@@ -39,8 +39,8 @@ ENV SPRING_PROFILES_ACTIVE=prod
 WORKDIR /app
 COPY --from=builder ${JAR_FILE} app.jar
 
-# The Angular dist is embedded so that http://localhost:14007/ shows the app
-# menu instead of the Spring login page (see FrontendController).
+# Le build Angular est embarqué pour que http://localhost:14007/ affiche
+# l'application au lieu de la page de connexion Spring (voir FrontendController).
 COPY --from=frontend-builder /app/dist/WcPregnantApp/browser /app/frontend-dist
 ENV FRONTEND_DIST_PATH=/app/frontend-dist
 

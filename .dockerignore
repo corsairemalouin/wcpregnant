@@ -1,5 +1,5 @@
-# Build context is the monorepo root (see WcPregnantService/Dockerfile).
-# Anything listed here never reaches the image.
+# Contexte de build : racine du monorepo (voir WcPregnantService/Dockerfile).
+# Rien de ce qui est listé ici n'atteint l'image.
 
 # Artefacts de build
 WcPregnantService/target/
