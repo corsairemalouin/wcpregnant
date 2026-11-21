@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.manu.wcpregnant.bdd.dao.ToiletDAO;
@@ -30,6 +31,18 @@ class ToiletteServiceImplTest {
     @Autowired
     ToiletteService service;
 
+    /**
+     * Repository JPA réellement injecté dans le service.
+     *
+     * <p>Le bean {@code ToiletteServiceImpl} est partagé par le contexte Spring mis en
+     * cache entre les classes de test {@code @SpringBootTest}. Comme chaque test remplace
+     * le repository par un mock, le repository authentique doit être restauré après
+     * chaque test, sinon les classes exécutées ensuite interrogent un mock
+     * ({@code findAll(Pageable)} renvoie alors {@code null}).</p>
+     */
+    @Autowired
+    ToiletteRepository realRepository;
+
     @Mock
     ToiletteRepository repository;
 
@@ -42,6 +55,19 @@ class ToiletteServiceImplTest {
     public void setup() {
         repository = mock(ToiletteRepository.class);
         ReflectionTestUtils.setField(service, "toiletteRepository", repository);
+    }
+
+    /**
+     * Restaure le repository JPA authentique sur le service partagé.
+     *
+     * <p>Sans cette étape, la pollution du bean {@code ToiletteServiceImpl} par le mock
+     * se propagerait aux autres classes d'intégration partageant le même contexte Spring
+     * (par exemple {@code DefaultProfileSecurityTest}), ce qui rendrait les tests
+     * dépendants de l'ordre d'exécution.</p>
+     */
+    @AfterEach
+    public void restoreRealRepository() {
+        ReflectionTestUtils.setField(service, "toiletteRepository", realRepository);
     }
 
     @Test

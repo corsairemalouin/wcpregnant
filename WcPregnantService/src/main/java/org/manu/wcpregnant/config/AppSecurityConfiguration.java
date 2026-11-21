@@ -79,9 +79,17 @@ public class AppSecurityConfiguration {
         return this.passwordEncoder;
     }
 
-    // --- GESTION DES UTILISATEURS (PROFIL DEV) ---
+    // --- GESTION DES UTILISATEURS (PROFIL DEV / LANCEMENT LOCAL) ---
     /**
-     * Fournit le gestionnaire d'utilisateurs de démonstration pour le profil {@code dev}.
+     * Fournit le gestionnaire d'utilisateurs de démonstration pour tout profil autre
+     * que {@code prod} : le profil {@code dev} explicite, mais aussi l'absence de
+     * profil, cas du lancement local par défaut ({@code mvn spring-boot:run}).
+     *
+     * <p>Sans ce bean, Spring Security auto-configurerait un
+     * {@code InMemoryUserDetailsManager} avec un utilisateur {@code user} et un mot
+     * de passe aléatoire : les comptes de démonstration {@code manu} et {@code admin}
+     * seraient alors inutilisables (401 systématique) alors qu'ils sont amorcés dans
+     * {@code user_account} par {@link org.manu.wcpregnant.bdd.seed.UserAccountSeeder}.</p>
      *
      * <p>Les comptes sont créés en mémoire à partir de
      * {@link org.manu.wcpregnant.bdd.seed.TestUserProfiles}, la source de vérité partagée
@@ -104,7 +112,7 @@ public class AppSecurityConfiguration {
      * @return un {@link InMemoryUserDetailsManager} contenant les comptes de démonstration
      */
     @Bean
-    @Profile("dev")
+    @Profile("!prod")
     public UserDetailsService userDetailsServiceDev(
             @Value("${demo.user.username:manu}") String userUsername,
             @Value("${demo.user.password:manu}") String userPassword,

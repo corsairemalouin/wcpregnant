@@ -87,7 +87,7 @@ L'interface historique `ToiletteService` est **dépréciée** : elle agrège dé
 - `@PreAuthorize("hasRole('ADMIN')")` pour les créations, mises à jour complètes et suppressions ;
 - Le chemin `/toilets/*/grade` est autorisé pour `USER` dans `AppSecurityConfiguration`, les autres `PUT` restent réservés à `ADMIN` ;
 - Basic auth sans session (`SessionCreationPolicy.STATELESS`) ; CSRF désactivé sur la chaîne API ;
-- Profil `dev` : utilisateurs en mémoire `manu/manu` (rôle `USER`) et `admin/admin` (rôles `USER` + `ADMIN`) ; profil `prod` : `JdbcUserDetailsManager`.
+- Tout profil **autre que `prod`** — y compris **aucun profil**, le lancement local par défaut (`mvn spring-boot:run`) : utilisateurs en mémoire `manu/manu` (rôle `USER`) et `admin/admin` (rôles `USER` + `ADMIN`) fournis par `userDetailsServiceDev` annoté `@Profile("!prod")` ; profil `prod` : `JdbcUserDetailsManager`. Sans ce bean, Spring Security auto-configurerait un `InMemoryUserDetailsManager` avec un utilisateur `user` et un mot de passe aléatoire : les comptes de démonstration seraient inutilisables (`401` systématique).
 
 ### 3.4 Gestion centralisée des erreurs HTTP (`web/GlobalExceptionHandler`)
 
@@ -224,7 +224,7 @@ Le build Angular est servi par le backend lui-même sur le port **14007** : ouvr
 |---|---|---|
 | **Tests unitaires** | JUnit 5, Mockito, AssertJ | `GeoPositionUtils`, `ToiletteServiceImpl`, mappers, services |
 | **Tests d'intégration API** | `@SpringBootTest` + MockMvc | `ToilettesApiImplTest` |
-| **Tests de sécurité** | `spring-security-test` | `SecurityIntegrationTest` |
+| **Tests de sécurité** | `spring-security-test` | `SecurityIntegrationTest`, `RbacMatrixIntegrationTest`, `DefaultProfileSecurityTest` (résolution du bean `userDetailsServiceDev` `@Profile("!prod")`) |
 | **Tests BDD** | Cucumber | `src/test/resources/features/api/*.feature` |
 | **Couverture** | JaCoCo | rapport dans `target/site/jacoco/` |
 

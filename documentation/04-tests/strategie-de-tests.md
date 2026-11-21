@@ -10,7 +10,7 @@
 |---|---|---|
 | **Tests unitaires** | JUnit 5, Mockito, AssertJ | `WcPregnantService/src/test/java/...` |
 | **Tests d'intégration API** | `@SpringBootTest` + MockMvc | `web/ToilettesApiImplTest`, `bdd/NonRegressionApiTest`, `web/AgentApiIntegrationTest` |
-| **Tests de sécurité** | `spring-security-test` | `web/SecurityIntegrationTest` |
+| **Tests de sécurité** | `spring-security-test` | `web/SecurityIntegrationTest`, `web/RbacMatrixIntegrationTest`, `web/DefaultProfileSecurityTest` |
 | **Tests agentiques (Tool Calling)** | Faux serveur d'inférence JDK `HttpServer` sur `127.0.0.1:45678` | `agent/AgentServiceImplTest`, `agent/inference/LocalInferenceClientTest`, `agent/tool/*Test`, `web/AgentChatEndToEndTest` |
 | **Tests BDD** | Cucumber 8.0.4 | `src/test/resources/features/api/*.feature` + `bdd/steps/ToiletApiSteps.java` |
 | **Tests d'API end-to-end** | Bruno | `Bruno/WcPregnant/WC Pregnant API/` |
@@ -55,6 +55,7 @@
 | `web/GlobalExceptionHandlerTest.java` | 12 tests du conseil global : `ConstraintViolationException`, `BindException`, `IllegalArgumentException`, `ResourceNotFoundException` → `400`/`404` avec corps `ApiError`, message de secours quand la violation n'a pas de libellé |
 | `web/ValidationStatusCodesIntegrationTest.java` | 6 tests d'intégration MockMvc sur les endpoints réels : `GET /toilets/0` → `400`, `GET /toilets?size=1000` → `400`, `GET /toilets?latitude=200` → `400`, `PUT /toilets/999999/grade` → `404` (`ApiError`), `POST /toilets` au corps invalide → `400`, `GET /toilets/999999` → `404` |
 | `web/FrontendControllerTest.java` | 8 tests du serveur de la SPA : `index.html` servi sur `/` avec le bon type MIME, `404` quand le build est absent ou que le chemin explicite ne contient pas `index.html`, assets racine et imbriqués (`application/javascript`, `image/png`), extension inconnue servie en `application/octet-stream`, refus de l'évasion de chemin (`../leaked.txt`) |
+| `web/DefaultProfileSecurityTest.java` | 9 tests du **profil par défaut (aucun `@ActiveProfiles`)** : le bean `userDetailsServiceDev` (`@Profile("!prod")`) est bien résolu — le `UserDetailsService` injecté est un `InMemoryUserDetailsManager` et non celui auto-configuré de Spring Security (`user` introuvable) ; les comptes `manu` (`ROLE_USER`) et `admin` (`ROLE_USER` + `ROLE_ADMIN`) sont authentifiables ; `GET /toilets` avec `manu:manu` répond `200` (et non `401`), `POST /toilets` par `manu` répond `403`, par `admin` `201`, le compte `disabled` `401`, requête anonyme `401` |
 
 
 
@@ -107,6 +108,25 @@ La boucle Tool Calling dépend d'un serveur d'inférence (Strata AI `Qwen-3.8-Fl
 - Vérifier les interactions avec `verify(...)` (mapper, repository) et les logs si la méthode loggue.
 - **Un test = un scénario** : pas de tests fleuves.
 - Ne jamais mocker la classe testée elle-même.
+
+---
+
+## 6. Isolation des contextes Spring : piège des beans partagés
+
+Le contexte `@SpringBootTest` est **mis en cache** et partagé entre toutes les classes de test
+dont la configuration est identique. Un bean modifié par une classe le reste pour les classes
+exécutées ensuite : l'ordre d'exécution de Surefire devient alors un facteur d'échec.
+
+Deux protections sont en place :
+
+| Protection | Où | Effet |
+|---|---|---|
+| Restauration du repository authentique | `service/ToiletteServiceImplTest.java` — `@AfterEach restoreRealRepository()` | le mock injecté via `ReflectionTestUtils.setField(service, "toiletteRepository", …)` ne fuite pas vers les autres classes d'intégration |
+| Contexte et base dédiés | `web/DefaultProfileSecurityTest.java` — `@SpringBootTest(properties = { "spring.datasource.url=jdbc:h2:mem:default-profile-security;DB_CLOSE_DELAY=-1" })` | un contexte Spring distinct, donc insensible aux mocks injectés ailleurs, tout en conservant le profil par défaut |
+
+> Symptôme observé avant la correction : `NullPointerException` dans `ToiletteServiceImpl.listToilets`
+> (`findAll(Pageable)` renvoyant `null` sur le mock) lors des appels MockMvc de
+> `DefaultProfileSecurityTest`.
 
 ---
 
