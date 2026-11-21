@@ -34,7 +34,7 @@
 | `bdd/repository/ToiletteRepositoryTest.java` | Repository JPA |
 | `bdd/NonRegressionApiTest.java` + `bdd/ApiTestContext.java` | Non-régression API |
 | `web/ToilettesApiImplTest.java` | Endpoints HTTP via MockMvc |
-| `web/SecurityIntegrationTest.java` | RBAC / authentification : `/auth/**` et `/error` publics, `401` sur `/api/toilets` et `/toilets` sans credentials, `403` pour un `USER` qui crée ou supprime une toilette |
+| `web/SecurityIntegrationTest.java` | RBAC / authentification : `/auth/**` et `/error` publics, **`/` et `/index.html` publics (interface web)** — vérifié par 2 tests qui refusent toute redirection `formLogin`, `401` sur `/api/toilets` et `/toilets` sans credentials, `403` pour un `USER` qui crée ou supprime une toilette |
 | `service/impl/PasswordResetServiceImplTest.java` | Réinitialisation du mot de passe : génération du code, expiration, code invalide ou consommé, mot de passe trop court |
 | `bdd/seed/UserAccountSeederTest.java` | Amorce idempotente des comptes de démonstration (mots de passe hachés) |
 | `bdd/seed/SecurityAccountSeederTest.java` | Amorce des comptes Spring Security du profil `prod` : création, idempotence, rôles `USER`/`ADMIN`, hachage BCrypt, refus des dépendances `null` |
@@ -54,6 +54,8 @@
 | `utils/TestsUtils.java` | Constructeurs de données de test |
 | `web/GlobalExceptionHandlerTest.java` | 12 tests du conseil global : `ConstraintViolationException`, `BindException`, `IllegalArgumentException`, `ResourceNotFoundException` → `400`/`404` avec corps `ApiError`, message de secours quand la violation n'a pas de libellé |
 | `web/ValidationStatusCodesIntegrationTest.java` | 6 tests d'intégration MockMvc sur les endpoints réels : `GET /toilets/0` → `400`, `GET /toilets?size=1000` → `400`, `GET /toilets?latitude=200` → `400`, `PUT /toilets/999999/grade` → `404` (`ApiError`), `POST /toilets` au corps invalide → `400`, `GET /toilets/999999` → `404` |
+| `web/FrontendControllerTest.java` | 8 tests du serveur de la SPA : `index.html` servi sur `/` avec le bon type MIME, `404` quand le build est absent ou que le chemin explicite ne contient pas `index.html`, assets racine et imbriqués (`application/javascript`, `image/png`), extension inconnue servie en `application/octet-stream`, refus de l'évasion de chemin (`../leaked.txt`) |
+
 
 
 **Fonctionnalités BDD** : `01-demo-data.feature`, `02-authentication.feature`.

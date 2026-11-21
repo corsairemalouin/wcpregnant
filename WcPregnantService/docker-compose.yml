@@ -23,7 +23,11 @@ services:
       - "5432:5432"
 
   app:
-    build: .
+    # Contexte de build = racine du monorepo : le Dockerfile a besoin des sources
+    # Angular (WcPregnantApp) pour embarquer l'interface web dans l'image.
+    build:
+      context: ..
+      dockerfile: WcPregnantService/Dockerfile
     image: wcpregnant:local
     restart: unless-stopped
     depends_on:

@@ -135,6 +135,26 @@ class SecurityIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    // --- INTERFACE WEB : / et les assets du SPA Angular sont publics ---
+
+    @Test
+    @DisplayName("GET / - Anonyme : pas de redirection vers /login (interface web publique)")
+    void rootAnonyme_NestPasRedirigeVersLogin() throws Exception {
+        int status = mockMvc.perform(get("/")).andReturn().getResponse().getStatus();
+
+        // 200 lorsque le build Angular est présent, 404 explicite lorsqu'il ne l'est
+        // pas ; dans les deux cas la chaîne formLogin ne doit jamais prendre le relais.
+        assertThat(status).isIn(200, 404);
+    }
+
+    @Test
+    @DisplayName("GET /index.html - Anonyme : asset non protégé par l'authentification Basic")
+    void indexHtmlAnonyme_NestPasAuthentifie() throws Exception {
+        int status = mockMvc.perform(get("/index.html")).andReturn().getResponse().getStatus();
+
+        assertThat(status).isIn(200, 404);
+    }
+
     // --- RÉINITIALISATION DU MOT DE PASSE : /auth/** doit rester public ---
 
     @Test

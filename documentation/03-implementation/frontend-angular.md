@@ -26,6 +26,33 @@ modifier et supprimer).
 > de `angular.json`). Sans lui, `TestBed` et `NgZone` échouent avec `NG0908` et la page s'affiche
 > vide.
 
+### Interface web servie par le backend (port 14007)
+
+Le build Angular est embarqué dans le service Spring : ouvrir `http://localhost:14007/` affiche
+directement le menu de l'application, sans `ng serve` ni page de connexion Spring.
+
+```powershell
+npm run build              # produit dist/WcPregnantApp/browser
+cd ..\WcPregnantService
+mvn spring-boot:run        # sert la SPA sur / (port 14007)
+```
+
+| Environnement | Emplacement du build |
+|---|---|
+| Local | `WcPregnantApp/dist/WcPregnantApp/browser`, résolu automatiquement par `FrontendController` |
+| Docker / Kubernetes | `/app/frontend-dist`, fixé par la variable `FRONTEND_DIST_PATH` |
+
+`FrontendController` sert `index.html` sur `/`, les fichiers racine (`main-*.js`,
+`styles-*.css`, `favicon.ico`) et les chemins imbriqués d'**un niveau**
+(`/media/marker-icon.png`, motif `/{dir}/{file}`), avec le type MIME adapté ; toute tentative
+d'évasion de chemin (`..`, `%2e%2e`) ou chemin plus profond renvoie `404`. Ces règles sont
+couvertes par `WcPregnantService/src/test/java/org/manu/wcpregnant/web/FrontendControllerTest.java`
+(8 tests) et par deux tests d'intégration de `SecurityIntegrationTest` qui vérifient que
+`/` et `/index.html` ne déclenchent plus la chaîne `formLogin`.
+
+> Le proxy `src/proxy.conf.json` reste utile en développement : il cible toujours
+> `http://localhost:14007` pour `/toilets*`, `/actuator*` et `/agent*`.
+
 ### Position de recherche et mode développeur
 
 Par défaut, la recherche part de la **géolocalisation du navigateur** (`MapService.getCurrentLocation()`) :

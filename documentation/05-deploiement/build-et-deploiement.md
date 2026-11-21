@@ -37,13 +37,34 @@ Les pages seront générées dans `target/site`.
 
 ## 3. Construire l'image Docker
 
-Après avoir exécuté `mvn package` (qui produit `target/*.jar`) :
+Le `Dockerfile` est **multi-stage** et se construit depuis la **racine du monorepo**, parce que
+l'image embarque le build Angular servi par le backend (voir
+[architecture.md §6.1](../02-conception/architecture.md#61-docker)) :
 
 ```powershell
-docker build -t ghcr.io/<OWNER>/wcpregnant:latest .
+cd D:\Programmation\wcpregnant
+docker build -t wcpregnant:local -f WcPregnantService/Dockerfile .
 ```
 
-Remplacez `<OWNER>` par votre utilisateur ou organisation si vous publiez sur GitHub Container Registry.
+Pour une publication sur GitHub Container Registry :
+
+```powershell
+docker build -t ghcr.io/<OWNER>/wcpregnant:latest -f WcPregnantService/Dockerfile .
+```
+
+Aucune étape `mvn package` préalable n'est nécessaire : la stage `builder` exécute
+`mvn -DskipTests package` à l'intérieur de l'image, et la stage `frontend-builder` exécute
+`npm ci --legacy-peer-deps` puis `npm run build`.
+
+| Stage | Base | Artefact produit |
+|---|---|---|
+| `builder` | `eclipse-temurin:26-jdk-alpine` | `target/*.jar` |
+| `frontend-builder` | `node:22-alpine` | `dist/WcPregnantApp/browser` → copié dans `/app/frontend-dist` |
+| `runtime` | `eclipse-temurin:26-jre-alpine` | image finale, utilisateur non root `appuser`, `HEALTHCHECK /actuator/health` |
+
+> Vérification live (21/11/2026) : `docker run -p 14008:14007 wcpregnant:local` répond
+> `200` sur `/` avec le `index.html` du SPA, `200` sur `styles-B6V7BVVK.css` (`text/css`)
+> et `{"status":"UP"}` sur `/actuator/health`.
 
 ## 4. Lancer en local avec docker-compose (Docker Desktop)
 
@@ -57,6 +78,11 @@ docker compose -f docker-compose.yml -p wcpregnant up -d
 |---|---|---|
 | `db` | `postgres:18-alpine` | `5432` (volume `db_data`) |
 | `app` | `wcpregnant:local` (construite depuis le `Dockerfile`) | `${API_PORT:-14007}` → `14007` |
+
+> Le `docker-compose.yml` déclare `build.context: ..` : la stage Angular est donc construite
+> depuis la racine du monorepo. Si l'image `wcpregnant:local` n'existe pas encore, lancez
+> d'abord `docker compose -f docker-compose.yml -p wcpregnant build` (ou laissez `up -d`
+> la construire).
 
 ### Migration PostgreSQL 15 → 18
 
@@ -209,7 +235,7 @@ jobs:
           java-version: '25'
 
       - name: Build with Maven
-        run: mvn -B -DskipTests package
+        run: mvn -B -DskipTests package -f WcPregnantService/pom.xml
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
@@ -222,6 +248,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          file: WcPregnantService/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/wcpregnant:latest
 ```

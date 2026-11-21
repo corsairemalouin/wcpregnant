@@ -216,9 +216,17 @@ public class AppSecurityConfiguration {
     @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/toilets/**", "/toilets", "/api/**", "/agent/**", "/auth/**", "/error") // Ajoute /toilets, /auth, /error et les endpoints agentiques
+                .securityMatcher("/toilets/**", "/toilets", "/api/**", "/agent/**", "/auth/**", "/error",
+                        // Interface web (SPA Angular) : racine et assets du build
+                        "/", "/index.html", "/**/*.js", "/**/*.css", "/**/*.png", "/**/*.jpg",
+                        "/**/*.svg", "/**/*.ico", "/**/*.woff", "/**/*.woff2", "/**/*.json", "/**/*.map")
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // L'interface web et ses assets sont publics : l'authentification
+                        // Basic est effectuée par le formulaire de l'application Angular.
+                        .requestMatchers("/", "/index.html", "/**/*.js", "/**/*.css", "/**/*.png",
+                                "/**/*.jpg", "/**/*.svg", "/**/*.ico", "/**/*.woff", "/**/*.woff2",
+                                "/**/*.json", "/**/*.map").permitAll()
                         // La réinitialisation du mot de passe est accessible sans session
                         .requestMatchers("/auth/**").permitAll()
                         // Le dispatch interne vers /error (400, 401, 500) doit rester public :

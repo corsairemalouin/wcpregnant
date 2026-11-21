@@ -1,0 +1,37 @@
+# Build context is the monorepo root (see WcPregnantService/Dockerfile).
+# Anything listed here never reaches the image.
+
+# Artefacts de build
+WcPregnantService/target/
+WcPregnantApp/node_modules/
+WcPregnantApp/dist/
+WcPregnantApp/.angular/
+
+# Code mort / archives
+Waste/
+developpement/
+
+# Outils locaux
+graphify-out/
+council-transcripts/
+.idea/
+.vscode/
+
+# Secrets et environnement
+.env
+*.jks
+*.log
+
+# Documentation et scripts non nécessaires à l'image
+documentation/
+Bruno/
+README.md
+*.md
+.git/
+.gitignore
+.gitattributes
+.graphifyignore
+.graphifyrc
+clinerules/
+.cline/
+cline-rules/

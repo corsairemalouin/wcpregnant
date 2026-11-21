@@ -193,6 +193,28 @@ Les interfaces d'API générées (`web/api/*`) sont annotées `@Validated` : les
 
 > **Limite connue** : en profil `dev`, l'authentification s'appuie sur `InMemoryUserDetailsManager` (`manu` / `admin` en `{noop}`) et en profil `prod` sur `JdbcUserDetailsManager` (table `users`). Le mot de passe réinitialisé est écrit dans `user_account` : la réinitialisation n'affecte la connexion que lorsque le `UserDetailsService` est branché sur `user_account`.
 
+### 3.11 Serveur de l'interface web (`web/FrontendController`)
+
+Le build Angular est servi par le backend lui-même sur le port **14007** : ouvrir
+`http://localhost:14007/` affiche directement le menu de l'application, sans `ng serve`
+(port 4200) ni page de connexion Spring.
+
+| Point | Détail |
+|---|---|
+| Racine | `GET /` et `GET /index.html` → contenu de `<dist>/index.html` |
+| Assets racine | `GET /main-XXXXXXXX.js`, `GET /styles.css`, `GET /favicon.ico` |
+| Assets imbriqués | `GET /media/marker-icon.png` — un seul niveau de dossier, motif `/{dir}/{file}` |
+| Résolution du dossier | `app.frontend.dist` (variable `FRONTEND_DIST_PATH`), sinon `WcPregnantApp/dist/WcPregnantApp/browser` (build local), puis `dist/WcPregnantApp` et `dist/browser` |
+| Protection | `Path.normalize()` + contrôle `startsWith(distRoot)` : toute évasion hors du dossier de build (`..`, `%2e%2e`) renvoie `404` |
+| Types MIME | `application/javascript`, `text/css`, `image/svg+xml`, `image/png`, `image/jpeg`, `font/woff`, `font/woff2`, `application/json`, `application/octet-stream` |
+| Build absent | `404` + message invitant à lancer `npm run build` dans `WcPregnantApp/` |
+| Tests | `web/FrontendControllerTest.java` (8 tests) + règles d'accès dans `web/SecurityIntegrationTest.java` |
+
+> L'authentification de l'interface reste celle de l'API : la chaîne de filtres
+> `apiFilterChain` autorise explicitement `/`, `/index.html` et les extensions d'assets
+> (`*.js`, `*.css`, `*.png`, `*.svg`, `*.ico`, `*.woff2`, `*.json`, `*.map`), tandis que
+> `/toilets/**`, `/api/**` et `/agent/**` exigent Basic auth et respectent le RBAC.
+
 
 ---
 
@@ -233,7 +255,27 @@ Le workflow `WcPregnantService/.github/workflows/docker-image.yml` se déclenche
 | Étape | Base | Rôle |
 |---|---|---|
 | `builder` | `eclipse-temurin:26-jdk-alpine` | `mvn -DskipTests package -q` |
-| `runtime` | `eclipse-temurin:26-jre-alpine` | Copie du jar, utilisateur non root `appuser` |
+| `frontend-builder` | `node:22-alpine` | `npm ci --legacy-peer-deps` puis `npm run build` → `dist/WcPregnantApp/browser` |
+| `runtime` | `eclipse-temurin:26-jre-alpine` | Copie du jar **et** du build Angular dans `/app/frontend-dist`, utilisateur non root `appuser` |
+
+Le contexte de build est la **racine du monorepo**, parce que l'image doit embarquer les sources
+Angular :
+
+```powershell
+docker build -t wcpregnant:local -f WcPregnantService/Dockerfile .
+```
+
+L'image définit `FRONTEND_DIST_PATH=/app/frontend-dist` : `http://localhost:14007/` affiche
+l'interface Angular au lieu de la page de connexion Spring (voir §3.11). Le fichier
+`.dockerignore` racine exclut `target/`, `node_modules/`, `dist/`, `Waste/`, `developpement/`
+et `documentation/` du contexte.
+
+> **Pourquoi `npm ci --legacy-peer-deps` ?** Le `package-lock.json` fige
+> `@angular/common` **20.0.4** alors que `@angular/platform-browser-dynamic` **20.0.7**
+> déclare un pair strict `@angular/common@20.0.7`. npm 10 rejette cette incohérence
+> (`ERESOLVE`) : `npm install` échoue dans l'image, `npm ci` seul aussi. Le drapeau
+> `--legacy-peer-deps` reproduit la résolution utilisée lors de l'installation locale,
+> qui produit un build Angular fonctionnel.
 
 - Port exposé : **14007** (port dédié au projet, défini par `server.port=${API_PORT:14007}`
   dans `application.properties` — ni 8080/8081, ni la plage éphémère Windows 49152-65535) ;
